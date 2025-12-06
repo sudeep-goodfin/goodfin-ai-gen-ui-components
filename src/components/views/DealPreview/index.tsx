@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ChatLayout } from '../../chat/ChatLayout';
 import { ChatMessage } from '../../chat/ChatMessage';
 import { FullVariantContent } from './FullVariant';
@@ -6,22 +6,21 @@ import { MinimalVariantContent } from './MinimalVariant';
 
 export type DealPreviewVariant = 'full' | 'minimal';
 
-const variants = [
-  { id: 'full' as const, label: 'Full Details' },
-  { id: 'minimal' as const, label: 'Minimal' },
+export const dealPreviewVariants = [
+  { id: 'full', label: 'Full Details' },
+  { id: 'minimal', label: 'Minimal' },
 ];
 
-export function DealPreviewView() {
-  const [variant, setVariant] = useState<DealPreviewVariant>('full');
+type DealPreviewViewProps = {
+  variant?: DealPreviewVariant;
+};
 
+export function DealPreviewView({ variant = 'full' }: DealPreviewViewProps) {
   return (
     <ChatLayout
-      title="Investment Assistant"
-      subtitle="Friday, December 5th"
+      title="GoodFin AI"
+      subtitle="Deal Preview"
       userMessage="I want to invest in Databricks IV"
-      variants={variants}
-      activeVariant={variant}
-      onVariantChange={setVariant}
     >
       <ChatMessage
         content={variant === 'full' ? <FullVariantContent /> : <MinimalVariantContent />}

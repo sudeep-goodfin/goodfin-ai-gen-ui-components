@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ChatLayout } from '../../chat/ChatLayout';
 import { ChatMessage } from '../../chat/ChatMessage';
 import { OriginalVariantContent, originalVariantAttachments } from './OriginalVariant';
@@ -6,26 +6,25 @@ import { CompactVariantContent } from './CompactVariant';
 
 export type InvestmentReviewVariant = 'original' | 'compact';
 
-const variants = [
-  { id: 'original' as const, label: 'Original' },
-  { id: 'compact' as const, label: 'Compact' },
+export const investmentReviewVariants = [
+  { id: 'original', label: 'Original' },
+  { id: 'compact', label: 'Compact' },
 ];
 
-export function InvestmentReviewChat() {
-  const [variant, setVariant] = useState<InvestmentReviewVariant>('original');
+type InvestmentReviewChatProps = {
+  variant?: InvestmentReviewVariant;
+};
 
+export function InvestmentReviewChat({ variant = 'original' }: InvestmentReviewChatProps) {
   const userMessage = variant === 'original'
     ? 'Looks good!'
     : 'This is clear, ready for the next one.';
 
   return (
     <ChatLayout
-      title="Investment Assistant"
-      subtitle="Databricks Investment Review"
+      title="GoodFin AI"
+      subtitle="Investment Review"
       userMessage={userMessage}
-      variants={variants}
-      activeVariant={variant}
-      onVariantChange={setVariant}
       inputPlaceholder="Type 'all clear' to proceed..."
     >
       <ChatMessage

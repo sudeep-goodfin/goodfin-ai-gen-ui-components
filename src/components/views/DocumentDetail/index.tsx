@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ChatLayout } from '../../chat/ChatLayout';
 import { ChatMessage } from '../../chat/ChatMessage';
 import { FullBreakdownVariantContent } from './FullBreakdownVariant';
@@ -6,22 +6,21 @@ import { CardViewVariantContent } from './CardViewVariant';
 
 export type DocumentDetailVariant = 'full' | 'card';
 
-const variants = [
-  { id: 'full' as const, label: 'Full Breakdown' },
-  { id: 'card' as const, label: 'Card View' },
+export const documentDetailVariants = [
+  { id: 'full', label: 'Full Breakdown' },
+  { id: 'card', label: 'Card View' },
 ];
 
-export function DocumentDetailView() {
-  const [variant, setVariant] = useState<DocumentDetailVariant>('full');
+type DocumentDetailViewProps = {
+  variant?: DocumentDetailVariant;
+};
 
+export function DocumentDetailView({ variant = 'full' }: DocumentDetailViewProps) {
   return (
     <ChatLayout
-      title="Investment Assistant"
+      title="GoodFin AI"
       subtitle="Document Review"
       userMessage="Looks good. Let's move on"
-      variants={variants}
-      activeVariant={variant}
-      onVariantChange={setVariant}
     >
       <ChatMessage
         content={

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ChatLayout } from '../../chat/ChatLayout';
 import { ChatMessage } from '../../chat/ChatMessage';
 import { FullVariantContent } from './FullVariant';
@@ -6,22 +6,21 @@ import { MinimalVariantContent } from './MinimalVariant';
 
 export type InvestmentRiskVariant = 'full' | 'minimal';
 
-const variants = [
-  { id: 'full' as const, label: 'Full Details' },
-  { id: 'minimal' as const, label: 'Minimal' },
+export const investmentRiskVariants = [
+  { id: 'full', label: 'Full Details' },
+  { id: 'minimal', label: 'Minimal' },
 ];
 
-export function InvestmentRiskView() {
-  const [variant, setVariant] = useState<InvestmentRiskVariant>('full');
+type InvestmentRiskViewProps = {
+  variant?: InvestmentRiskVariant;
+};
 
+export function InvestmentRiskView({ variant = 'full' }: InvestmentRiskViewProps) {
   return (
     <ChatLayout
-      title="Investment Assistant"
+      title="GoodFin AI"
       subtitle="Risk Acknowledgment"
       userMessage="I'd like to invest 200000"
-      variants={variants}
-      activeVariant={variant}
-      onVariantChange={setVariant}
     >
       <ChatMessage
         content={variant === 'full' ? <FullVariantContent /> : <MinimalVariantContent />}

@@ -1,9 +1,9 @@
+/* Google Fonts - Open Sans */
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Google Fonts - Open Sans */
-@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap");
 
 /* Font Face Declarations - GoodFin Typography */
 @font-face {

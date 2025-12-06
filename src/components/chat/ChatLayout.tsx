@@ -1,33 +1,21 @@
 import React, { useState } from 'react';
 import { Send } from 'lucide-react';
-import { cn } from '../../lib/utils';
 
-type VariantOption<T extends string> = {
-  id: T;
-  label: string;
-};
-
-type ChatLayoutProps<T extends string> = {
+type ChatLayoutProps = {
   title: string;
   subtitle: string;
   userMessage: string;
   children: React.ReactNode;
-  variants?: VariantOption<T>[];
-  activeVariant?: T;
-  onVariantChange?: (variant: T) => void;
   inputPlaceholder?: string;
 };
 
-export function ChatLayout<T extends string>({
+export function ChatLayout({
   title,
   subtitle,
   userMessage,
   children,
-  variants,
-  activeVariant,
-  onVariantChange,
   inputPlaceholder = 'Type your response...',
-}: ChatLayoutProps<T>) {
+}: ChatLayoutProps) {
   const [inputValue, setInputValue] = useState('');
   const [isInputFocused, setIsInputFocused] = useState(false);
 
@@ -61,56 +49,26 @@ export function ChatLayout<T extends string>({
           }}
         >
           <div className="max-w-3xl mx-auto px-4 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: '#030303' }}
+            <div className="flex items-center gap-3">
+              <img
+                src="/conciergeIcon.png"
+                alt="GoodFin AI"
+                className="w-10 h-10 rounded-full"
+              />
+              <div>
+                <h1
+                  className="text-sm font-semibold font-primary"
+                  style={{ color: '#030303' }}
                 >
-                  <span className="text-white font-semibold text-sm">AI</span>
-                </div>
-                <div>
-                  <h1
-                    className="text-sm font-semibold"
-                    style={{ color: '#030303' }}
-                  >
-                    {title}
-                  </h1>
-                  <p
-                    className="text-xs"
-                    style={{ color: '#7F7582' }}
-                  >
-                    {subtitle}
-                  </p>
-                </div>
+                  {title}
+                </h1>
+                <p
+                  className="text-xs"
+                  style={{ color: '#7F7582' }}
+                >
+                  {subtitle}
+                </p>
               </div>
-
-              {/* Variant Selector */}
-              {variants && variants.length > 0 && onVariantChange && (
-                <div
-                  className="flex gap-1 p-1 rounded-xl"
-                  style={{ backgroundColor: '#F0EEF0' }}
-                >
-                  {variants.map((variant) => (
-                    <button
-                      key={variant.id}
-                      onClick={() => onVariantChange(variant.id)}
-                      className={cn(
-                        'px-3 py-1.5 text-xs font-medium rounded-lg transition-all',
-                        activeVariant === variant.id
-                          ? 'shadow-sm'
-                          : ''
-                      )}
-                      style={{
-                        backgroundColor: activeVariant === variant.id ? '#FFFFFF' : 'transparent',
-                        color: activeVariant === variant.id ? '#030303' : '#7F7582',
-                      }}
-                    >
-                      {variant.label}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         </header>

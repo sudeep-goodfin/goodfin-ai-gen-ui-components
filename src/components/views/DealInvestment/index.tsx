@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ChatLayout } from '../../chat/ChatLayout';
 import { ChatMessage } from '../../chat/ChatMessage';
 import { FullVariantContent } from './FullVariant';
@@ -7,15 +7,17 @@ import { SimpleVariantContent } from './SimpleVariant';
 
 export type DealInvestmentVariant = 'full' | 'minimal' | 'simple';
 
-const variants = [
-  { id: 'full' as const, label: 'Full' },
-  { id: 'minimal' as const, label: 'Minimal' },
-  { id: 'simple' as const, label: 'Simple' },
+export const dealInvestmentVariants = [
+  { id: 'full', label: 'Full' },
+  { id: 'minimal', label: 'Minimal' },
+  { id: 'simple', label: 'Simple' },
 ];
 
-export function DealPageInvestmentView() {
-  const [variant, setVariant] = useState<DealInvestmentVariant>('full');
+type DealPageInvestmentViewProps = {
+  variant?: DealInvestmentVariant;
+};
 
+export function DealPageInvestmentView({ variant = 'full' }: DealPageInvestmentViewProps) {
   const getContent = () => {
     switch (variant) {
       case 'full':
@@ -29,12 +31,9 @@ export function DealPageInvestmentView() {
 
   return (
     <ChatLayout
-      title="Investment Assistant"
-      subtitle="Databricks IV Investment"
+      title="GoodFin AI"
+      subtitle="Investment"
       userMessage="I want to invest in Databricks IV"
-      variants={variants}
-      activeVariant={variant}
-      onVariantChange={setVariant}
     >
       <ChatMessage content={getContent()} showFeedback={true} />
     </ChatLayout>

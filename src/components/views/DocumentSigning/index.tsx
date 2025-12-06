@@ -8,7 +8,7 @@ function SigningContent() {
 
   return (
     <div className="space-y-4">
-      <p className="text-foreground">
+      <p style={{ color: 'var(--chat-ai-foreground)' }}>
         I've prepared the documents for your signature. Please review and sign
         the Private Placement Memorandum to proceed.
       </p>
@@ -30,7 +30,7 @@ function SigningContent() {
         />
       </div>
 
-      <p className="text-sm text-muted-foreground pt-2">
+      <p className="text-sm pt-2" style={{ color: '#7F7582' }}>
         Once signed, we'll process your investment allocation immediately.
       </p>
     </div>
@@ -40,8 +40,8 @@ function SigningContent() {
 export function DocumentAttachmentWithSign() {
   return (
     <ChatLayout
-      title="Investment Assistant"
-      subtitle="Databricks Investment Review"
+      title="GoodFin AI"
+      subtitle="Document Signing"
       userMessage="I'm ready to sign."
     >
       <ChatMessage content={<SigningContent />} showFeedback={true} />
