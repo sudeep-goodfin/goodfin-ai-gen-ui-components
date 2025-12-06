@@ -1,7 +1,8 @@
-module.exports = {content: [
-  './index.html',
-  './src/**/*.{js,ts,jsx,tsx}'
-],
+module.exports = {
+  content: [
+    './index.html',
+    './src/**/*.{js,ts,jsx,tsx}'
+  ],
   darkMode: "selector",
   theme: {
     container: {
@@ -46,70 +47,29 @@ module.exports = {content: [
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        grey: {
-          50: "#F7F7F8",
-          100: "#F0EEF0",
-          200: "#E6E4E7",
-          300: "#BEB9C0",
-          400: "#9B929E",
-          500: "#7F7582",
-          600: "#685F6A",
-          700: "#554D57",
-          800: "#48424A",
-          900: "#373338",
-          950: "#29272A",
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
         },
-        green: {
-          50: "#EEFFF4",
-          100: "#D7FFE8",
-          200: "#B2FFD2",
-          300: "#76FFB0",
-          400: "#33F586",
-          500: "#09DE65",
-          600: "#00B24D",
-          700: "#049142",
-          800: "#0A7138",
-          900: "#0A5D30",
-          950: "#003418",
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
         },
-        yellow: {
-          50: "#FEFEE8",
-          100: "#FFFFC2",
-          200: "#FFFB88",
-          300: "#FFF143",
-          400: "#FFE110",
-          500: "#EFC703",
-          600: "#D19D00",
-          700: "#A46F04",
-          800: "#87560C",
-          900: "#734610",
-          950: "#432505",
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
         },
-        red: {
-          50: "#FFEFF0",
-          100: "#FFE0E3",
-          200: "#FFC6CF",
-          300: "#FF97A7",
-          400: "#FF5D78",
-          500: "#FF224F",
-          600: "#EB0037",
-          700: "#D70032",
-          800: "#B40033",
-          900: "#990232",
-          950: "#570015",
-        },
-        blue: {
-          50: "#EFF6FF",
-          100: "#DBEAFE",
-          200: "#BFDBFE",
-          300: "#93C5FD",
-          400: "#60A5FA",
-          500: "#3B82F6",
-          600: "#2563EB",
-          700: "#1D4ED8",
-          800: "#1E40AF",
-          900: "#1E3A8A",
-          950: "#172554",
+        chat: {
+          user: {
+            DEFAULT: "hsl(var(--chat-user-bg))",
+            foreground: "hsl(var(--chat-user-foreground))",
+          },
+          ai: {
+            DEFAULT: "hsl(var(--chat-ai-bg))",
+            foreground: "hsl(var(--chat-ai-foreground))",
+            "gradient-from": "hsl(var(--chat-ai-gradient-from))",
+            "gradient-to": "hsl(var(--chat-ai-gradient-to))",
+          },
         },
       },
       borderRadius: {

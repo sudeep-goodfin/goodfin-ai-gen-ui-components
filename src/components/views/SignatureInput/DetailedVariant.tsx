@@ -1,0 +1,130 @@
+import React, { useState } from 'react';
+import { Sparkles, ChevronRight } from 'lucide-react';
+import { Card, CardContent, Checkbox, Button, SuggestionGroup } from '../../ui';
+
+export function DetailedVariantContent() {
+  const [signatureName] = useState('jay');
+  const [agreedToDocuments, setAgreedToDocuments] = useState(true);
+
+  const suggestions = [
+    'Can I change my signature later?',
+    'What happens after I submit?',
+    'Is this legally binding?',
+  ];
+
+  return (
+    <div className="space-y-4">
+      <p className="text-foreground leading-relaxed">
+        Perfect—everything's confirmed.
+      </p>
+
+      <div className="space-y-2">
+        <p className="font-semibold text-foreground">
+          Legal Documents for Your Review:
+        </p>
+        <ul className="space-y-1">
+          <li>
+            <a href="#" className="text-sm text-accent hover:text-accent/80 underline">
+              Subscription Agreement & Privacy Notice
+            </a>
+          </li>
+          <li>
+            <a href="#" className="text-sm text-accent hover:text-accent/80 underline">
+              Limited Liability Company Agreement
+            </a>
+          </li>
+          <li>
+            <a href="#" className="text-sm text-accent hover:text-accent/80 underline">
+              Private Placement Memorandum
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <p className="text-muted-foreground leading-relaxed">
+        To finalize the paperwork for your investment in Databricks, how would
+        you like your name to appear on the documents?
+      </p>
+
+      <p className="text-muted-foreground text-sm leading-relaxed">
+        Your electronic signature carries the same legal weight as a handwritten
+        one.
+      </p>
+
+      <p className="text-muted-foreground text-sm leading-relaxed">
+        Just type the name you want to use, and I'll apply it.
+      </p>
+
+      {/* Investment Documents Section */}
+      <Card className="mt-4">
+        <CardContent className="space-y-3">
+          <h3 className="font-semibold text-foreground">Investment Documents</h3>
+
+          <div className="space-y-2">
+            <button className="w-full flex items-center justify-between p-3 bg-muted hover:bg-muted/80 rounded-lg transition-colors text-left">
+              <span className="text-sm font-medium text-muted-foreground">
+                Subscription Agreement & Privacy Notice
+              </span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </button>
+
+            <button className="w-full flex items-center justify-between p-3 bg-muted hover:bg-muted/80 rounded-lg transition-colors text-left">
+              <span className="text-sm font-medium text-muted-foreground">
+                Limited Liability Company Agreement
+              </span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </button>
+
+            <button className="w-full flex items-center justify-between p-3 bg-muted hover:bg-muted/80 rounded-lg transition-colors text-left">
+              <span className="text-sm font-medium text-muted-foreground">
+                Private Placement Memorandum
+              </span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </div>
+
+          {/* Agreement Checkbox */}
+          <div className="pt-3 border-t border-border">
+            <Checkbox
+              checked={agreedToDocuments}
+              onChange={setAgreedToDocuments}
+              label="I have read and agreed to these documents."
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Add Signature Section */}
+      <Card className="mt-4">
+        <CardContent className="space-y-4">
+          <h3 className="font-semibold text-foreground">Add Signature</h3>
+
+          <div className="space-y-2">
+            <div className="bg-muted rounded-lg p-6 border border-border">
+              <p
+                className="text-3xl text-muted-foreground text-center"
+                style={{ fontFamily: 'Brush Script MT, cursive' }}
+              >
+                {signatureName}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-3 border-t border-border">
+            <p className="text-sm text-muted-foreground">Submit after signing</p>
+            <Button disabled={!agreedToDocuments} size="lg">
+              Submitted
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* AI Suggestions */}
+      <SuggestionGroup
+        suggestions={suggestions}
+        label="Questions about signing:"
+        icon={<Sparkles className="w-4 h-4" />}
+      />
+    </div>
+  );
+}

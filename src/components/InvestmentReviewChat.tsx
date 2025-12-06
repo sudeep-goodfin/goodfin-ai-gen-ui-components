@@ -23,28 +23,26 @@ export function InvestmentReviewChat() {
       <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200">
         <div className="max-w-3xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">AI</span>
-              </div>
-              <div>
-                <h1 className="text-sm font-semibold text-gray-900">
-                  Investment Assistant
-                </h1>
-                <p className="text-xs text-gray-500">
-                  Databricks Investment Review
-                </p>
-              </div>
+            <div>
+              <h1 className="text-sm font-semibold text-gray-900">
+                Investment Assistant
+              </h1>
+              <p className="text-xs text-gray-500">
+                Databricks Investment Review
+              </p>
             </div>
 
             {/* Variant Selector */}
-            <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
+            <div className="flex flex-col items-end gap-1">
+              <span className="text-xs text-gray-500">Variants</span>
+              <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
               <button onClick={() => setVariant('original')} className={`px-3 py-1 text-xs font-medium rounded transition-all ${variant === 'original' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
                 Original
               </button>
               <button onClick={() => setVariant('compact')} className={`px-3 py-1 text-xs font-medium rounded transition-all ${variant === 'compact' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
                 Compact
               </button>
+              </div>
             </div>
           </div>
         </div>
