@@ -40,7 +40,7 @@ export function ChatLayout({
         className="relative z-10 min-h-screen"
         style={{ backgroundColor: 'var(--chat-container-bg)' }}
       >
-        {/* Header */}
+        {/* Header - Without avatar (avatar is now on AI response) */}
         <header
           className="sticky top-0 z-10 border-b"
           style={{
@@ -50,11 +50,6 @@ export function ChatLayout({
         >
           <div className="max-w-3xl mx-auto px-4 py-3">
             <div className="flex items-center gap-3">
-              <img
-                src="/conciergeIcon.png"
-                alt="GoodFin AI"
-                className="w-10 h-10 rounded-full"
-              />
               <div>
                 <h1
                   className="text-sm font-semibold font-primary"
@@ -75,17 +70,20 @@ export function ChatLayout({
 
         {/* Chat Container */}
         <main className="max-w-3xl mx-auto px-4 py-8 pb-32">
-          {/* User Message - Exact Concierge ChatBubble styling */}
+          {/* User Message - Exact Concierge TextType styling */}
           <div className="flex justify-end mb-6">
             <div
-              className="px-4 py-3 max-w-md"
+              className="font-primary"
               style={{
-                backgroundColor: 'var(--chat-user-bg)',
-                color: 'var(--chat-user-foreground)',
+                backgroundColor: '#F0EEF0',
+                color: '#030303',
                 borderRadius: '16px',
+                padding: '8px 12px',
+                maxWidth: '450px',
+                boxShadow: '0.5px 0.5px 1px 0px rgba(255, 255, 255, 0.50) inset',
               }}
             >
-              <p className="text-sm leading-relaxed font-primary">{userMessage}</p>
+              <p className="text-sm leading-relaxed">{userMessage}</p>
             </div>
           </div>
 

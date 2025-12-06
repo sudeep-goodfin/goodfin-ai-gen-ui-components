@@ -21,20 +21,30 @@ export function ChatMessage({
   const [feedback, setFeedback] = useState<'up' | 'down' | null>(null);
 
   return (
-    <div className="max-w-2xl">
+    <div className="flex gap-3 max-w-2xl">
+      {/* AI Avatar - GoodFin Concierge Icon */}
+      <div className="flex-shrink-0">
+        <img
+          src="/conciergeIcon.png"
+          alt="GoodFin AI"
+          className="w-10 h-10 rounded-full"
+        />
+      </div>
+
       {/* Message Content */}
-      <div className="space-y-4">
-        {/* Main Message Bubble - Exact Concierge ChatBubble styling */}
+      <div className="flex-1 space-y-4">
+        {/* Main Message Bubble - Exact Concierge TextType styling (assistant type) */}
         <div
-          className="p-4 font-primary"
+          className="font-primary"
           style={{
-            backgroundColor: 'var(--chat-ai-bg)',
-            color: 'var(--chat-ai-foreground)',
-            borderRadius: '24px',
-            boxShadow: 'var(--chat-bubble-inset-shadow)',
+            backgroundColor: '#F7F7F8',
+            color: '#030303',
+            borderRadius: '16px',
+            padding: '8px 12px',
+            boxShadow: '0.5px 0.5px 1px 0px rgba(255, 255, 255, 0.50) inset',
           }}
         >
-          <div className="prose prose-sm max-w-none" style={{ color: 'var(--chat-ai-foreground)' }}>
+          <div className="prose prose-sm max-w-none" style={{ color: '#030303' }}>
             {content}
           </div>
         </div>

@@ -26,12 +26,12 @@ module.exports = {
       fontSize: {
         /* GoodFin Typography Scale */
         /* Headings */
-        "h1": ["40px", { lineHeight: "56px", letterSpacing: "-1.2px" }],
-        "h2": ["32px", { lineHeight: "40px", letterSpacing: "-0.96px" }],
-        "h3": ["24px", { lineHeight: "32px", letterSpacing: "-0.48px" }],
-        "h4": ["20px", { lineHeight: "32px", letterSpacing: "-0.4px" }],
-        "h5": ["18px", { lineHeight: "24px", letterSpacing: "-0.18px" }],
-        "h6": ["16px", { lineHeight: "24px", letterSpacing: "-0.16px" }],
+        "h1": ["40px", { lineHeight: "56px", letterSpacing: "0px" }],
+        "h2": ["32px", { lineHeight: "40px", letterSpacing: "0px" }],
+        "h3": ["24px", { lineHeight: "32px", letterSpacing: "0px" }],
+        "h4": ["20px", { lineHeight: "32px", letterSpacing: "0px" }],
+        "h5": ["18px", { lineHeight: "24px", letterSpacing: "0px" }],
+        "h6": ["16px", { lineHeight: "24px", letterSpacing: "0px" }],
         /* Labels (Soehne Kraftig) */
         "label-lg": ["18px", { lineHeight: "24px" }],
         "label-md": ["16px", { lineHeight: "20px" }],

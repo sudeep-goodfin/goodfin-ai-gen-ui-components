@@ -235,27 +235,27 @@
     /* Typography - Heading Sizes (Test Signifier) */
     --text-h1: 40px;
     --text-h1-line: 56px;
-    --text-h1-tracking: -1.2px;
+    --text-h1-tracking: 0px;
 
     --text-h2: 32px;
     --text-h2-line: 40px;
-    --text-h2-tracking: -0.96px;
+    --text-h2-tracking: 0px;
 
     --text-h3: 24px;
     --text-h3-line: 32px;
-    --text-h3-tracking: -0.48px;
+    --text-h3-tracking: 0px;
 
     --text-h4: 20px;
     --text-h4-line: 32px;
-    --text-h4-tracking: -0.4px;
+    --text-h4-tracking: 0px;
 
     --text-h5: 18px;
     --text-h5-line: 24px;
-    --text-h5-tracking: -0.18px;
+    --text-h5-tracking: 0px;
 
     --text-h6: 16px;
     --text-h6-line: 24px;
-    --text-h6-tracking: -0.16px;
+    --text-h6-tracking: 0px;
 
     /* Typography - Label Sizes (Soehne Kraftig) */
     --text-label-lg: 18px;
