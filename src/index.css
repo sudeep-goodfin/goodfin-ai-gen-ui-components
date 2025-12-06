@@ -4,103 +4,202 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 47.4% 11.2%;
+    /* GoodFin Design System - Primitive Colors as CSS Variables */
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Grey Palette */
+    --grey-50: #F7F7F8;
+    --grey-100: #F0EEF0;
+    --grey-200: #E6E4E7;
+    --grey-300: #BEB9C0;
+    --grey-400: #9B929E;
+    --grey-500: #7F7582;
+    --grey-600: #685F6A;
+    --grey-700: #554D57;
+    --grey-800: #48424A;
+    --grey-900: #373338;
+    --grey-950: #29272A;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 47.4% 11.2%;
+    /* Green Palette */
+    --green-50: #EEFFF4;
+    --green-100: #D7FFE8;
+    --green-200: #B2FFD2;
+    --green-300: #76FFB0;
+    --green-400: #33F586;
+    --green-500: #09DE65;
+    --green-600: #00B24D;
+    --green-700: #049142;
+    --green-800: #0A7138;
+    --green-900: #0A5D30;
+    --green-950: #003418;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    /* Yellow Palette */
+    --yellow-50: #FEFEE8;
+    --yellow-100: #FFFFC2;
+    --yellow-200: #FFFB88;
+    --yellow-300: #FFF143;
+    --yellow-400: #FFE110;
+    --yellow-500: #EFC703;
+    --yellow-600: #D19D00;
+    --yellow-700: #A46F04;
+    --yellow-800: #87560C;
+    --yellow-900: #734610;
+    --yellow-950: #432505;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 47.4% 11.2%;
+    /* Red Palette */
+    --red-50: #FFEFF0;
+    --red-100: #FFE0E3;
+    --red-200: #FFC6CF;
+    --red-300: #FF97A7;
+    --red-400: #FF5D78;
+    --red-500: #FF244F;
+    --red-600: #EB0037;
+    --red-700: #D70032;
+    --red-800: #B40033;
+    --red-900: #990232;
+    --red-950: #570015;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Blue Palette */
+    --blue-50: #EFF6FF;
+    --blue-100: #DBEAFE;
+    --blue-200: #BFDBFE;
+    --blue-300: #93C5FD;
+    --blue-400: #60A5FA;
+    --blue-500: #3B82F6;
+    --blue-600: #2563EB;
+    --blue-700: #1D4ED8;
+    --blue-800: #1E40AF;
+    --blue-900: #1E3A8A;
+    --blue-950: #172554;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Sand Palette (Legacy) */
+    --sand-0: #FFFFFF;
+    --sand-50: #F4F3F5;
+    --sand-100: #EDEBEE;
+    --sand-200: #DFDCE1;
+    --sand-300: #C7C3CD;
+    --sand-400: #ADA6B4;
+    --sand-500: #9A90A1;
+    --sand-600: #8A7F91;
+    --sand-700: #7E7283;
+    --sand-800: #69606D;
+    --sand-900: #554F59;
+    --sand-950: #373338;
 
-    --accent: 263 70% 50%;
-    --accent-foreground: 210 40% 98%;
+    /* Semantic Tokens - Light Mode */
+    --background: var(--sand-100);
+    --foreground: var(--grey-950);
 
-    --destructive: 0 100% 50%;
-    --destructive-foreground: 210 40% 98%;
+    --muted: var(--grey-200);
+    --muted-foreground: var(--grey-600);
 
-    --success: 142 76% 36%;
-    --success-foreground: 210 40% 98%;
+    --popover: var(--sand-0);
+    --popover-foreground: var(--grey-950);
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 222.2 47.4% 11.2%;
+    --border: var(--grey-200);
+    --input: var(--grey-200);
 
-    --info: 217 91% 60%;
-    --info-foreground: 210 40% 98%;
+    --card: var(--sand-0);
+    --card-foreground: var(--grey-950);
 
-    --ring: 263 70% 50%;
+    --primary: var(--grey-950);
+    --primary-foreground: var(--grey-50);
+
+    --secondary: var(--grey-100);
+    --secondary-foreground: var(--grey-950);
+
+    --accent: var(--grey-200);
+    --accent-foreground: var(--grey-950);
+
+    --destructive: var(--red-600);
+    --destructive-foreground: var(--red-50);
+
+    --success: var(--green-600);
+    --success-foreground: var(--green-50);
+
+    --warning: var(--yellow-500);
+    --warning-foreground: var(--yellow-950);
+
+    --info: var(--blue-500);
+    --info-foreground: var(--blue-50);
+
+    --ring: var(--grey-950);
 
     --radius: 0.5rem;
 
+    /* Spacing Tokens */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 12px;
+    --spacing-lg: 16px;
+    --spacing-xl: 24px;
+    --spacing-2xl: 40px;
+    --spacing-3xl: 56px;
+
+    /* Border Radius Tokens */
+    --radius-minimal: 4px;
+    --radius-small: 8px;
+    --radius-medium: 8px;
+    --radius-rounded: 16px;
+    --radius-large: 24px;
+    --radius-xlarge: 64px;
+    --radius-full: 256px;
+
     /* Chat-specific tokens */
-    --chat-user-bg: 217 91% 60%;
-    --chat-user-foreground: 210 40% 98%;
-    --chat-ai-bg: 0 0% 100%;
-    --chat-ai-foreground: 222.2 47.4% 11.2%;
-    --chat-ai-gradient-from: 263 70% 50%;
-    --chat-ai-gradient-to: 280 65% 45%;
+    --chat-user-bg: var(--grey-950);
+    --chat-user-foreground: var(--grey-50);
+    --chat-ai-bg: var(--sand-0);
+    --chat-ai-foreground: var(--grey-950);
+    --chat-ai-gradient-from: var(--grey-100);
+    --chat-ai-gradient-to: var(--grey-200);
   }
 
   :root[class~="dark"] {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
+    /* Semantic Tokens - Dark Mode */
+    --background: var(--grey-950);
+    --foreground: var(--grey-50);
 
-    --muted: 223 47% 11%;
-    --muted-foreground: 215.4 16.3% 56.9%;
+    --muted: var(--grey-800);
+    --muted-foreground: var(--grey-400);
 
-    --accent: 263 70% 50%;
-    --accent-foreground: 210 40% 98%;
+    --popover: var(--grey-900);
+    --popover-foreground: var(--grey-50);
 
-    --popover: 224 71% 4%;
-    --popover-foreground: 215 20.2% 65.1%;
+    --border: var(--grey-700);
+    --input: var(--grey-700);
 
-    --border: 216 34% 17%;
-    --input: 216 34% 17%;
+    --card: var(--grey-900);
+    --card-foreground: var(--grey-50);
 
-    --card: 224 71% 4%;
-    --card-foreground: 213 31% 91%;
+    --primary: var(--grey-50);
+    --primary-foreground: var(--grey-950);
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 1.2%;
+    --secondary: var(--grey-800);
+    --secondary-foreground: var(--grey-50);
 
-    --secondary: 222.2 47.4% 11.2%;
-    --secondary-foreground: 210 40% 98%;
+    --accent: var(--grey-700);
+    --accent-foreground: var(--grey-50);
 
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: var(--red-500);
+    --destructive-foreground: var(--red-50);
 
-    --success: 142 76% 36%;
-    --success-foreground: 210 40% 98%;
+    --success: var(--green-500);
+    --success-foreground: var(--green-50);
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 222.2 47.4% 11.2%;
+    --warning: var(--yellow-400);
+    --warning-foreground: var(--yellow-950);
 
-    --info: 217 91% 60%;
-    --info-foreground: 210 40% 98%;
+    --info: var(--blue-400);
+    --info-foreground: var(--blue-950);
 
-    --ring: 263 70% 50%;
+    --ring: var(--grey-50);
 
-    --radius: 0.5rem;
-
-    /* Chat-specific tokens */
-    --chat-user-bg: 217 91% 60%;
-    --chat-user-foreground: 210 40% 98%;
-    --chat-ai-bg: 223 47% 11%;
-    --chat-ai-foreground: 213 31% 91%;
-    --chat-ai-gradient-from: 263 70% 50%;
-    --chat-ai-gradient-to: 280 65% 45%;
+    /* Chat-specific tokens - Dark Mode */
+    --chat-user-bg: var(--grey-100);
+    --chat-user-foreground: var(--grey-950);
+    --chat-ai-bg: var(--grey-800);
+    --chat-ai-foreground: var(--grey-50);
+    --chat-ai-gradient-from: var(--grey-800);
+    --chat-ai-gradient-to: var(--grey-700);
   }
 }
 
