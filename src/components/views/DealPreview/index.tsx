@@ -18,8 +18,6 @@ type DealPreviewViewProps = {
 export function DealPreviewView({ variant = 'full' }: DealPreviewViewProps) {
   return (
     <ChatLayout
-      title="GoodFin AI"
-      subtitle="Deal Preview"
       userMessage="I want to invest in Databricks IV"
     >
       <ChatMessage

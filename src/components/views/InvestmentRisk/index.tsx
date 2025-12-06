@@ -18,8 +18,6 @@ type InvestmentRiskViewProps = {
 export function InvestmentRiskView({ variant = 'full' }: InvestmentRiskViewProps) {
   return (
     <ChatLayout
-      title="GoodFin AI"
-      subtitle="Risk Acknowledgment"
       userMessage="I'd like to invest 200000"
     >
       <ChatMessage

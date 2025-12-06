@@ -18,8 +18,6 @@ type DocumentDetailViewProps = {
 export function DocumentDetailView({ variant = 'full' }: DocumentDetailViewProps) {
   return (
     <ChatLayout
-      title="GoodFin AI"
-      subtitle="Document Review"
       userMessage="Looks good. Let's move on"
     >
       <ChatMessage

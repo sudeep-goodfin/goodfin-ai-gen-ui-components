@@ -22,8 +22,6 @@ export function SignatureInputView({ variant = 'simple' }: SignatureInputViewPro
 
   return (
     <ChatLayout
-      title="GoodFin AI"
-      subtitle="Document Signature"
       userMessage={userMessage}
     >
       <ChatMessage

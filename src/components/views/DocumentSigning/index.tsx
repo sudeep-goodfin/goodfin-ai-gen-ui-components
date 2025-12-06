@@ -40,8 +40,6 @@ function SigningContent() {
 export function DocumentAttachmentWithSign() {
   return (
     <ChatLayout
-      title="GoodFin AI"
-      subtitle="Document Signing"
       userMessage="I'm ready to sign."
     >
       <ChatMessage content={<SigningContent />} showFeedback={true} />

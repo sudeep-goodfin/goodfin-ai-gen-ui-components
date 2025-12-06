@@ -22,8 +22,6 @@ export function InvestmentReviewChat({ variant = 'original' }: InvestmentReviewC
 
   return (
     <ChatLayout
-      title="GoodFin AI"
-      subtitle="Investment Review"
       userMessage={userMessage}
       inputPlaceholder="Type 'all clear' to proceed..."
     >

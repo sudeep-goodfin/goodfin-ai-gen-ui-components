@@ -42,7 +42,7 @@ export function MinimalVariantContent() {
         inputAmount={inputAmount}
         onAmountChange={handleAmountChange}
         onQuickAmountClick={handleQuickAmountClick}
-        variant="dark"
+        variant="default"
         helperText="You can invest any amount above the minimum."
       />
 
