@@ -16,6 +16,14 @@ import {
   DocumentAttachmentWithSign,
   ApplyCreditView,
   applyCreditVariants,
+  PromoCodeView,
+  promoCodeVariants,
+  InvestorProfileView,
+  investorProfileVariants,
+  BankSelectionView,
+  bankSelectionVariants,
+  CountrySelectionView,
+  countrySelectionVariants,
 } from './components/views';
 import {
   Layout,
@@ -26,6 +34,10 @@ import {
   DollarSign,
   AlertTriangle,
   CreditCard,
+  Tag,
+  UserCheck,
+  Building2,
+  Globe,
 } from 'lucide-react';
 
 export function App() {
@@ -84,6 +96,34 @@ export function App() {
       component: (variant: string) => <ApplyCreditView variant={variant as 'simple' | 'detailed'} />,
       icon: <CreditCard className="w-6 h-6" />,
       variants: applyCreditVariants,
+    },
+    {
+      id: 'promo-code',
+      label: 'Promo Code',
+      component: (variant: string) => <PromoCodeView variant={variant as 'simple' | 'detailed'} />,
+      icon: <Tag className="w-6 h-6" />,
+      variants: promoCodeVariants,
+    },
+    {
+      id: 'investor-profile',
+      label: 'Investor Profile',
+      component: (variant: string) => <InvestorProfileView variant={variant as 'simple' | 'detailed'} />,
+      icon: <UserCheck className="w-6 h-6" />,
+      variants: investorProfileVariants,
+    },
+    {
+      id: 'bank-selection',
+      label: 'Bank Selection',
+      component: (variant: string) => <BankSelectionView variant={variant as 'simple' | 'detailed'} />,
+      icon: <Building2 className="w-6 h-6" />,
+      variants: bankSelectionVariants,
+    },
+    {
+      id: 'country-selection',
+      label: 'Country Selection',
+      component: (variant: string) => <CountrySelectionView variant={variant as 'simple' | 'detailed'} />,
+      icon: <Globe className="w-6 h-6" />,
+      variants: countrySelectionVariants,
     },
   ];
 

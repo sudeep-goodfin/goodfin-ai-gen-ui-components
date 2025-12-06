@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, CardContent, Button, Input } from '../../ui';
+import { Card, CardContent, Button } from '../../ui';
 
 type CreditCardProps = {
   availableCredit?: number;
@@ -12,7 +12,7 @@ export function CreditCard({
   onApply,
   onSkip,
 }: CreditCardProps) {
-  const [creditAmount, setCreditAmount] = useState('');
+  const [creditAmount, setCreditAmount] = useState(availableCredit.toString());
 
   const handleApply = () => {
     const amount = parseFloat(creditAmount);
@@ -31,14 +31,21 @@ export function CreditCard({
           </p>
         </div>
 
-        <Input
-          placeholder="Enter credit amount"
-          value={creditAmount}
-          onChange={(e) => setCreditAmount(e.target.value)}
-          type="number"
-          max={availableCredit}
-          min={0}
-        />
+        {/* Input with $ prefix */}
+        <div
+          className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-background focus-within:ring-2 focus-within:ring-accent focus-within:border-accent"
+        >
+          <span className="text-muted-foreground font-medium">$</span>
+          <input
+            type="number"
+            placeholder="Enter credit amount"
+            value={creditAmount}
+            onChange={(e) => setCreditAmount(e.target.value)}
+            max={availableCredit}
+            min={0}
+            className="flex-1 bg-transparent text-sm outline-none text-foreground placeholder:text-muted-foreground"
+          />
+        </div>
 
         <div className="flex gap-3">
           <Button
@@ -51,7 +58,6 @@ export function CreditCard({
           <Button
             className="flex-1"
             onClick={handleApply}
-            disabled={!creditAmount || parseFloat(creditAmount) <= 0 || parseFloat(creditAmount) > availableCredit}
           >
             Apply Credit
           </Button>
