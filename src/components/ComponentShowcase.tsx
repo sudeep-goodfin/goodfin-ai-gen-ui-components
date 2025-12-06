@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
 import { MessageSquare, Layers } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { ConversationView, conversationTemplates } from './chat';
+import { ConversationView, spaceXInvestmentFlow } from './chat';
 
 type VariantOption = {
   id: string;
@@ -44,8 +44,22 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
       : activeOption.component
     : null;
 
-  // Get conversation messages for the active component
-  const conversationMessages = conversationTemplates[activeId as keyof typeof conversationTemplates] || conversationTemplates['investment-review'];
+  // Build components map for the conversation view
+  const getComponentForId = (id: string) => {
+    const option = options.find((opt) => opt.id === id);
+    if (!option) return null;
+    return typeof option.component === 'function'
+      ? option.component(variantStates[id] || (option.variants?.[0]?.id ?? ''))
+      : option.component;
+  };
+
+  const conversationComponents: Record<string, React.ReactNode> = {
+    'deal-preview': getComponentForId('deal-preview'),
+    'investment-risk': getComponentForId('investment-risk'),
+    'document-detail': getComponentForId('document-detail'),
+    'document-detail-2': getComponentForId('document-detail'),
+    'signature-input': getComponentForId('signature-input'),
+  };
 
   const handleVariantChange = (variantId: string) => {
     setVariantStates((prev) => ({ ...prev, [activeId]: variantId }));
@@ -208,9 +222,8 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
         {viewMode === 'conversation' && (
           <div className="rounded-2xl overflow-hidden min-h-[800px]">
             <ConversationView
-              messages={conversationMessages}
-              componentPreview={activeComponent}
-              componentPreviewIndex={0}
+              messages={spaceXInvestmentFlow}
+              components={conversationComponents}
             />
           </div>
         )}

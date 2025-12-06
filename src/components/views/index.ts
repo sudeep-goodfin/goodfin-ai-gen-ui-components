@@ -24,3 +24,7 @@ export type { SignatureInputVariant } from './SignatureInput';
 
 // Document Signing
 export { DocumentAttachmentWithSign, SignableDocumentCard } from './DocumentSigning';
+
+// Apply Credit
+export { ApplyCreditView, CreditCard, applyCreditVariants } from './ApplyCredit';
+export type { ApplyCreditVariant } from './ApplyCredit';

@@ -1,17 +1,20 @@
 import React from 'react';
 import { ChatLayout } from './ChatLayout';
 import { ChatMessage } from './ChatMessage';
+import { SuggestionGroup } from '../ui';
+import { mockedInvestmentData, formatCurrency } from '../../data/conversationData';
 
+// Message types
 type ConversationMessage = {
-  type: 'user' | 'ai';
+  type: 'user' | 'ai' | 'component' | 'section-header';
   content: React.ReactNode;
   attachments?: { title: string; subtitle?: string; href?: string }[];
+  componentId?: string; // Which component to render
 };
 
 type ConversationViewProps = {
   messages: ConversationMessage[];
-  componentPreview?: React.ReactNode;
-  componentPreviewIndex?: number; // Which message index to insert the component after
+  components?: Record<string, React.ReactNode>; // Map of componentId to component
 };
 
 // User message bubble component
@@ -35,31 +38,42 @@ function UserMessage({ content }: { content: React.ReactNode }) {
   );
 }
 
+// Section header component
+function SectionHeader({ content }: { content: React.ReactNode }) {
+  return (
+    <div className="py-4 mb-4 border-t border-grey-200 mt-8 first:mt-0 first:border-t-0">
+      <h3 className="text-base font-semibold text-grey-700 font-primary">{content}</h3>
+    </div>
+  );
+}
+
 export function ConversationView({
   messages,
-  componentPreview,
-  componentPreviewIndex = 1,
+  components = {},
 }: ConversationViewProps) {
   return (
     <ChatLayout>
       {messages.map((message, index) => (
         <React.Fragment key={index}>
-          {message.type === 'user' ? (
+          {message.type === 'section-header' ? (
+            <SectionHeader content={message.content} />
+          ) : message.type === 'user' ? (
             <UserMessage content={message.content} />
+          ) : message.type === 'component' && message.componentId ? (
+            <div className="mb-6">
+              {components[message.componentId] || (
+                <div className="p-4 bg-grey-100 rounded-xl text-grey-500 text-sm">
+                  [Component: {message.componentId}]
+                </div>
+              )}
+            </div>
           ) : (
             <div className="mb-6">
               <ChatMessage
                 content={message.content}
                 attachments={message.attachments}
-                showFeedback={index === messages.length - 1}
+                showFeedback={false}
               />
-            </div>
-          )}
-
-          {/* Insert component preview after specified message */}
-          {componentPreview && index === componentPreviewIndex && (
-            <div className="mb-6">
-              {componentPreview}
             </div>
           )}
         </React.Fragment>
@@ -68,123 +82,314 @@ export function ConversationView({
   );
 }
 
-// Pre-built conversation templates for different component types
+// Shorthand for data
+const d = mockedInvestmentData;
+
+// Complete Investment Flow Conversation using mocked data
+export const investmentFlowConversation: ConversationMessage[] = [
+  // Section 1: Initial Investment Interest
+  { type: 'section-header', content: 'Initial Investment Interest' },
+
+  { type: 'user', content: `I want to invest in ${d.dealName}` },
+
+  {
+    type: 'ai',
+    content: (
+      <div>
+        <p className="mb-3">
+          Excellent choice, {d.userName}! {d.dealName} is one of the most compelling opportunities
+          in the {d.dealDescription} space right now.
+        </p>
+        <p>
+          How much would you like to invest? The minimum is {formatCurrency(d.minimumInvestment)},
+          but you can invest any amount above that.
+        </p>
+      </div>
+    ),
+  },
+
+  { type: 'user', content: "What's a good amount?" },
+
+  {
+    type: 'ai',
+    content: (
+      <div>
+        <p className="mb-3">Great question! It depends on your investment goals and portfolio. Here are some popular options:</p>
+        <ul className="list-none space-y-1 mb-3">
+          {d.investmentOptions.map((opt, i) => (
+            <li key={i}>• <strong>{opt.label}</strong> - {opt.description}</li>
+          ))}
+        </ul>
+        <p>What feels right for your situation?</p>
+      </div>
+    ),
+  },
+
+  { type: 'user', content: `I'd like to invest ${formatCurrency(d.selectedAmount)}` },
+
+  {
+    type: 'ai',
+    content: (
+      <div>
+        <p className="mb-3">
+          Perfect! {formatCurrency(d.selectedAmount)} in {d.dealName} is a solid investment.
+          That gives you meaningful exposure to {d.dealCompany}'s growth potential.
+        </p>
+        <p>
+          Now let's move through the legal documents - there are {d.documents.length} important ones
+          we need to review together. Ready to start with the first one?
+        </p>
+      </div>
+    ),
+  },
+
+  // Show deal preview component here
+  { type: 'component', content: null, componentId: 'deal-preview' },
+
+  // Section 2: Document Step 1
+  { type: 'section-header', content: `Document Step 1: ${d.documents[0].name}` },
+
+  {
+    type: 'ai',
+    content: (
+      <div>
+        <p className="font-semibold mb-3">Step {d.documents[0].step} of {d.documents[0].total}: {d.documents[0].name}</p>
+        <p className="mb-3">The {d.documents[0].name} explains your {d.dealName} investment opportunity. Key points:</p>
+        <ul className="list-none space-y-1 mb-3">
+          <li>• <strong>What you're investing in:</strong> {d.dealCompany}'s {d.dealDescription} platform</li>
+          <li>• <strong>Use of funds:</strong> R&D, expansion, operational costs</li>
+          <li>• <strong>Financial projections:</strong> Potential 5-10x returns over 5-7 years</li>
+          <li>• <strong>Risk factors:</strong> Technology, regulatory, market competition</li>
+          <li>• <strong>Investment structure:</strong> You'll own units in a fund that holds {d.dealCompany} shares</li>
+        </ul>
+
+        <SuggestionGroup
+          suggestions={[
+            'What are the main risks?',
+            'How will my money be used?',
+            'What are the expected returns?',
+          ]}
+          label="Ask me anything about this document:"
+        />
+      </div>
+    ),
+  },
+
+  { type: 'user', content: 'What are the main risks I should know about?' },
+
+  {
+    type: 'ai',
+    content: (
+      <div>
+        <p className="font-semibold mb-3">Risk Analysis:</p>
+        <p className="mb-3">The main risks for your {d.dealName} investment include:</p>
+
+        {d.risks.map((risk, i) => (
+          <div key={i} className="mb-3">
+            <p className="font-semibold">{risk.title}:</p>
+            <p className="text-grey-600">{risk.description}</p>
+          </div>
+        ))}
+
+        <p className="mt-3">The document covers these in detail. Want to review the full document now?</p>
+      </div>
+    ),
+  },
+
+  // Show risk component
+  { type: 'component', content: null, componentId: 'investment-risk' },
+
+  { type: 'user', content: 'Yes, show me the document' },
+
+  {
+    type: 'ai',
+    content: (
+      <p>
+        Perfect! Here's the {d.documents[0].name}. Take your time to read through it - it's detailed but important.
+        Ask me any questions as you review.
+      </p>
+    ),
+  },
+
+  // Show document detail component
+  { type: 'component', content: null, componentId: 'document-detail' },
+
+  { type: 'user', content: "I've finished reading and understand the terms" },
+
+  {
+    type: 'ai',
+    content: (
+      <p>
+        Excellent! You've completed the {d.documents[0].name} review. ✅
+        <br /><br />
+        Moving to document {d.documents[1].step} of {d.documents[1].total}...
+      </p>
+    ),
+  },
+
+  // Section 3: Document Step 2
+  { type: 'section-header', content: `Document Step 2: ${d.documents[1].name}` },
+
+  {
+    type: 'ai',
+    content: (
+      <div>
+        <p className="font-semibold mb-3">Step {d.documents[1].step} of {d.documents[1].total}: {d.documents[1].name}</p>
+        <p className="mb-3">The {d.documents[1].name} defines your rights and obligations as a fund investor:</p>
+        <ul className="list-none space-y-1 mb-3">
+          <li>• <strong>Your investor rights:</strong> Vote on major fund decisions, access to quarterly reports</li>
+          <li>• <strong>Fund management:</strong> Professional fund managers handle day-to-day operations</li>
+          <li>• <strong>Distributions:</strong> You'll receive proceeds when {d.dealCompany} has liquidity events</li>
+          <li>• <strong>Governance:</strong> Annual investor meetings, voting on key decisions</li>
+          <li>• <strong>Exit provisions:</strong> Limited transfer rights, potential secondary market opportunities</li>
+        </ul>
+
+        <SuggestionGroup
+          suggestions={[
+            'What voting rights do I have?',
+            'How are distributions handled?',
+            'Can I exit my investment early?',
+          ]}
+          label="Ask me anything about this document:"
+        />
+      </div>
+    ),
+  },
+
+  { type: 'user', content: 'What voting rights do I have?' },
+
+  {
+    type: 'ai',
+    content: (
+      <div>
+        <p className="font-semibold mb-3">Voting Rights Explained:</p>
+        <p className="mb-3">As a {formatCurrency(d.selectedAmount)} investor, you'll have voting rights on:</p>
+
+        <p className="font-semibold mt-3">Major Decisions (Require Investor Approval):</p>
+        <ul className="list-none space-y-1 mb-2">
+          <li>• Changes to investment strategy or fund terms</li>
+          <li>• Replacement of fund managers</li>
+          <li>• Major amendments to the agreement</li>
+          <li>• Decisions to wind down the fund</li>
+        </ul>
+
+        <p className="font-semibold mt-3">Your Voting Power:</p>
+        <ul className="list-none space-y-1 mb-2">
+          <li>• Proportional to your investment ({formatCurrency(d.selectedAmount)} out of total fund size)</li>
+          <li>• Typically requires majority or supermajority for major changes</li>
+        </ul>
+
+        <p className="mt-3">Ready to review the full document?</p>
+      </div>
+    ),
+  },
+
+  { type: 'user', content: 'Yes, let me see it' },
+
+  {
+    type: 'ai',
+    content: (
+      <p>Great! Here's the {d.documents[1].name}. This one covers your investor rights in detail.</p>
+    ),
+  },
+
+  // Show document component for LLOA
+  { type: 'component', content: null, componentId: 'document-detail-2' },
+
+  { type: 'user', content: 'Done with this document' },
+
+  {
+    type: 'ai',
+    content: (
+      <p>
+        Perfect! {d.documents[1].name} review complete. ✅
+        <br /><br />
+        Now for the final document - your formal investment commitment...
+      </p>
+    ),
+  },
+
+  // Section 4: Document Step 3
+  { type: 'section-header', content: `Document Step 3: ${d.documents[2].name}` },
+
+  {
+    type: 'ai',
+    content: (
+      <div>
+        <p className="font-semibold mb-3">Step {d.documents[2].step} of {d.documents[2].total}: {d.documents[2].name}</p>
+        <p className="mb-3">This is your formal commitment to invest. The {d.documents[2].name} confirms:</p>
+        <ul className="list-none space-y-1 mb-3">
+          <li>• <strong>Investment amount:</strong> {formatCurrency(d.selectedAmount)} in {d.dealName}</li>
+          <li>• <strong>Your accreditation:</strong> Confirms you qualify as an accredited investor</li>
+          <li>• <strong>Payment terms:</strong> Wire transfer instructions and deadline</li>
+          <li>• <strong>Acknowledgments:</strong> You understand the risks and have reviewed all documents</li>
+          <li>• <strong>Signature required:</strong> Legally binding commitment</li>
+        </ul>
+        <p className="mb-3 text-warning"><strong>Important:</strong> Once signed, you're committed to funding within 5 business days.</p>
+
+        <SuggestionGroup
+          suggestions={[
+            "I'm ready to sign",
+            'What happens after I sign?',
+            'Review investment details',
+          ]}
+        />
+      </div>
+    ),
+  },
+
+  { type: 'user', content: "Yes, I'm ready to sign" },
+
+  {
+    type: 'ai',
+    content: (
+      <p>
+        Here's your {d.documents[2].name}. Please review your investment details and provide your signature below.
+      </p>
+    ),
+  },
+
+  // Show signature component
+  { type: 'component', content: null, componentId: 'signature-input' },
+
+  // Section 5: Final Confirmation
+  { type: 'section-header', content: 'Investment Complete' },
+
+  { type: 'user', content: 'Ready to sign' },
+
+  {
+    type: 'ai',
+    content: (
+      <div>
+        <p className="text-lg font-semibold mb-3">Congratulations, {d.userName}! Your {d.dealName} investment is confirmed! 🎉</p>
+        <p className="mb-3"><strong>Investment Summary:</strong></p>
+        <ul className="list-none space-y-1 mb-3">
+          <li>• <strong>Amount:</strong> {formatCurrency(d.selectedAmount)}</li>
+          <li>• <strong>Fund:</strong> {d.dealName}</li>
+          <li>• <strong>Documents signed:</strong> {d.documents.map(doc => doc.name).join(', ')}</li>
+        </ul>
+        <p className="mb-3"><strong>Next Steps:</strong></p>
+        <ul className="list-none space-y-1 mb-3">
+          <li>1. You'll receive wire instructions via email within 24 hours</li>
+          <li>2. Complete the wire transfer within 5 business days</li>
+          <li>3. Once funded, you'll receive your official investor welcome packet</li>
+        </ul>
+        <p>Welcome to {d.dealName}! 🚀</p>
+      </div>
+    ),
+  },
+];
+
+// Legacy export for backward compatibility
+export const spaceXInvestmentFlow = investmentFlowConversation;
+
+// Legacy templates for backward compatibility
 export const conversationTemplates = {
-  'deal-preview': [
-    { type: 'user' as const, content: 'Show me the latest investment opportunity' },
-    {
-      type: 'ai' as const,
-      content: (
-        <p>
-          I found a great opportunity for you. Here's the deal preview with all the key details including the investment terms, timeline, and expected returns.
-        </p>
-      ),
-    },
-    { type: 'user' as const, content: 'This looks interesting. What are the risks?' },
-    {
-      type: 'ai' as const,
-      content: (
-        <p>
-          I'll prepare a detailed risk assessment for you. Let me know if you'd like to proceed with the investment.
-        </p>
-      ),
-    },
-  ],
-  'deal-page-investment': [
-    { type: 'user' as const, content: 'I want to invest in this deal' },
-    {
-      type: 'ai' as const,
-      content: (
-        <p>
-          Great choice! Let me help you set up your investment. Please select your investment amount below.
-        </p>
-      ),
-    },
-    { type: 'user' as const, content: 'I want to invest $25,000' },
-    {
-      type: 'ai' as const,
-      content: (
-        <p>
-          Perfect. I've set up your investment for $25,000. Please review the details and confirm when ready.
-        </p>
-      ),
-    },
-  ],
-  'investment-risk': [
-    { type: 'user' as const, content: 'What are the risks of this investment?' },
-    {
-      type: 'ai' as const,
-      content: (
-        <p>
-          I've analyzed the key risk factors for this investment. Here's a breakdown of the potential risks you should consider before proceeding.
-        </p>
-      ),
-    },
-    { type: 'user' as const, content: 'How does this compare to similar investments?' },
-    {
-      type: 'ai' as const,
-      content: (
-        <p>
-          Compared to similar investments in this sector, the risk profile is moderate. The main differentiators are the management team's experience and the market positioning.
-        </p>
-      ),
-    },
-  ],
-  'investment-review': [
-    { type: 'user' as const, content: 'Can you review my investment documents?' },
-    {
-      type: 'ai' as const,
-      content: (
-        <p>
-          I've reviewed your investment documents. Here's a summary of the key points and important sections you should pay attention to.
-        </p>
-      ),
-      attachments: [
-        { title: 'Investment Agreement', subtitle: 'PDF Document' },
-        { title: 'Risk Disclosure', subtitle: 'PDF Document' },
-      ],
-    },
-  ],
-  'document-detail': [
-    { type: 'user' as const, content: 'Show me the details of this document' },
-    {
-      type: 'ai' as const,
-      content: (
-        <p>
-          Here's the detailed breakdown of the document. I've highlighted the key sections and summarized the important points for your review.
-        </p>
-      ),
-    },
-  ],
-  'signature-input': [
-    { type: 'user' as const, content: 'I need to sign the investment documents' },
-    {
-      type: 'ai' as const,
-      content: (
-        <p>
-          Please provide your signature below to complete the investment process. Your signature will be applied to all required documents.
-        </p>
-      ),
-    },
-  ],
-  'document-signing': [
-    { type: 'user' as const, content: 'Which documents do I need to sign?' },
-    {
-      type: 'ai' as const,
-      content: (
-        <p>
-          Here are the documents that require your signature. Please review each document carefully before signing.
-        </p>
-      ),
-    },
-    { type: 'user' as const, content: "I've reviewed them, ready to sign" },
-    {
-      type: 'ai' as const,
-      content: (
-        <p>
-          Great! Please sign each document below. Once completed, I'll process your investment.
-        </p>
-      ),
-    },
-  ],
+  'deal-preview': investmentFlowConversation.slice(0, 8),
+  'deal-page-investment': investmentFlowConversation.slice(0, 8),
+  'investment-risk': investmentFlowConversation.slice(8, 14),
+  'investment-review': investmentFlowConversation,
+  'document-detail': investmentFlowConversation.slice(14, 20),
+  'signature-input': investmentFlowConversation.slice(26, 32),
+  'document-signing': investmentFlowConversation.slice(26, 32),
 };

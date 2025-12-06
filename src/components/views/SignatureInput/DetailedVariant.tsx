@@ -18,45 +18,8 @@ export function DetailedVariantContent() {
         Perfect—everything's confirmed.
       </p>
 
-      <div className="space-y-2">
-        <p className="font-semibold text-foreground">
-          Legal Documents for Your Review:
-        </p>
-        <ul className="space-y-1">
-          <li>
-            <a href="#" className="text-sm text-accent hover:text-accent/80 underline">
-              Subscription Agreement & Privacy Notice
-            </a>
-          </li>
-          <li>
-            <a href="#" className="text-sm text-accent hover:text-accent/80 underline">
-              Limited Liability Company Agreement
-            </a>
-          </li>
-          <li>
-            <a href="#" className="text-sm text-accent hover:text-accent/80 underline">
-              Private Placement Memorandum
-            </a>
-          </li>
-        </ul>
-      </div>
-
-      <p className="text-muted-foreground leading-relaxed">
-        To finalize the paperwork for your investment in Databricks, how would
-        you like your name to appear on the documents?
-      </p>
-
-      <p className="text-muted-foreground text-sm leading-relaxed">
-        Your electronic signature carries the same legal weight as a handwritten
-        one.
-      </p>
-
-      <p className="text-muted-foreground text-sm leading-relaxed">
-        Just type the name you want to use, and I'll apply it.
-      </p>
-
       {/* Investment Documents Section */}
-      <Card className="mt-4">
+      <Card>
         <CardContent className="space-y-3">
           <h3 className="font-semibold text-foreground">Investment Documents</h3>
 
@@ -95,7 +58,7 @@ export function DetailedVariantContent() {
       </Card>
 
       {/* Add Signature Section */}
-      <Card className="mt-4">
+      <Card>
         <CardContent className="space-y-4">
           <h3 className="font-semibold text-foreground">Add Signature</h3>
 
@@ -113,7 +76,7 @@ export function DetailedVariantContent() {
           <div className="flex items-center justify-between pt-3 border-t border-border">
             <p className="text-sm text-muted-foreground">Submit after signing</p>
             <Button disabled={!agreedToDocuments} size="lg">
-              Submitted
+              Submit
             </Button>
           </div>
         </CardContent>

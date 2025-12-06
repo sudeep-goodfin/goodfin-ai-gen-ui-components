@@ -14,6 +14,8 @@ import {
   SignatureInputView,
   signatureInputVariants,
   DocumentAttachmentWithSign,
+  ApplyCreditView,
+  applyCreditVariants,
 } from './components/views';
 import {
   Layout,
@@ -23,6 +25,7 @@ import {
   TrendingUp,
   DollarSign,
   AlertTriangle,
+  CreditCard,
 } from 'lucide-react';
 
 export function App() {
@@ -74,6 +77,13 @@ export function App() {
       label: 'Document Signing',
       component: <DocumentAttachmentWithSign />,
       icon: <PenTool className="w-6 h-6" />,
+    },
+    {
+      id: 'apply-credit',
+      label: 'Apply Credit',
+      component: (variant: string) => <ApplyCreditView variant={variant as 'simple' | 'detailed'} />,
+      icon: <CreditCard className="w-6 h-6" />,
+      variants: applyCreditVariants,
     },
   ];
 
