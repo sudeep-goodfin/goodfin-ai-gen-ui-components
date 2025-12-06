@@ -30,7 +30,7 @@ export function DealPageInvestmentView({ variant = 'full' }: DealPageInvestmentV
   };
 
   return (
-    <ChatLayout
+    <ChatLayout showInput={false}
       userMessage="I want to invest in Databricks IV"
     >
       <ChatMessage content={getContent()} showFeedback={true} />

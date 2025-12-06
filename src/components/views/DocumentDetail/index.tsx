@@ -17,7 +17,7 @@ type DocumentDetailViewProps = {
 
 export function DocumentDetailView({ variant = 'full' }: DocumentDetailViewProps) {
   return (
-    <ChatLayout
+    <ChatLayout showInput={false}
       userMessage="Looks good. Let's move on"
     >
       <ChatMessage

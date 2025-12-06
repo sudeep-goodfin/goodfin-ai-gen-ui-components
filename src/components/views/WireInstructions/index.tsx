@@ -17,7 +17,7 @@ type WireInstructionsViewProps = {
 
 export function WireInstructionsView({ variant = 'simple' }: WireInstructionsViewProps) {
   return (
-    <ChatLayout userMessage="Yes">
+    <ChatLayout showInput={false} userMessage="Yes">
       <ChatMessage
         content={variant === 'simple' ? <SimpleVariantContent /> : <DetailedVariantContent />}
         showFeedback={true}

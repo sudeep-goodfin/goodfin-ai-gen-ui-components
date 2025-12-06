@@ -21,7 +21,7 @@ export function InvestmentReviewChat({ variant = 'original' }: InvestmentReviewC
     : 'This is clear, ready for the next one.';
 
   return (
-    <ChatLayout
+    <ChatLayout showInput={false}
       userMessage={userMessage}
       inputPlaceholder="Type 'all clear' to proceed..."
     >

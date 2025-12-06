@@ -17,7 +17,7 @@ type InvestorProfileViewProps = {
 
 export function InvestorProfileView({ variant = 'simple' }: InvestorProfileViewProps) {
   return (
-    <ChatLayout userMessage="I have read the documents, and fully acknowledge the risks. Signed. [Name]">
+    <ChatLayout showInput={false} userMessage="I have read the documents, and fully acknowledge the risks. Signed. [Name]">
       <ChatMessage
         content={variant === 'simple' ? <SimpleVariantContent /> : <DetailedVariantContent />}
         showFeedback={true}

@@ -17,7 +17,7 @@ type ApplyCreditViewProps = {
 
 export function ApplyCreditView({ variant = 'simple' }: ApplyCreditViewProps) {
   return (
-    <ChatLayout userMessage="Confirmed. Please proceed with this identity">
+    <ChatLayout showInput={false} userMessage="Confirmed. Please proceed with this identity">
       <ChatMessage
         content={variant === 'simple' ? <SimpleVariantContent /> : <DetailedVariantContent />}
         showFeedback={true}

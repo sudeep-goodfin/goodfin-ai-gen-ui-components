@@ -39,7 +39,7 @@ function SigningContent() {
 
 export function DocumentAttachmentWithSign() {
   return (
-    <ChatLayout
+    <ChatLayout showInput={false}
       userMessage="I'm ready to sign."
     >
       <ChatMessage content={<SigningContent />} showFeedback={true} />

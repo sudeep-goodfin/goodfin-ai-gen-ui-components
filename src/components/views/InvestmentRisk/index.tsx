@@ -17,7 +17,7 @@ type InvestmentRiskViewProps = {
 
 export function InvestmentRiskView({ variant = 'full' }: InvestmentRiskViewProps) {
   return (
-    <ChatLayout
+    <ChatLayout showInput={false}
       userMessage="I'd like to invest 200000"
     >
       <ChatMessage

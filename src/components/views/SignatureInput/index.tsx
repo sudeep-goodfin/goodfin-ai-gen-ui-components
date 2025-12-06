@@ -21,7 +21,7 @@ export function SignatureInputView({ variant = 'simple' }: SignatureInputViewPro
     : 'I confirm all four items and am ready to proceed with signature.';
 
   return (
-    <ChatLayout
+    <ChatLayout showInput={false}
       userMessage={userMessage}
     >
       <ChatMessage

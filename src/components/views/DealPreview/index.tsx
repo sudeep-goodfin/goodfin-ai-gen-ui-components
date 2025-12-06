@@ -17,7 +17,7 @@ type DealPreviewViewProps = {
 
 export function DealPreviewView({ variant = 'full' }: DealPreviewViewProps) {
   return (
-    <ChatLayout
+    <ChatLayout showInput={false}
       userMessage="I want to invest in Databricks IV"
     >
       <ChatMessage

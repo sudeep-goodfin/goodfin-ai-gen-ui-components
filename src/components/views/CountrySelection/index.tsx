@@ -17,7 +17,7 @@ type CountrySelectionViewProps = {
 
 export function CountrySelectionView({ variant = 'simple' }: CountrySelectionViewProps) {
   return (
-    <ChatLayout userMessage="I don't have a promo code to apply.">
+    <ChatLayout showInput={false} userMessage="I don't have a promo code to apply.">
       <ChatMessage
         content={variant === 'simple' ? <SimpleVariantContent /> : <DetailedVariantContent />}
         showFeedback={true}

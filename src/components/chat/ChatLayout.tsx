@@ -5,6 +5,7 @@ type ChatLayoutProps = {
   userMessage?: string;
   children: React.ReactNode;
   inputPlaceholder?: string;
+  showInput?: boolean;
 };
 
 // Deep Research Analyst SVG Icon
@@ -29,6 +30,7 @@ export function ChatLayout({
   userMessage,
   children,
   inputPlaceholder = 'Type your response...',
+  showInput = true,
 }: ChatLayoutProps) {
   const [inputValue, setInputValue] = useState('');
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -56,7 +58,7 @@ export function ChatLayout({
         style={{ backgroundColor: 'var(--chat-container-bg)' }}
       >
         {/* Chat Container */}
-        <main className="max-w-3xl mx-auto px-4 py-8 pb-32">
+        <main className={`max-w-3xl mx-auto px-4 py-8 ${showInput ? 'pb-32' : 'pb-8'}`}>
           {/* Single User Message (legacy support) */}
           {userMessage && (
             <div className="flex justify-end mb-6">
@@ -81,104 +83,106 @@ export function ChatLayout({
         </main>
 
         {/* Input Area - Exact Concierge InputBox styling */}
-        <div
-          className="fixed bottom-0 left-0 right-0 pt-6 pb-4 px-4"
-          style={{
-            background: `linear-gradient(to top, var(--chat-container-bg) 70%, transparent)`,
-          }}
-        >
-          <div className="max-w-3xl mx-auto flex flex-col items-center">
-            {/* Input Container */}
-            <div
-              className="w-full flex flex-col gap-2 px-3 py-2"
-              style={{
-                backgroundColor: 'var(--chat-input-bg)',
-                border: '2px solid #FFFFFF',
-                borderRadius: '24px',
-                boxShadow: '0px 2px 8px 0px rgba(164, 140, 160, 0.20)',
-                transition: 'border-color 0.2s, box-shadow 0.2s',
-              }}
-            >
-              {/* Top Row - Input + Action Buttons */}
-              <div className="flex items-center gap-2">
-                {/* Input Field */}
-                <input
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onFocus={() => setIsInputFocused(true)}
-                  onBlur={() => setIsInputFocused(false)}
-                  placeholder={isDeepResearchEnabled ? 'Type to run a financial deep dive' : inputPlaceholder}
-                  className="flex-1 bg-transparent text-sm outline-none py-1 font-primary"
-                  style={{
-                    color: 'var(--chat-user-foreground)',
-                    fontWeight: 500,
-                  }}
-                  aria-label="Chat message input"
-                />
-
-                {/* Action Buttons */}
-                {inputValue.trim() ? (
-                  <button
-                    className="w-9 h-9 flex items-center justify-center rounded-full transition-all hover:bg-grey-100"
-                    aria-label="Send message"
-                  >
-                    <Send className="w-5 h-5" style={{ color: '#030303' }} />
-                  </button>
-                ) : (
-                  <button
-                    className="w-9 h-9 flex items-center justify-center rounded-full transition-all hover:bg-grey-100"
-                    aria-label="Voice input"
-                  >
-                    <Mic className="w-5 h-5" style={{ color: '#030303' }} />
-                  </button>
-                )}
-              </div>
-
-              {/* Bottom Row - Deep Research Toggle */}
-              <div className="flex items-center justify-between">
-                <button
-                  onClick={() => setIsDeepResearchEnabled(!isDeepResearchEnabled)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all"
-                  style={{
-                    backgroundColor: isDeepResearchEnabled ? '#685F6A' : 'transparent',
-                    cursor: 'pointer',
-                  }}
-                  aria-label="Toggle Deep Research Analyst"
-                  aria-pressed={isDeepResearchEnabled}
-                >
-                  <DeepResearchIcon active={isDeepResearchEnabled} />
-                  <span
-                    className="text-sm font-primary"
+        {showInput && (
+          <div
+            className="fixed bottom-0 left-0 right-0 pt-6 pb-4 px-4 z-50"
+            style={{
+              background: `linear-gradient(to top, var(--chat-container-bg) 70%, transparent)`,
+            }}
+          >
+            <div className="max-w-3xl mx-auto flex flex-col items-center">
+              {/* Input Container */}
+              <div
+                className="w-full flex flex-col gap-2 px-3 py-2"
+                style={{
+                  backgroundColor: 'var(--chat-input-bg)',
+                  border: '2px solid #FFFFFF',
+                  borderRadius: '24px',
+                  boxShadow: '0px 2px 8px 0px rgba(164, 140, 160, 0.20)',
+                  transition: 'border-color 0.2s, box-shadow 0.2s',
+                }}
+              >
+                {/* Top Row - Input + Action Buttons */}
+                <div className="flex items-center gap-2">
+                  {/* Input Field */}
+                  <input
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onFocus={() => setIsInputFocused(true)}
+                    onBlur={() => setIsInputFocused(false)}
+                    placeholder={isDeepResearchEnabled ? 'Type to run a financial deep dive' : inputPlaceholder}
+                    className="flex-1 bg-transparent text-sm outline-none py-1 font-primary"
                     style={{
-                      color: isDeepResearchEnabled ? '#F0EEF0' : '#030303',
+                      color: 'var(--chat-user-foreground)',
+                      fontWeight: 500,
                     }}
-                  >
-                    Deep Research Analyst
-                  </span>
-                  {isDeepResearchEnabled && (
-                    <X
-                      className="w-5 h-5 ml-1 cursor-pointer hover:opacity-80"
-                      style={{ color: '#9B929E' }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsDeepResearchEnabled(false);
-                      }}
-                    />
-                  )}
-                </button>
-              </div>
-            </div>
+                    aria-label="Chat message input"
+                  />
 
-            {/* Disclaimer Text */}
-            <p
-              className="text-xs text-center mt-2 font-primary px-4"
-              style={{ color: '#7F7582' }}
-            >
-              Goodfin AI Concierge does not provide tax, financial, investment, or legal advice. It can present inaccurate information. Make sure to validate.
-            </p>
+                  {/* Action Buttons */}
+                  {inputValue.trim() ? (
+                    <button
+                      className="w-9 h-9 flex items-center justify-center rounded-full transition-all hover:bg-grey-100"
+                      aria-label="Send message"
+                    >
+                      <Send className="w-5 h-5" style={{ color: '#030303' }} />
+                    </button>
+                  ) : (
+                    <button
+                      className="w-9 h-9 flex items-center justify-center rounded-full transition-all hover:bg-grey-100"
+                      aria-label="Voice input"
+                    >
+                      <Mic className="w-5 h-5" style={{ color: '#030303' }} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Bottom Row - Deep Research Toggle */}
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => setIsDeepResearchEnabled(!isDeepResearchEnabled)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all"
+                    style={{
+                      backgroundColor: isDeepResearchEnabled ? '#685F6A' : 'transparent',
+                      cursor: 'pointer',
+                    }}
+                    aria-label="Toggle Deep Research Analyst"
+                    aria-pressed={isDeepResearchEnabled}
+                  >
+                    <DeepResearchIcon active={isDeepResearchEnabled} />
+                    <span
+                      className="text-sm font-primary"
+                      style={{
+                        color: isDeepResearchEnabled ? '#F0EEF0' : '#030303',
+                      }}
+                    >
+                      Deep Research Analyst
+                    </span>
+                    {isDeepResearchEnabled && (
+                      <X
+                        className="w-5 h-5 ml-1 cursor-pointer hover:opacity-80"
+                        style={{ color: '#9B929E' }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsDeepResearchEnabled(false);
+                        }}
+                      />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Disclaimer Text */}
+              <p
+                className="text-xs text-center mt-2 font-primary px-4"
+                style={{ color: '#7F7582' }}
+              >
+                Goodfin AI Concierge does not provide tax, financial, investment, or legal advice. It can present inaccurate information. Make sure to validate.
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

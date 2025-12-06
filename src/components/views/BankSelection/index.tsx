@@ -17,7 +17,7 @@ type BankSelectionViewProps = {
 
 export function BankSelectionView({ variant = 'simple' }: BankSelectionViewProps) {
   return (
-    <ChatLayout userMessage="United States">
+    <ChatLayout showInput={false} userMessage="United States">
       <ChatMessage
         content={variant === 'simple' ? <SimpleVariantContent /> : <DetailedVariantContent />}
         showFeedback={true}

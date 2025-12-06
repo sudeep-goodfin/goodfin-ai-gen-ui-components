@@ -17,7 +17,7 @@ type PromoCodeViewProps = {
 
 export function PromoCodeView({ variant = 'simple' }: PromoCodeViewProps) {
   return (
-    <ChatLayout userMessage="I don't want to apply any credit to this investment.">
+    <ChatLayout showInput={false} userMessage="I don't want to apply any credit to this investment.">
       <ChatMessage
         content={variant === 'simple' ? <SimpleVariantContent /> : <DetailedVariantContent />}
         showFeedback={true}
