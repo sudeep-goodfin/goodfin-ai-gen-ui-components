@@ -44,3 +44,7 @@ export type { BankSelectionVariant } from './BankSelection';
 // Country Selection
 export { CountrySelectionView, CountrySearchDropdown, countrySelectionVariants } from './CountrySelection';
 export type { CountrySelectionVariant } from './CountrySelection';
+
+// Wire Instructions
+export { WireInstructionsView, WireInstructionsCard, wireInstructionsVariants } from './WireInstructions';
+export type { WireInstructionsVariant } from './WireInstructions';

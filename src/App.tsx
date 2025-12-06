@@ -24,6 +24,8 @@ import {
   bankSelectionVariants,
   CountrySelectionView,
   countrySelectionVariants,
+  WireInstructionsView,
+  wireInstructionsVariants,
 } from './components/views';
 import {
   Layout,
@@ -38,6 +40,7 @@ import {
   UserCheck,
   Building2,
   Globe,
+  Send,
 } from 'lucide-react';
 
 export function App() {
@@ -124,6 +127,13 @@ export function App() {
       component: (variant: string) => <CountrySelectionView variant={variant as 'simple' | 'detailed'} />,
       icon: <Globe className="w-6 h-6" />,
       variants: countrySelectionVariants,
+    },
+    {
+      id: 'wire-instructions',
+      label: 'Wire Instructions',
+      component: (variant: string) => <WireInstructionsView variant={variant as 'simple' | 'detailed'} />,
+      icon: <Send className="w-6 h-6" />,
+      variants: wireInstructionsVariants,
     },
   ];
 
