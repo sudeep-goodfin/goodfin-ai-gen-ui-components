@@ -29,78 +29,156 @@ export function ChatLayout<T extends string>({
   inputPlaceholder = 'Type your response...',
 }: ChatLayoutProps<T>) {
   const [inputValue, setInputValue] = useState('');
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-muted/50 to-muted">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border">
-        <div className="max-w-3xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-chat-ai-gradient-from to-chat-ai-gradient-to rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">AI</span>
-              </div>
-              <div>
-                <h1 className="text-sm font-semibold text-foreground">{title}</h1>
-                <p className="text-xs text-muted-foreground">{subtitle}</p>
-              </div>
-            </div>
+    <div className="min-h-screen w-full relative overflow-hidden">
+      {/* Gradient Background Effect - Exact Concierge GradientEffect */}
+      <div
+        className="absolute bottom-0 left-0 pointer-events-none"
+        style={{
+          width: '470px',
+          height: '479px',
+          borderRadius: '679px',
+          background: 'var(--chat-gradient-bg)',
+          backgroundBlendMode: 'hard-light',
+          filter: 'blur(213px)',
+          opacity: 0.4,
+        }}
+      />
 
-            {/* Variant Selector */}
-            {variants && variants.length > 0 && onVariantChange && (
-              <div className="flex gap-1 p-1 bg-muted rounded-lg">
-                {variants.map((variant) => (
-                  <button
-                    key={variant.id}
-                    onClick={() => onVariantChange(variant.id)}
-                    className={cn(
-                      'px-3 py-1 text-xs font-medium rounded transition-all',
-                      activeVariant === variant.id
-                        ? 'bg-background text-foreground shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
-                    )}
+      {/* Main Container - Exact Concierge styling */}
+      <div
+        className="relative z-10 min-h-screen"
+        style={{ backgroundColor: 'var(--chat-container-bg)' }}
+      >
+        {/* Header */}
+        <header
+          className="sticky top-0 z-10 border-b"
+          style={{
+            backgroundColor: 'var(--chat-container-bg)',
+            borderColor: 'var(--chat-card-border)',
+          }}
+        >
+          <div className="max-w-3xl mx-auto px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: '#030303' }}
+                >
+                  <span className="text-white font-semibold text-sm">AI</span>
+                </div>
+                <div>
+                  <h1
+                    className="text-sm font-semibold"
+                    style={{ color: '#030303' }}
                   >
-                    {variant.label}
-                  </button>
-                ))}
+                    {title}
+                  </h1>
+                  <p
+                    className="text-xs"
+                    style={{ color: '#7F7582' }}
+                  >
+                    {subtitle}
+                  </p>
+                </div>
               </div>
-            )}
+
+              {/* Variant Selector */}
+              {variants && variants.length > 0 && onVariantChange && (
+                <div
+                  className="flex gap-1 p-1 rounded-xl"
+                  style={{ backgroundColor: '#F0EEF0' }}
+                >
+                  {variants.map((variant) => (
+                    <button
+                      key={variant.id}
+                      onClick={() => onVariantChange(variant.id)}
+                      className={cn(
+                        'px-3 py-1.5 text-xs font-medium rounded-lg transition-all',
+                        activeVariant === variant.id
+                          ? 'shadow-sm'
+                          : ''
+                      )}
+                      style={{
+                        backgroundColor: activeVariant === variant.id ? '#FFFFFF' : 'transparent',
+                        color: activeVariant === variant.id ? '#030303' : '#7F7582',
+                      }}
+                    >
+                      {variant.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Chat Container */}
-      <main className="max-w-3xl mx-auto px-4 py-8 pb-24">
-        {/* User Message */}
-        <div className="flex justify-end mb-6">
-          <div className="bg-chat-user text-chat-user-foreground px-4 py-2.5 rounded-2xl rounded-br-md max-w-md shadow-sm">
-            <p className="text-sm">{userMessage}</p>
-          </div>
-        </div>
-
-        {/* AI Response */}
-        {children}
-      </main>
-
-      {/* Input Area */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4">
-        <div className="max-w-3xl mx-auto">
-          <div className="flex items-center gap-3 bg-muted rounded-2xl border border-border px-4 py-2 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 transition-all">
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder={inputPlaceholder}
-              className="flex-1 bg-transparent text-sm text-foreground placeholder-muted-foreground outline-none"
-              aria-label="Chat message input"
-            />
-            <button
-              className="p-2 bg-accent text-accent-foreground rounded-xl hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={!inputValue.trim()}
-              aria-label="Send message"
+        {/* Chat Container */}
+        <main className="max-w-3xl mx-auto px-4 py-8 pb-32">
+          {/* User Message - Exact Concierge ChatBubble styling */}
+          <div className="flex justify-end mb-6">
+            <div
+              className="px-4 py-3 max-w-md"
+              style={{
+                backgroundColor: 'var(--chat-user-bg)',
+                color: 'var(--chat-user-foreground)',
+                borderRadius: '16px',
+              }}
             >
-              <Send className="w-4 h-4" />
-            </button>
+              <p className="text-sm leading-relaxed font-primary">{userMessage}</p>
+            </div>
+          </div>
+
+          {/* AI Response */}
+          {children}
+        </main>
+
+        {/* Input Area - Exact Concierge CustomInputField styling */}
+        <div
+          className="fixed bottom-0 left-0 right-0 pt-6 pb-4 px-4"
+          style={{
+            background: `linear-gradient(to top, var(--chat-container-bg) 70%, transparent)`,
+          }}
+        >
+          <div className="max-w-3xl mx-auto">
+            <div
+              className="flex items-center gap-3 px-4 py-2"
+              style={{
+                backgroundColor: 'var(--chat-input-bg)',
+                border: `1px solid ${isInputFocused ? 'var(--chat-input-border-focus)' : 'var(--chat-input-border)'}`,
+                borderRadius: '16px',
+                boxShadow: isInputFocused ? '0 0 0 1px var(--chat-input-border-focus)' : 'none',
+                transition: 'border-color 0.2s, box-shadow 0.2s',
+              }}
+            >
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onFocus={() => setIsInputFocused(true)}
+                onBlur={() => setIsInputFocused(false)}
+                placeholder={inputPlaceholder}
+                className="flex-1 bg-transparent text-sm outline-none py-1 font-primary"
+                style={{
+                  color: 'var(--chat-user-foreground)',
+                }}
+                aria-label="Chat message input"
+              />
+              <button
+                className="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
+                style={{
+                  backgroundColor: inputValue.trim() ? 'var(--chat-send-bg-active)' : 'var(--chat-send-bg)',
+                  color: inputValue.trim() ? 'var(--chat-send-color-active)' : 'var(--chat-send-color)',
+                  opacity: inputValue.trim() ? 1 : 0.5,
+                }}
+                disabled={!inputValue.trim()}
+                aria-label="Send message"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>

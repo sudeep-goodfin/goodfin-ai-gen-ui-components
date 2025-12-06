@@ -13,6 +13,36 @@ module.exports = {
       },
     },
     extend: {
+      fontFamily: {
+        /* GoodFin Font Families */
+        sans: ["Soehne", "Open Sans", "system-ui", "sans-serif"],
+        primary: ["Soehne", "Open Sans", "sans-serif"],
+        "primary-light": ["Soehne Leicht", "Soehne", "Open Sans", "sans-serif"],
+        "primary-bold": ["Soehne Kraftig", "Soehne", "Open Sans", "sans-serif"],
+        heading: ["Test Signifier", "Soehne", "Georgia", "serif"],
+        signifier: ["Signifier", "Test Signifier", "Georgia", "serif"],
+        body: ["Open Sans", "Soehne", "system-ui", "sans-serif"],
+      },
+      fontSize: {
+        /* GoodFin Typography Scale */
+        /* Headings */
+        "h1": ["40px", { lineHeight: "56px", letterSpacing: "-1.2px" }],
+        "h2": ["32px", { lineHeight: "40px", letterSpacing: "-0.96px" }],
+        "h3": ["24px", { lineHeight: "32px", letterSpacing: "-0.48px" }],
+        "h4": ["20px", { lineHeight: "32px", letterSpacing: "-0.4px" }],
+        "h5": ["18px", { lineHeight: "24px", letterSpacing: "-0.18px" }],
+        "h6": ["16px", { lineHeight: "24px", letterSpacing: "-0.16px" }],
+        /* Labels (Soehne Kraftig) */
+        "label-lg": ["18px", { lineHeight: "24px" }],
+        "label-md": ["16px", { lineHeight: "20px" }],
+        "label-sm": ["14px", { lineHeight: "16px" }],
+        "label-xs": ["12px", { lineHeight: "16px" }],
+        /* Paragraphs (Soehne Leicht) */
+        "para-lg": ["18px", { lineHeight: "28px" }],
+        "para-md": ["16px", { lineHeight: "24px" }],
+        "para-sm": ["14px", { lineHeight: "20px" }],
+        "para-xs": ["12px", { lineHeight: "16px" }],
+      },
       colors: {
         /* GoodFin Primitive Color Palettes */
         grey: {
@@ -151,6 +181,15 @@ module.exports = {
             foreground: "var(--chat-ai-foreground)",
             "gradient-from": "var(--chat-ai-gradient-from)",
             "gradient-to": "var(--chat-ai-gradient-to)",
+          },
+          overlay: "var(--chat-overlay-bg)",
+          input: {
+            DEFAULT: "var(--chat-input-bg)",
+            border: "var(--chat-input-border)",
+          },
+          action: {
+            DEFAULT: "var(--chat-action-primary)",
+            foreground: "var(--chat-action-primary-foreground)",
           },
         },
       },

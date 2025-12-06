@@ -2,6 +2,87 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Google Fonts - Open Sans */
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap");
+
+/* Font Face Declarations - GoodFin Typography */
+@font-face {
+  font-family: "Signifier";
+  src: url("/fonts/signifier-extralight.woff2") format("woff2"),
+    url("/fonts/signifier-extralight.woff") format("woff");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Test Signifier";
+  src: url("/fonts/test-signifier-regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Soehne";
+  src: url("/fonts/soehne-buch.woff2") format("woff2"),
+    url("/fonts/soehne-buch.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Soehne";
+  src: url("/fonts/soehne-buch-kursiv.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Soehne Leicht";
+  src: url("/fonts/soehne-leicht.woff2") format("woff2"),
+    url("/fonts/soehne-leicht.woff") format("woff");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Soehne Halbfett";
+  src: url("/fonts/soehne-halbfett.woff2") format("woff2"),
+    url("/fonts/soehne-halbfett.woff") format("woff");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Soehne Kraftig";
+  src: url("/fonts/soehne-kraftig.woff2") format("woff2"),
+    url("/fonts/soehne-kraftig.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Soehne Dreiviertelfett";
+  src: url("/fonts/soehne-dreiviertelfett.woff2") format("woff2");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Soehne Fett";
+  src: url("/fonts/soehne-fett.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     /* GoodFin Design System - Primitive Colors as CSS Variables */
@@ -144,13 +225,102 @@
     --radius-xlarge: 64px;
     --radius-full: 256px;
 
-    /* Chat-specific tokens */
-    --chat-user-bg: var(--grey-950);
-    --chat-user-foreground: var(--grey-50);
-    --chat-ai-bg: var(--sand-0);
-    --chat-ai-foreground: var(--grey-950);
-    --chat-ai-gradient-from: var(--grey-100);
-    --chat-ai-gradient-to: var(--grey-200);
+    /* Typography - Font Families */
+    --font-primary: "Soehne", "Open Sans", sans-serif;
+    --font-primary-light: "Soehne Leicht", "Soehne", "Open Sans", sans-serif;
+    --font-primary-bold: "Soehne Kraftig", "Soehne", "Open Sans", sans-serif;
+    --font-heading: "Test Signifier", "Soehne", serif;
+    --font-body: "Open Sans", "Soehne", sans-serif;
+
+    /* Typography - Heading Sizes (Test Signifier) */
+    --text-h1: 40px;
+    --text-h1-line: 56px;
+    --text-h1-tracking: -1.2px;
+
+    --text-h2: 32px;
+    --text-h2-line: 40px;
+    --text-h2-tracking: -0.96px;
+
+    --text-h3: 24px;
+    --text-h3-line: 32px;
+    --text-h3-tracking: -0.48px;
+
+    --text-h4: 20px;
+    --text-h4-line: 32px;
+    --text-h4-tracking: -0.4px;
+
+    --text-h5: 18px;
+    --text-h5-line: 24px;
+    --text-h5-tracking: -0.18px;
+
+    --text-h6: 16px;
+    --text-h6-line: 24px;
+    --text-h6-tracking: -0.16px;
+
+    /* Typography - Label Sizes (Soehne Kraftig) */
+    --text-label-lg: 18px;
+    --text-label-lg-line: 24px;
+
+    --text-label-md: 16px;
+    --text-label-md-line: 20px;
+
+    --text-label-sm: 14px;
+    --text-label-sm-line: 16px;
+
+    --text-label-xs: 12px;
+    --text-label-xs-line: 16px;
+
+    /* Typography - Paragraph Sizes (Soehne Leicht) */
+    --text-para-lg: 18px;
+    --text-para-lg-line: 28px;
+
+    --text-para-md: 16px;
+    --text-para-md-line: 24px;
+
+    --text-para-sm: 14px;
+    --text-para-sm-line: 20px;
+
+    --text-para-xs: 12px;
+    --text-para-xs-line: 16px;
+
+    /* Concierge Chat UI - Exact Colors */
+
+    /* User message bubble - matches Concierge ChatBubble */
+    --chat-user-bg: #F6F6F6;
+    --chat-user-foreground: #030303;
+
+    /* AI message bubble - matches Concierge ChatBubble */
+    --chat-ai-bg: #FFFFFF;
+    --chat-ai-foreground: #030303;
+
+    /* Chat container inner background */
+    --chat-container-bg: #F7F7F8;
+
+    /* Chat overlay (modal wrapper) */
+    --chat-overlay-bg: rgba(229, 223, 228, 0.80);
+    --chat-overlay-shadow: -1px 5px 19.6px 0px rgba(164, 140, 160, 0.60);
+
+    /* Gradient effect - exact from Concierge GradientEffect */
+    --chat-gradient-bg: radial-gradient(201.03% 158.21% at 50.06% 26.9%, #F4D1FF 0%, #F8BCD8 12.5%, #FCEDD6 27.5%, #FCFCFA 42%, #FFF4E2 52.5%, #FCFCFA 62.5%, #FFF 100%);
+
+    /* Input box styling - exact from Concierge CustomInputField */
+    --chat-input-bg: #FFFFFF;
+    --chat-input-border: #D1D1D1;
+    --chat-input-border-focus: #030303;
+    --chat-input-shadow: none;
+    --chat-input-placeholder: rgba(127, 117, 130, 0.8);
+
+    /* Send button - exact from Concierge */
+    --chat-send-bg: #D1D1D1;
+    --chat-send-bg-active: #020203;
+    --chat-send-color: #030303;
+    --chat-send-color-active: #FFFFFF;
+
+    /* Message bubble inset shadow - exact from Concierge TextType */
+    --chat-bubble-inset-shadow: 0.5px 0.5px 1px 0px rgba(255, 255, 255, 0.50) inset;
+
+    /* Reference/attachment card border */
+    --chat-card-border: #D1D1D1;
   }
 
   :root[class~="dark"] {
@@ -193,13 +363,25 @@
 
     --ring: var(--grey-50);
 
-    /* Chat-specific tokens - Dark Mode */
-    --chat-user-bg: var(--grey-100);
-    --chat-user-foreground: var(--grey-950);
-    --chat-ai-bg: var(--grey-800);
-    --chat-ai-foreground: var(--grey-50);
-    --chat-ai-gradient-from: var(--grey-800);
-    --chat-ai-gradient-to: var(--grey-700);
+    /* Concierge Chat UI - Dark Mode */
+    --chat-user-bg: #48424A;
+    --chat-user-foreground: #F7F7F8;
+    --chat-ai-bg: #373338;
+    --chat-ai-foreground: #F7F7F8;
+    --chat-container-bg: #29272A;
+    --chat-overlay-bg: rgba(41, 39, 42, 0.95);
+    --chat-overlay-shadow: -1px 5px 19.6px 0px rgba(0, 0, 0, 0.60);
+    --chat-gradient-bg: radial-gradient(201.03% 158.21% at 50.06% 26.9%, #3D2A42 0%, #352A35 12.5%, #2D2A28 27.5%, #29272A 42%, #2D2A28 52.5%, #29272A 62.5%, #29272A 100%);
+    --chat-input-bg: #373338;
+    --chat-input-border: #554D57;
+    --chat-input-border-focus: #F7F7F8;
+    --chat-input-placeholder: rgba(155, 146, 158, 0.8);
+    --chat-send-bg: #554D57;
+    --chat-send-bg-active: #F7F7F8;
+    --chat-send-color: #F7F7F8;
+    --chat-send-color-active: #29272A;
+    --chat-bubble-inset-shadow: 0.5px 0.5px 1px 0px rgba(255, 255, 255, 0.10) inset;
+    --chat-card-border: #554D57;
   }
 }
 
@@ -209,6 +391,52 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-primary);
     font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Heading Typography */
+  h1, .h1 {
+    font-family: var(--font-heading);
+    font-size: var(--text-h1);
+    line-height: var(--text-h1-line);
+    letter-spacing: var(--text-h1-tracking);
+  }
+
+  h2, .h2 {
+    font-family: var(--font-heading);
+    font-size: var(--text-h2);
+    line-height: var(--text-h2-line);
+    letter-spacing: var(--text-h2-tracking);
+  }
+
+  h3, .h3 {
+    font-family: var(--font-heading);
+    font-size: var(--text-h3);
+    line-height: var(--text-h3-line);
+    letter-spacing: var(--text-h3-tracking);
+  }
+
+  h4, .h4 {
+    font-family: var(--font-heading);
+    font-size: var(--text-h4);
+    line-height: var(--text-h4-line);
+    letter-spacing: var(--text-h4-tracking);
+  }
+
+  h5, .h5 {
+    font-family: var(--font-heading);
+    font-size: var(--text-h5);
+    line-height: var(--text-h5-line);
+    letter-spacing: var(--text-h5-tracking);
+  }
+
+  h6, .h6 {
+    font-family: var(--font-heading);
+    font-size: var(--text-h6);
+    line-height: var(--text-h6-line);
+    letter-spacing: var(--text-h6-tracking);
   }
 }
