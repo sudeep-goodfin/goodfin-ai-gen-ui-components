@@ -160,4 +160,29 @@ function AttachmentCard({ title, subtitle = 'PDF Document', href = '#' }: Attach
   );
 }
 
+// User Message Bubble Component
+type UserMessageProps = {
+  children: React.ReactNode;
+};
+
+export function UserMessage({ children }: UserMessageProps) {
+  return (
+    <div className="flex justify-end mb-6">
+      <div
+        className="font-primary"
+        style={{
+          backgroundColor: '#F0EEF0',
+          color: '#030303',
+          borderRadius: '16px',
+          padding: '8px 12px',
+          maxWidth: '450px',
+          boxShadow: '0.5px 0.5px 1px 0px rgba(255, 255, 255, 0.50) inset',
+        }}
+      >
+        <p className="text-sm leading-relaxed">{children}</p>
+      </div>
+    </div>
+  );
+}
+
 export { AttachmentCard };

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Send, Mic, X } from 'lucide-react';
 
 type ChatLayoutProps = {
-  userMessage: string;
+  userMessage?: string;
   children: React.ReactNode;
   inputPlaceholder?: string;
 };
@@ -57,24 +57,26 @@ export function ChatLayout({
       >
         {/* Chat Container */}
         <main className="max-w-3xl mx-auto px-4 py-8 pb-32">
-          {/* User Message - Exact Concierge TextType styling */}
-          <div className="flex justify-end mb-6">
-            <div
-              className="font-primary"
-              style={{
-                backgroundColor: '#F0EEF0',
-                color: '#030303',
-                borderRadius: '16px',
-                padding: '8px 12px',
-                maxWidth: '450px',
-                boxShadow: '0.5px 0.5px 1px 0px rgba(255, 255, 255, 0.50) inset',
-              }}
-            >
-              <p className="text-sm leading-relaxed">{userMessage}</p>
+          {/* Single User Message (legacy support) */}
+          {userMessage && (
+            <div className="flex justify-end mb-6">
+              <div
+                className="font-primary"
+                style={{
+                  backgroundColor: '#F0EEF0',
+                  color: '#030303',
+                  borderRadius: '16px',
+                  padding: '8px 12px',
+                  maxWidth: '450px',
+                  boxShadow: '0.5px 0.5px 1px 0px rgba(255, 255, 255, 0.50) inset',
+                }}
+              >
+                <p className="text-sm leading-relaxed">{userMessage}</p>
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* AI Response */}
+          {/* Chat Content (AI Response or full conversation) */}
           {children}
         </main>
 
@@ -97,15 +99,8 @@ export function ChatLayout({
                 transition: 'border-color 0.2s, box-shadow 0.2s',
               }}
             >
-              {/* Top Row - Avatar + Input + Action Buttons */}
+              {/* Top Row - Input + Action Buttons */}
               <div className="flex items-center gap-2">
-                {/* GoodFin Avatar */}
-                <img
-                  src="/conciergeIcon.png"
-                  alt="GoodFin"
-                  className="w-9 h-9 rounded-full flex-shrink-0"
-                />
-
                 {/* Input Field */}
                 <input
                   type="text"
