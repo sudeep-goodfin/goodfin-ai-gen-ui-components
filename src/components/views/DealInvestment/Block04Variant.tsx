@@ -63,7 +63,7 @@ type PresetsCardProps = {
 
 function PresetsCard({ amount, setAmount }: PresetsCardProps) {
   const [isCustom, setIsCustom] = useState(false);
-  const presets = [1000, 2500, 5000, 10000, 25000, 50000];
+  const presets = [25000, 50000, 100000, 200000, 500000, 1000000];
 
   return (
     <Card className="h-full">
