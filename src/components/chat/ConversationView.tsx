@@ -383,6 +383,13 @@ export const investmentFlowConversation: ConversationMessage[] = [
 // Legacy export for backward compatibility
 export const spaceXInvestmentFlow = investmentFlowConversation;
 
+// AI Greeting Conversation Flow - Shows ONLY the greeting component
+// This is a standalone greeting view without additional conversation
+export const aiGreetingConversationFlow: ConversationMessage[] = [
+  // Only show AI Greeting component - no other content
+  { type: 'component', content: null, componentId: 'ai-greeting' },
+];
+
 // Legacy templates for backward compatibility
 export const conversationTemplates = {
   'deal-preview': investmentFlowConversation.slice(0, 8),
@@ -392,4 +399,5 @@ export const conversationTemplates = {
   'document-detail': investmentFlowConversation.slice(14, 20),
   'signature-input': investmentFlowConversation.slice(26, 32),
   'document-signing': investmentFlowConversation.slice(26, 32),
+  'ai-greeting': aiGreetingConversationFlow,
 };

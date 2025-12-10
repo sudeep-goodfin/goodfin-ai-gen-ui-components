@@ -26,6 +26,9 @@ import {
   countrySelectionVariants,
   WireInstructionsView,
   wireInstructionsVariants,
+  AIGreetingView,
+  AIGreetingContent,
+  aiGreetingVariants,
 } from './components/views';
 import {
   Layout,
@@ -41,6 +44,7 @@ import {
   Building2,
   Globe,
   Send,
+  MessageSquare,
 } from 'lucide-react';
 
 export function App() {
@@ -55,7 +59,14 @@ export function App() {
     {
       id: 'deal-page-investment',
       label: 'Deal Investment',
-      component: (variant: string) => <DealPageInvestmentView variant={variant as 'full' | 'minimal' | 'simple'} />,
+      component: (variant: string, options?: { showPresets?: boolean; showStepper?: boolean; showSuggestions?: boolean }) => (
+        <DealPageInvestmentView
+          variant={variant as 'full' | 'minimal' | 'simple' | 'block-04'}
+          showPresets={options?.showPresets}
+          showStepper={options?.showStepper}
+          showSuggestions={options?.showSuggestions}
+        />
+      ),
       icon: <DollarSign className="w-6 h-6" />,
       variants: dealInvestmentVariants,
     },
@@ -134,6 +145,13 @@ export function App() {
       component: (variant: string) => <WireInstructionsView variant={variant as 'simple' | 'detailed'} />,
       icon: <Send className="w-6 h-6" />,
       variants: wireInstructionsVariants,
+    },
+    {
+      id: 'ai-greeting',
+      label: 'AI Greeting',
+      component: (variant: string) => <AIGreetingView variant={variant as 'first-time' | 'returning' | 'invested' | 'non-invested'} />,
+      icon: <MessageSquare className="w-6 h-6" />,
+      variants: aiGreetingVariants,
     },
   ];
 

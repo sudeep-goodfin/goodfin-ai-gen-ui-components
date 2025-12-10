@@ -48,3 +48,18 @@ export type { CountrySelectionVariant } from './CountrySelection';
 // Wire Instructions
 export { WireInstructionsView, WireInstructionsCard, wireInstructionsVariants } from './WireInstructions';
 export type { WireInstructionsVariant } from './WireInstructions';
+
+// AI Greeting
+export {
+  AIGreetingView,
+  AIGreetingContent,
+  aiGreetingVariants,
+  accreditedSubStates,
+  nonAccreditedSubStates,
+} from './AIGreeting';
+export type {
+  AIGreetingVariant,
+  AccreditationStatus,
+  AccreditedSubState,
+  NonAccreditedSubState,
+} from './AIGreeting';
