@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
-import { MessageSquare, Layers, Sparkles, DollarSign } from 'lucide-react';
+import { MessageSquare, Layers, Sparkles, DollarSign, Link2, Check } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { Checkbox } from './ui';
+import { Checkbox, Button } from './ui';
 import { ConversationView, aiGreetingConversationFlow, spaceXInvestmentFlow } from './chat';
 import {
   AIGreetingContent,
@@ -11,6 +11,29 @@ import {
   type AIGreetingVariant,
   type AccreditationStatus,
 } from './views';
+
+// URL parameter helpers
+const getUrlParams = () => new URLSearchParams(window.location.search);
+
+const updateUrlParams = (params: Record<string, string | boolean | undefined>) => {
+  const url = new URL(window.location.href);
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === '') {
+      url.searchParams.delete(key);
+    } else if (typeof value === 'boolean') {
+      url.searchParams.set(key, value ? '1' : '0');
+    } else {
+      url.searchParams.set(key, value);
+    }
+  });
+  window.history.replaceState({}, '', url.toString());
+};
+
+const getBoolParam = (params: URLSearchParams, key: string, defaultValue: boolean): boolean => {
+  const value = params.get(key);
+  if (value === null) return defaultValue;
+  return value === '1';
+};
 
 // Conversation flow options
 type ConversationFlowOption = {
@@ -50,27 +73,86 @@ type ComponentShowcaseProps = {
 };
 
 export function ComponentShowcase({ options }: ComponentShowcaseProps) {
-  const [activeId, setActiveId] = useState(options[0].id);
-  const [viewMode, setViewMode] = useState<ViewMode>('component');
-  const [activeConversationFlow, setActiveConversationFlow] = useState('ai-greeting');
+  // Initialize state from URL parameters
+  const [activeId, setActiveId] = useState(() => {
+    const params = getUrlParams();
+    const componentId = params.get('component');
+    return componentId && options.some(opt => opt.id === componentId) ? componentId : options[0].id;
+  });
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const params = getUrlParams();
+    const mode = params.get('view');
+    return mode === 'conversation' ? 'conversation' : 'component';
+  });
+  const [activeConversationFlow, setActiveConversationFlow] = useState(() => {
+    const params = getUrlParams();
+    return params.get('flow') || 'ai-greeting';
+  });
   // Two-level selector state for AI Greeting
-  const [accreditationStatus, setAccreditationStatus] = useState<AccreditationStatus>('accredited');
-  const [accreditedSubState, setAccreditedSubState] = useState<string>('first-time');
-  const [nonAccreditedSubState, setNonAccreditedSubState] = useState<string>('first-time');
+  const [accreditationStatus, setAccreditationStatus] = useState<AccreditationStatus>(() => {
+    const params = getUrlParams();
+    const status = params.get('accreditation');
+    return status === 'non-accredited' ? 'non-accredited' : 'accredited';
+  });
+  const [accreditedSubState, setAccreditedSubState] = useState<string>(() => {
+    const params = getUrlParams();
+    return params.get('accreditedState') || 'first-time';
+  });
+  const [nonAccreditedSubState, setNonAccreditedSubState] = useState<string>(() => {
+    const params = getUrlParams();
+    return params.get('nonAccreditedState') || 'first-time';
+  });
   const [variantStates, setVariantStates] = useState<Record<string, string>>(() => {
+    const params = getUrlParams();
     const initial: Record<string, string> = {};
     options.forEach((opt) => {
       if (opt.variants && opt.variants.length > 0) {
-        initial[opt.id] = opt.variants[0].id;
+        const urlVariant = params.get(`variant_${opt.id}`);
+        initial[opt.id] = urlVariant && opt.variants.some(v => v.id === urlVariant)
+          ? urlVariant
+          : opt.variants[0].id;
       }
     });
     return initial;
   });
 
   // Block-04 specific state for card visibility toggles
-  const [showPresets, setShowPresets] = useState(true);
-  const [showStepper, setShowStepper] = useState(true);
-  const [showSuggestions, setShowSuggestions] = useState(true);
+  const [showPresets, setShowPresets] = useState(() => getBoolParam(getUrlParams(), 'presets', true));
+  const [showStepper, setShowStepper] = useState(() => getBoolParam(getUrlParams(), 'stepper', true));
+  const [showSuggestions, setShowSuggestions] = useState(() => getBoolParam(getUrlParams(), 'suggestions', true));
+
+  // Copy link feedback state
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  // Update URL when state changes
+  useEffect(() => {
+    const params: Record<string, string | boolean | undefined> = {
+      view: viewMode,
+      component: viewMode === 'component' ? activeId : undefined,
+      [`variant_${activeId}`]: viewMode === 'component' ? variantStates[activeId] : undefined,
+      flow: viewMode === 'conversation' ? activeConversationFlow : undefined,
+      accreditation: viewMode === 'conversation' && activeConversationFlow === 'ai-greeting' ? accreditationStatus : undefined,
+      accreditedState: viewMode === 'conversation' && activeConversationFlow === 'ai-greeting' && accreditationStatus === 'accredited' ? accreditedSubState : undefined,
+      nonAccreditedState: viewMode === 'conversation' && activeConversationFlow === 'ai-greeting' && accreditationStatus === 'non-accredited' ? nonAccreditedSubState : undefined,
+    };
+
+    // Add block-04 specific params
+    if (viewMode === 'component' && activeId === 'deal-page-investment' && variantStates[activeId] === 'block-04') {
+      params.presets = showPresets;
+      params.stepper = showStepper;
+      params.suggestions = showSuggestions;
+    }
+
+    updateUrlParams(params);
+  }, [viewMode, activeId, variantStates, activeConversationFlow, accreditationStatus, accreditedSubState, nonAccreditedSubState, showPresets, showStepper, showSuggestions]);
+
+  // Copy current URL to clipboard
+  const copyShareLink = useCallback(() => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    });
+  }, []);
 
   const activeOption = options.find((opt) => opt.id === activeId);
   const activeVariant = variantStates[activeId];
@@ -124,39 +206,61 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
   return (
     <div className="min-h-screen bg-muted p-4 md:p-8 font-sans">
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* View Mode Toggle - Above Title */}
-        <div
-          className="flex gap-1 p-1 rounded-xl w-fit"
-          style={{ backgroundColor: '#F0EEF0' }}
-        >
-          <button
-            onClick={() => setViewMode('component')}
-            className={cn(
-              'flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg transition-all'
-            )}
-            style={{
-              backgroundColor: viewMode === 'component' ? '#FFFFFF' : 'transparent',
-              color: viewMode === 'component' ? '#030303' : '#7F7582',
-              boxShadow: viewMode === 'component' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
-            }}
+        {/* View Mode Toggle & Share Button - Above Title */}
+        <div className="flex items-center gap-3">
+          <div
+            className="flex gap-1 p-1 rounded-xl"
+            style={{ backgroundColor: '#F0EEF0' }}
           >
-            <Layers className="w-4 h-4" />
-            Component
-          </button>
-          <button
-            onClick={() => setViewMode('conversation')}
-            className={cn(
-              'flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg transition-all'
-            )}
-            style={{
-              backgroundColor: viewMode === 'conversation' ? '#FFFFFF' : 'transparent',
-              color: viewMode === 'conversation' ? '#030303' : '#7F7582',
-              boxShadow: viewMode === 'conversation' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
-            }}
+            <button
+              onClick={() => setViewMode('component')}
+              className={cn(
+                'flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg transition-all'
+              )}
+              style={{
+                backgroundColor: viewMode === 'component' ? '#FFFFFF' : 'transparent',
+                color: viewMode === 'component' ? '#030303' : '#7F7582',
+                boxShadow: viewMode === 'component' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+              }}
+            >
+              <Layers className="w-4 h-4" />
+              Component
+            </button>
+            <button
+              onClick={() => setViewMode('conversation')}
+              className={cn(
+                'flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg transition-all'
+              )}
+              style={{
+                backgroundColor: viewMode === 'conversation' ? '#FFFFFF' : 'transparent',
+                color: viewMode === 'conversation' ? '#030303' : '#7F7582',
+                boxShadow: viewMode === 'conversation' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+              }}
+            >
+              <MessageSquare className="w-4 h-4" />
+              Conversation
+            </button>
+          </div>
+
+          {/* Share Link Button */}
+          <Button
+            onClick={copyShareLink}
+            variant="secondary"
+            size="sm"
+            className="gap-2"
           >
-            <MessageSquare className="w-4 h-4" />
-            Conversation
-          </button>
+            {linkCopied ? (
+              <>
+                <Check className="w-4 h-4" />
+                Copied!
+              </>
+            ) : (
+              <>
+                <Link2 className="w-4 h-4" />
+                Copy Link
+              </>
+            )}
+          </Button>
         </div>
 
         {/* Header & Thumbnail Selector - Only show in component mode */}
