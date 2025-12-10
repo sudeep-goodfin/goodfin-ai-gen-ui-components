@@ -20,13 +20,15 @@ type DealPageInvestmentViewProps = {
   showPresets?: boolean;
   showStepper?: boolean;
   showSuggestions?: boolean;
+  presetCount?: 3 | 6;
 };
 
 export function DealPageInvestmentView({
   variant = 'full',
   showPresets = true,
   showStepper = true,
-  showSuggestions = true
+  showSuggestions = true,
+  presetCount = 6
 }: DealPageInvestmentViewProps) {
   const getContent = () => {
     switch (variant) {
@@ -37,7 +39,7 @@ export function DealPageInvestmentView({
       case 'simple':
         return <SimpleVariantContent />;
       case 'block-04':
-        return <Block04VariantContent showPresets={showPresets} showStepper={showStepper} showSuggestions={showSuggestions} />;
+        return <Block04VariantContent showPresets={showPresets} showStepper={showStepper} showSuggestions={showSuggestions} presetCount={presetCount} />;
     }
   };
 

@@ -59,12 +59,13 @@ export function App() {
     {
       id: 'deal-page-investment',
       label: 'Deal Investment',
-      component: (variant: string, options?: { showPresets?: boolean; showStepper?: boolean; showSuggestions?: boolean }) => (
+      component: (variant: string, options?: { showPresets?: boolean; showStepper?: boolean; showSuggestions?: boolean; presetCount?: 3 | 6 }) => (
         <DealPageInvestmentView
           variant={variant as 'full' | 'minimal' | 'simple' | 'block-04'}
           showPresets={options?.showPresets}
           showStepper={options?.showStepper}
           showSuggestions={options?.showSuggestions}
+          presetCount={options?.presetCount}
         />
       ),
       icon: <DollarSign className="w-6 h-6" />,

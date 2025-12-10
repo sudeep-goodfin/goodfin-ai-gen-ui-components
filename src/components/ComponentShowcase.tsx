@@ -56,6 +56,7 @@ type ComponentOptions = {
   showPresets?: boolean;
   showStepper?: boolean;
   showSuggestions?: boolean;
+  presetCount?: 3 | 6;
 };
 
 type ComponentOption = {
@@ -120,6 +121,11 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
   const [showPresets, setShowPresets] = useState(() => getBoolParam(getUrlParams(), 'presets', true));
   const [showStepper, setShowStepper] = useState(() => getBoolParam(getUrlParams(), 'stepper', true));
   const [showSuggestions, setShowSuggestions] = useState(() => getBoolParam(getUrlParams(), 'suggestions', true));
+  const [presetCount, setPresetCount] = useState<3 | 6>(() => {
+    const params = getUrlParams();
+    const count = params.get('presetCount');
+    return count === '3' ? 3 : 6;
+  });
 
   // Copy link feedback state
   const [linkCopied, setLinkCopied] = useState(false);
@@ -141,10 +147,11 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
       params.presets = showPresets;
       params.stepper = showStepper;
       params.suggestions = showSuggestions;
+      params.presetCount = String(presetCount);
     }
 
     updateUrlParams(params);
-  }, [viewMode, activeId, variantStates, activeConversationFlow, accreditationStatus, accreditedSubState, nonAccreditedSubState, showPresets, showStepper, showSuggestions]);
+  }, [viewMode, activeId, variantStates, activeConversationFlow, accreditationStatus, accreditedSubState, nonAccreditedSubState, showPresets, showStepper, showSuggestions, presetCount]);
 
   // Copy current URL to clipboard
   const copyShareLink = useCallback(() => {
@@ -162,6 +169,7 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
     showPresets,
     showStepper,
     showSuggestions,
+    presetCount,
   };
 
   const activeComponent = activeOption
@@ -338,7 +346,7 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
               </div>
               {/* Block-04 Card Toggle Options */}
               {activeId === 'deal-page-investment' && activeVariant === 'block-04' && (
-                <div className="flex gap-4 mr-4">
+                <div className="flex gap-4 mr-4 items-center">
                   <Checkbox
                     checked={showPresets}
                     onChange={setShowPresets}
@@ -354,6 +362,40 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
                     onChange={setShowSuggestions}
                     label="Suggestions"
                   />
+                  {/* Preset Count Toggle */}
+                  {showPresets && (
+                    <div
+                      className="flex gap-1 p-1 rounded-lg ml-2"
+                      style={{ backgroundColor: '#F0EEF0' }}
+                    >
+                      <button
+                        onClick={() => setPresetCount(3)}
+                        className={cn(
+                          'px-2 py-1 text-xs font-medium rounded transition-all'
+                        )}
+                        style={{
+                          backgroundColor: presetCount === 3 ? '#FFFFFF' : 'transparent',
+                          color: presetCount === 3 ? '#030303' : '#7F7582',
+                          boxShadow: presetCount === 3 ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                        }}
+                      >
+                        3 Presets
+                      </button>
+                      <button
+                        onClick={() => setPresetCount(6)}
+                        className={cn(
+                          'px-2 py-1 text-xs font-medium rounded transition-all'
+                        )}
+                        style={{
+                          backgroundColor: presetCount === 6 ? '#FFFFFF' : 'transparent',
+                          color: presetCount === 6 ? '#030303' : '#7F7582',
+                          boxShadow: presetCount === 6 ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                        }}
+                      >
+                        6 Presets
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
               {/* Variant Selector - Outside preview */}

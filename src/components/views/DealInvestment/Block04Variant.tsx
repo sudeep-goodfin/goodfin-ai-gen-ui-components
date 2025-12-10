@@ -59,11 +59,16 @@ function CustomAmountInput({ amount, setAmount, isCustom, setIsCustom }: CustomA
 type PresetsCardProps = {
   amount: number;
   setAmount: (amount: number) => void;
+  presetCount?: 3 | 6;
 };
 
-function PresetsCard({ amount, setAmount }: PresetsCardProps) {
+function PresetsCard({ amount, setAmount, presetCount = 6 }: PresetsCardProps) {
   const [isCustom, setIsCustom] = useState(false);
-  const presets = [10000, 25000, 50000, 100000, 250000, 500000];
+  const allPresets = {
+    6: [10000, 25000, 50000, 100000, 250000, 500000],
+    3: [25000, 100000, 500000],
+  };
+  const presets = allPresets[presetCount];
 
   return (
     <Card className="h-full">
@@ -79,7 +84,7 @@ function PresetsCard({ amount, setAmount }: PresetsCardProps) {
             </span>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className={cn('grid gap-3', presetCount === 3 ? 'grid-cols-3' : 'grid-cols-3')}>
             {presets.map((val) => (
               <Button
                 key={val}
@@ -199,12 +204,14 @@ type Block04VariantContentProps = {
   showPresets?: boolean;
   showStepper?: boolean;
   showSuggestions?: boolean;
+  presetCount?: 3 | 6;
 };
 
 export function Block04VariantContent({
   showPresets = true,
   showStepper = true,
-  showSuggestions = true
+  showSuggestions = true,
+  presetCount = 6
 }: Block04VariantContentProps) {
   const [presetsAmount, setPresetsAmount] = useState(25000);
   const [stepperAmount, setStepperAmount] = useState(25000);
@@ -238,7 +245,7 @@ export function Block04VariantContent({
         >
           {showPresets && (
             <div className="min-h-[320px]">
-              <PresetsCard amount={presetsAmount} setAmount={setPresetsAmount} />
+              <PresetsCard amount={presetsAmount} setAmount={setPresetsAmount} presetCount={presetCount} />
             </div>
           )}
           {showStepper && (
