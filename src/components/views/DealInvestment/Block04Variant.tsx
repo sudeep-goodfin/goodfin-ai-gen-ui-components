@@ -73,17 +73,21 @@ function PresetsCard({ amount, setAmount, presetCount = 6 }: PresetsCardProps) {
   return (
     <Card className="h-full">
       <CardContent className="h-full flex flex-col">
-        {/* Top Section */}
-        <div>
-          <div className="text-center py-2 mb-6">
-            <span className="text-4xl font-bold text-foreground tracking-tight">
-              ${formatCurrency(amount)}
-            </span>
-            <span className="block text-xs text-muted-foreground mt-2 font-medium uppercase tracking-wide">
-              Investment Amount
-            </span>
-          </div>
+        {/* Top Section - Amount Display */}
+        <div className="text-center py-2">
+          <span className="text-4xl font-bold text-foreground tracking-tight">
+            ${formatCurrency(amount)}
+          </span>
+          <span className="block text-xs text-muted-foreground mt-2 font-medium uppercase tracking-wide">
+            Investment Amount
+          </span>
+        </div>
 
+        {/* Spacer */}
+        <div className="flex-1 min-h-[24px]" />
+
+        {/* Bottom Section - Presets + Custom Input */}
+        <div className="space-y-3">
           <div className={cn('grid gap-3', presetCount === 3 ? 'grid-cols-3' : 'grid-cols-3')}>
             {presets.map((val) => (
               <Button
@@ -102,13 +106,7 @@ function PresetsCard({ amount, setAmount, presetCount = 6 }: PresetsCardProps) {
               </Button>
             ))}
           </div>
-        </div>
 
-        {/* Spacer */}
-        <div className="flex-1 min-h-[24px]" />
-
-        {/* Bottom Section */}
-        <div>
           <CustomAmountInput
             amount={amount}
             setAmount={setAmount}

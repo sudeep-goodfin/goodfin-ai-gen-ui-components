@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
-import { MessageSquare, Layers, Sparkles, DollarSign, Link2, Check } from 'lucide-react';
+import { MessageSquare, Layers, Sparkles, DollarSign, Link2, Check, RotateCcw } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Checkbox, Button } from './ui';
 import { ConversationView, aiGreetingConversationFlow, spaceXInvestmentFlow } from './chat';
@@ -130,6 +130,19 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
   // Copy link feedback state
   const [linkCopied, setLinkCopied] = useState(false);
 
+  // Replay function ref for AI greeting animation
+  const replayFnRef = useRef<(() => void) | null>(null);
+
+  const handleReplayRequest = useCallback((replayFn: () => void) => {
+    replayFnRef.current = replayFn;
+  }, []);
+
+  const triggerReplay = useCallback(() => {
+    if (replayFnRef.current) {
+      replayFnRef.current();
+    }
+  }, []);
+
   // Update URL when state changes
   useEffect(() => {
     const params: Record<string, string | boolean | undefined> = {
@@ -195,9 +208,14 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
   const conversationComponents: Record<string, React.ReactNode> = {
     // Use AIGreetingContent (without ChatLayout) for embedding in conversation
     // Key forces remount when variant changes to restart animation
+    // showReplayButton={false} - button moved to conversation flows header
     'ai-greeting': (
       <div key={conversationGreetingVariant}>
-        <AIGreetingContent variant={conversationGreetingVariant} showReplayButton={true} />
+        <AIGreetingContent
+          variant={conversationGreetingVariant}
+          showReplayButton={false}
+          onReplayRequest={handleReplayRequest}
+        />
       </div>
     ),
     'deal-preview': getComponentForId('deal-preview'),
@@ -275,7 +293,7 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
         {viewMode === 'component' && (
           <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
             <h2 className="text-xl font-semibold text-foreground mb-4 font-heading">
-              Mocked GoodFin AI Interface Design
+              Mocked Goodfin AI Interface Design
             </h2>
 
             {/* Horizontal ScrollArea for thumbnails */}
@@ -445,9 +463,23 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
           <>
             {/* Conversation Flow Selector */}
             <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
-              <h2 className="text-xl font-semibold text-foreground mb-4 font-heading">
-                Mocked GoodFin AI Conversation Flows
-              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-foreground font-heading">
+                  Mocked Goodfin AI Conversation Flows
+                </h2>
+                {/* Replay Animation Button */}
+                {activeConversationFlow === 'ai-greeting' && (
+                  <Button
+                    onClick={triggerReplay}
+                    variant="secondary"
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    Replay Animation
+                  </Button>
+                )}
+              </div>
 
               {/* Flow Selector Thumbnails */}
               <div className="flex gap-4">

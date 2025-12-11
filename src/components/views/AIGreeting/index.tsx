@@ -79,7 +79,7 @@ const VARIANT_DATA: Record<AIGreetingVariant, VariantData> = {
   // === ACCREDITED USERS (Can view deals, make investments) ===
   'accredited-first-time': {
     userName: 'there',
-    greeting: 'Welcome to GoodFin!',
+    greeting: 'Welcome to Goodfin!',
     summary:
       "I'm your **private market finance assistant**. Let's get you started with exploring **exclusive investment opportunities**.",
     suggestions: [
@@ -117,7 +117,7 @@ const VARIANT_DATA: Record<AIGreetingVariant, VariantData> = {
   // === NON-ACCREDITED USERS (Research, insights, news - assistant mode) ===
   'non-accredited-first-time': {
     userName: 'there',
-    greeting: 'Welcome to GoodFin!',
+    greeting: 'Welcome to Goodfin!',
     summary:
       "I'm your **private market finance assistant**. I can help you stay informed with **market insights**, research, and the latest **private market news**.",
     suggestions: [
@@ -158,6 +158,8 @@ type AIGreetingContentProps = {
   onSuggestionClick?: (suggestion: string) => void;
   /** Show replay button when animation completes */
   showReplayButton?: boolean;
+  /** Callback to trigger replay from external component */
+  onReplayRequest?: (replayFn: () => void) => void;
 };
 
 /**
@@ -178,6 +180,7 @@ export function AIGreetingContent({
   variant = 'accredited-first-time',
   onSuggestionClick,
   showReplayButton = true,
+  onReplayRequest,
 }: AIGreetingContentProps) {
   const [phase, setPhase] = useState<AnimationPhase>('idle');
   const [animationKey, setAnimationKey] = useState(0);
@@ -204,6 +207,13 @@ export function AIGreetingContent({
     setPhase('idle');
     setAnimationKey(prev => prev + 1);
   }, []);
+
+  // Expose replay function to parent component
+  useEffect(() => {
+    if (onReplayRequest) {
+      onReplayRequest(handleReplay);
+    }
+  }, [onReplayRequest, handleReplay]);
 
   // Sequential animation timeline
   useEffect(() => {
