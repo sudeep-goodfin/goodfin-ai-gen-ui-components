@@ -9,8 +9,8 @@ type AccreditedConfirmStepProps = {
   isLoading?: boolean;
 };
 
-// Accreditation options
-const accreditationOptions = [
+// Accredited Investor options
+const accreditedOptions = [
   {
     key: 'netWorthBased',
     label: 'Accredited Investor (Net Worth-Based)',
@@ -21,6 +21,10 @@ const accreditationOptions = [
     label: 'Accredited Investor (Income-Based)',
     description: 'I have earned income exceeding $200,000 individually (or $300,000 jointly with my spouse) in each of the past two years, with a reasonable expectation of the same in the current year.',
   },
+];
+
+// Qualified options
+const qualifiedOptions = [
   {
     key: 'qualifiedClient',
     label: "I'm also a Qualified Client",
@@ -31,23 +35,28 @@ const accreditationOptions = [
     label: "I'm also a Qualified Purchaser",
     description: 'I own at least $5 million in investments (for individuals), or I manage an entity with at least $25 million in investments for other qualified purchasers.',
   },
-  {
-    key: 'finraLicensed',
-    label: "I'm also a FINRA-Licensed Representative",
-    description: 'I currently hold a Series 7, 65, or 82 license.',
-  },
-  {
-    key: 'notAccredited',
-    label: 'Not Accredited',
-    description: 'I am here to learn about private market investing and do not currently meet the above criteria.',
-  },
 ];
+
+// FINRA option
+const finraOption = {
+  key: 'finraLicensed',
+  label: "I'm also a FINRA-Licensed Representative",
+  description: 'I currently hold a Series 7, 65, or 82 license.',
+};
+
+// Not Accredited option
+const notAccreditedOption = {
+  key: 'notAccredited',
+  label: 'Not Accredited',
+  description: 'I am here to learn about private market investing and do not currently meet the above criteria.',
+};
 
 /**
  * AccreditedConfirmStep Component
  *
  * Conversational step asking for accredited investor status with multiple options.
  * Uses toggle switches for each option.
+ * Options are grouped into separate sections.
  */
 export function AccreditedConfirmStep({
   firstName,
@@ -88,6 +97,53 @@ export function AccreditedConfirmStep({
   };
 
   const hasSelection = selectedOptions.size > 0;
+
+  // Reusable option row component
+  const OptionRow = ({ option }: { option: { key: string; label: string; description: string } }) => (
+    <div className="flex items-start gap-3">
+      {/* Toggle Switch */}
+      <button
+        type="button"
+        onClick={() => handleToggleOption(option.key)}
+        disabled={isLoading}
+        className={cn(
+          'relative w-12 h-7 rounded-full transition-all duration-200 flex-shrink-0 mt-0.5'
+        )}
+        style={{
+          backgroundColor: isSelected(option.key) ? colors.grey[900] : colors.grey[300],
+        }}
+      >
+        <div
+          className={cn(
+            'absolute top-1 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-200',
+            isSelected(option.key) ? 'left-6' : 'left-1'
+          )}
+        />
+      </button>
+
+      {/* Label & Description */}
+      <div className="flex flex-col gap-1">
+        <span
+          style={{
+            ...typography.paragraph.sm,
+            color: colors.grey[900],
+            fontWeight: 500,
+          }}
+        >
+          {option.label}
+        </span>
+        <span
+          style={{
+            ...typography.paragraph.xs,
+            color: colors.grey[600],
+            lineHeight: 1.5,
+          }}
+        >
+          {option.description}
+        </span>
+      </div>
+    </div>
+  );
 
   return (
     <div className="w-full max-w-[560px] flex flex-col">
@@ -144,7 +200,51 @@ export function AccreditedConfirmStep({
         Investor Accreditation Status (Select all that apply):
       </p>
 
-      {/* Accreditation Options */}
+      {/* Accredited Investor Options */}
+      <div
+        className="w-full rounded-xl mb-4"
+        style={{
+          backgroundColor: 'rgba(247, 247, 248, 0.70)',
+          border: '1px solid #F5F4F6',
+          padding: '20px',
+        }}
+      >
+        <div className="space-y-5">
+          {accreditedOptions.map((option) => (
+            <OptionRow key={option.key} option={option} />
+          ))}
+        </div>
+      </div>
+
+      {/* Qualified Options */}
+      <div
+        className="w-full rounded-xl mb-4"
+        style={{
+          backgroundColor: 'rgba(247, 247, 248, 0.70)',
+          border: '1px solid #F5F4F6',
+          padding: '20px',
+        }}
+      >
+        <div className="space-y-5">
+          {qualifiedOptions.map((option) => (
+            <OptionRow key={option.key} option={option} />
+          ))}
+        </div>
+      </div>
+
+      {/* FINRA Option */}
+      <div
+        className="w-full rounded-xl mb-4"
+        style={{
+          backgroundColor: 'rgba(247, 247, 248, 0.70)',
+          border: '1px solid #F5F4F6',
+          padding: '20px',
+        }}
+      >
+        <OptionRow option={finraOption} />
+      </div>
+
+      {/* Not Accredited Option */}
       <div
         className="w-full rounded-xl mb-8"
         style={{
@@ -153,56 +253,7 @@ export function AccreditedConfirmStep({
           padding: '20px',
         }}
       >
-        <div className="space-y-5">
-          {accreditationOptions.map((option) => (
-            <div
-              key={option.key}
-              className="flex items-start gap-3"
-            >
-              {/* Toggle Switch */}
-              <button
-                type="button"
-                onClick={() => handleToggleOption(option.key)}
-                disabled={isLoading}
-                className={cn(
-                  'relative w-12 h-7 rounded-full transition-all duration-200 flex-shrink-0 mt-0.5'
-                )}
-                style={{
-                  backgroundColor: isSelected(option.key) ? colors.grey[900] : colors.grey[300],
-                }}
-              >
-                <div
-                  className={cn(
-                    'absolute top-1 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-200',
-                    isSelected(option.key) ? 'left-6' : 'left-1'
-                  )}
-                />
-              </button>
-
-              {/* Label & Description */}
-              <div className="flex flex-col gap-1">
-                <span
-                  style={{
-                    ...typography.paragraph.sm,
-                    color: colors.grey[900],
-                    fontWeight: 500,
-                  }}
-                >
-                  {option.label}
-                </span>
-                <span
-                  style={{
-                    ...typography.paragraph.xs,
-                    color: colors.grey[600],
-                    lineHeight: 1.5,
-                  }}
-                >
-                  {option.description}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+        <OptionRow option={notAccreditedOption} />
       </div>
 
       {/* Submit Button */}
