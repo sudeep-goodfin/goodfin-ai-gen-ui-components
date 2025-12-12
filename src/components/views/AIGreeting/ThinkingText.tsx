@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { cn } from '../../../lib/utils';
 import { Shimmer } from '../../ui/Shimmer';
 
-// Witty loading texts to shuffle through
-const LOADING_TEXTS = [
+// Default witty loading texts to shuffle through
+const DEFAULT_LOADING_TEXTS = [
   'summarizing...',
   'crunching numbers...',
   'reading the charts...',
@@ -24,6 +24,8 @@ type ThinkingTextProps = {
   onComplete?: () => void;
   /** Additional className */
   className?: string;
+  /** Custom loading texts to cycle through */
+  loadingTexts?: string[];
 };
 
 /**
@@ -37,6 +39,7 @@ export function ThinkingText({
   isVisible,
   onComplete,
   className,
+  loadingTexts = DEFAULT_LOADING_TEXTS,
 }: ThinkingTextProps) {
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [isFading, setIsFading] = useState(false);
@@ -69,7 +72,7 @@ export function ThinkingText({
 
         // Change text after fade out
         setTimeout(() => {
-          setCurrentTextIndex(i % LOADING_TEXTS.length);
+          setCurrentTextIndex(i % loadingTexts.length);
           setIsFading(false);
         }, FADE_DURATION);
       }, i * TEXT_SHUFFLE_INTERVAL);
@@ -109,7 +112,7 @@ export function ThinkingText({
         textColor="var(--muted-foreground)"
         shimmerColor="var(--foreground)"
       >
-        {LOADING_TEXTS[currentTextIndex]}
+        {loadingTexts[currentTextIndex]}
       </Shimmer>
     </div>
   );

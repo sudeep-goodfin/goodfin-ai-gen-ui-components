@@ -2,38 +2,43 @@ import React, { useState } from 'react';
 import { SignupStep } from './SignupStep';
 import { CountryStep } from './CountryStep';
 import { VerifyPhoneStep } from './VerifyPhoneStep';
-import { AccreditationStep } from './AccreditationStep';
 import { SummaryStep } from './SummaryStep';
+import { NameStep } from './NameStep';
+import { PhoneStep } from './PhoneStep';
+import { AccreditedConfirmStep } from './AccreditedConfirmStep';
 import { colors } from './designTokens';
 
 // Onboarding step types - matching goodfin_aws SIGNUP_STEPS
 export type OnboardingStep =
+  | 'name'
+  | 'phone'
+  | 'accredited-confirm'
   | 'signup'
   | 'country'
   | 'verify-phone'
-  | 'accreditation'
   | 'summary';
 
 // Variants for showcasing different states
 export type OnboardingVariant =
+  | 'animated-flow'
   | 'signup'
   | 'country'
   | 'verify-phone'
-  | 'accreditation'
   | 'summary'
   | 'full-flow';
 
 export const onboardingVariants = [
+  { id: 'animated-flow', label: 'AI Animated' },
   { id: 'full-flow', label: 'Full Flow' },
   { id: 'signup', label: 'Sign Up' },
   { id: 'country', label: 'Country' },
   { id: 'verify-phone', label: 'Phone' },
-  { id: 'accreditation', label: 'Accreditation' },
   { id: 'summary', label: 'Summary' },
 ];
 
 // Mock user data for states
 export type OnboardingUserData = {
+  fullName: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -41,10 +46,12 @@ export type OnboardingUserData = {
   zip?: string;
   phoneNumber: string;
   isAccredited: boolean;
+  isAccreditedConfirmed: boolean;
   accreditationSelections: string[];
 };
 
 const initialUserData: OnboardingUserData = {
+  fullName: '',
   firstName: '',
   lastName: '',
   email: '',
@@ -52,11 +59,13 @@ const initialUserData: OnboardingUserData = {
   zip: '',
   phoneNumber: '',
   isAccredited: false,
+  isAccreditedConfirmed: false,
   accreditationSelections: [],
 };
 
 // Mock user data for individual step previews
 const mockUserData: OnboardingUserData = {
+  fullName: 'Alex Johnson',
   firstName: 'Alex',
   lastName: 'Johnson',
   email: 'alex.johnson@example.com',
@@ -64,6 +73,7 @@ const mockUserData: OnboardingUserData = {
   zip: '94105',
   phoneNumber: '+1 (415) 555-0123',
   isAccredited: true,
+  isAccreditedConfirmed: true,
   accreditationSelections: ['netWorthBased', 'qualifiedClient'],
 };
 
@@ -75,27 +85,27 @@ type OnboardingViewProps = {
  * OnboardingView Component
  *
  * Displays the Goodfin onboarding flow with multiple steps:
- * 1. Signup - Name & Email
- * 2. Country - Primary residence
- * 3. Verify Phone - Phone number with SMS consent
- * 4. Accreditation - Investor accreditation status
- * 5. Summary - Review and submit
+ * 1. Name - First name, then reveals last name
+ * 2. Phone - Phone number with country code
+ * 3. Accreditation - Investor accreditation status with switches
+ * 4. Summary - Review and submit
  */
-export function OnboardingView({ variant = 'signup' }: OnboardingViewProps) {
+export function OnboardingView({ variant = 'animated-flow' }: OnboardingViewProps) {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>(
-    variant === 'full-flow' ? 'signup' : variant as OnboardingStep
+    variant === 'full-flow' ? 'signup' : variant === 'animated-flow' ? 'name' : variant as OnboardingStep
   );
   const [userData, setUserData] = useState<OnboardingUserData>(
-    variant === 'full-flow' ? initialUserData : mockUserData
+    variant === 'full-flow' || variant === 'animated-flow' ? initialUserData : mockUserData
   );
   const [isLoading, setIsLoading] = useState(false);
 
   // For individual step variants, show that step directly
-  // For full-flow, enable navigation
+  // For full-flow or animated-flow, enable navigation
   const isFullFlow = variant === 'full-flow';
+  const isAnimatedFlow = variant === 'animated-flow';
 
   const handleNextStep = (nextStep: OnboardingStep) => {
-    if (isFullFlow) {
+    if (isFullFlow || isAnimatedFlow) {
       setIsLoading(true);
       // Simulate API delay
       setTimeout(() => {
@@ -106,7 +116,7 @@ export function OnboardingView({ variant = 'signup' }: OnboardingViewProps) {
   };
 
   const handlePrevStep = (prevStep: OnboardingStep) => {
-    if (isFullFlow) {
+    if (isFullFlow || isAnimatedFlow) {
       setCurrentStep(prevStep);
     }
   };
@@ -116,10 +126,12 @@ export function OnboardingView({ variant = 'signup' }: OnboardingViewProps) {
   };
 
   // Determine which step to show
-  const stepToShow = isFullFlow ? currentStep : variant as OnboardingStep;
+  const stepToShow = (isFullFlow || isAnimatedFlow) ? currentStep : variant as OnboardingStep;
 
   // Step order for progress indicator
-  const steps: OnboardingStep[] = ['signup', 'country', 'verify-phone', 'accreditation', 'summary'];
+  const steps: OnboardingStep[] = isAnimatedFlow
+    ? ['name', 'phone', 'accredited-confirm', 'summary']
+    : ['signup', 'country', 'verify-phone', 'summary'];
   const currentStepIndex = steps.indexOf(stepToShow);
 
   // Inline SVG as data URI for background
@@ -132,28 +144,46 @@ export function OnboardingView({ variant = 'signup' }: OnboardingViewProps) {
         background: `${bgSvg} no-repeat center bottom / 100% auto, ${colors.grey[100]}`,
       }}
     >
-      {/* Header */}
-      <header
-        className="w-full py-5 px-8 flex items-center justify-center"
-        style={{
-          background: 'transparent',
-        }}
-      >
-        <div
-          style={{
-            fontFamily: 'var(--font-heading, "Soehne Kraftig", system-ui)',
-            fontSize: '20px',
-            fontWeight: 700,
-            color: colors.grey[950],
-            letterSpacing: '-0.5px',
-          }}
-        >
-          goodfin
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center justify-start px-4 py-8 overflow-y-auto">
+        {stepToShow === 'name' && (
+          <NameStep
+            onSubmit={(data) => {
+              handleUpdateUserData({
+                firstName: data.firstName,
+                lastName: data.lastName,
+                fullName: `${data.firstName} ${data.lastName}`,
+              });
+              handleNextStep('phone');
+            }}
+            isLoading={isLoading}
+          />
+        )}
+        {stepToShow === 'phone' && (
+          <PhoneStep
+            firstName={userData.firstName}
+            onSubmit={(data) => {
+              handleUpdateUserData({
+                phoneNumber: data.phoneNumber,
+                country: data.country,
+              });
+              handleNextStep('accredited-confirm');
+            }}
+            onBack={() => handlePrevStep('name')}
+            isLoading={isLoading}
+          />
+        )}
+        {stepToShow === 'accredited-confirm' && (
+          <AccreditedConfirmStep
+            firstName={userData.firstName}
+            onNext={(isAccredited, selections) => {
+              handleUpdateUserData({ isAccredited, isAccreditedConfirmed: isAccredited, accreditationSelections: selections });
+              handleNextStep('summary');
+            }}
+            onBack={() => handlePrevStep('phone')}
+            isLoading={isLoading}
+          />
+        )}
         {stepToShow === 'signup' && (
           <SignupStep
             onNext={(data) => {
@@ -177,26 +207,16 @@ export function OnboardingView({ variant = 'signup' }: OnboardingViewProps) {
           <VerifyPhoneStep
             onNext={(phoneNumber) => {
               handleUpdateUserData({ phoneNumber });
-              handleNextStep('accreditation');
+              handleNextStep('summary');
             }}
             onBack={() => handlePrevStep('country')}
             isLoading={isLoading}
           />
         )}
-        {stepToShow === 'accreditation' && (
-          <AccreditationStep
-            onNext={(isAccredited, selections) => {
-              handleUpdateUserData({ isAccredited, accreditationSelections: selections });
-              handleNextStep('summary');
-            }}
-            onBack={() => handlePrevStep('verify-phone')}
-            isLoading={isLoading}
-          />
-        )}
         {stepToShow === 'summary' && (
           <SummaryStep
-            userData={isFullFlow ? userData : mockUserData}
-            onBack={() => handlePrevStep('accreditation')}
+            userData={isFullFlow || isAnimatedFlow ? userData : mockUserData}
+            onBack={() => handlePrevStep(isAnimatedFlow ? 'accredited-confirm' : 'verify-phone')}
             onSubmit={() => {
               setIsLoading(true);
               setTimeout(() => {
@@ -209,8 +229,8 @@ export function OnboardingView({ variant = 'signup' }: OnboardingViewProps) {
         )}
       </main>
 
-      {/* Footer - Step indicator for full flow */}
-      {isFullFlow && stepToShow !== 'summary' && (
+      {/* Footer - Step indicator for full flow or animated flow */}
+      {(isFullFlow || isAnimatedFlow) && stepToShow !== 'summary' && (
         <footer className="py-4 flex justify-center">
           <div className="flex items-center gap-2">
             {steps.slice(0, -1).map((step, index) => (

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
-import { MessageSquare, Layers, Sparkles, DollarSign, Link2, Check, RotateCcw, UserPlus } from 'lucide-react';
+import { MessageSquare, Layers, Sparkles, DollarSign, Link2, Check, RotateCcw, UserPlus, Maximize2, X, Trash2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Checkbox, Button } from './ui';
 import { ConversationView, aiGreetingConversationFlow, spaceXInvestmentFlow } from './chat';
@@ -95,6 +95,7 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
     const variant = params.get('onboardingVariant');
     return (variant as OnboardingVariant) || 'signup';
   });
+  const [onboardingKey, setOnboardingKey] = useState(0);
   const [activeConversationFlow, setActiveConversationFlow] = useState(() => {
     const params = getUrlParams();
     return params.get('flow') || 'ai-greeting';
@@ -139,6 +140,20 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
 
   // Copy link feedback state
   const [linkCopied, setLinkCopied] = useState(false);
+
+  // Fullscreen state
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // ESC key handler for exiting fullscreen
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isFullscreen]);
 
   // Replay function ref for AI greeting animation
   const replayFnRef = useRef<(() => void) | null>(null);
@@ -240,6 +255,27 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
     setVariantStates((prev) => ({ ...prev, [activeId]: variantId }));
   };
 
+  // Render fullscreen overlay
+  if (isFullscreen) {
+    return (
+      <div className="fixed inset-0 z-50 bg-muted">
+        {/* Fullscreen Preview Content - Press ESC to exit */}
+        <div className="h-full w-full overflow-auto">
+          {viewMode === 'component' && activeComponent}
+          {viewMode === 'conversation' && (
+            <ConversationView
+              messages={activeConversationFlow === 'ai-greeting' ? aiGreetingConversationFlow : spaceXInvestmentFlow}
+              components={conversationComponents}
+            />
+          )}
+          {viewMode === 'onboarding' && (
+            <OnboardingView variant={activeOnboardingVariant} />
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-muted p-4 md:p-8 font-sans">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -311,6 +347,17 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
                 Copy Link
               </>
             )}
+          </Button>
+
+          {/* Fullscreen Button */}
+          <Button
+            onClick={() => setIsFullscreen(true)}
+            variant="secondary"
+            size="sm"
+            className="gap-2"
+          >
+            <Maximize2 className="w-4 h-4" />
+            Fullscreen
           </Button>
         </div>
 
@@ -706,6 +753,37 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
               </ScrollAreaPrimitive.Root>
             </div>
 
+            {/* Reset Buttons */}
+            <div className="flex justify-end gap-2 mb-3">
+              {/* Reset Flow State - Clears localStorage and resets step data */}
+              <button
+                onClick={() => {
+                  // Clear any onboarding-related localStorage
+                  Object.keys(localStorage).forEach(key => {
+                    if (key.toLowerCase().includes('onboarding')) {
+                      localStorage.removeItem(key);
+                    }
+                  });
+                  // Reset the component
+                  setOnboardingKey(prev => prev + 1);
+                }}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-destructive rounded-lg hover:bg-destructive/10 transition-all duration-200"
+              >
+                <Trash2 className="w-4 h-4" />
+                Reset Flow State
+              </button>
+              {/* Reset Animation - Only show for animated-flow variant */}
+              {activeOnboardingVariant === 'animated-flow' && (
+                <button
+                  onClick={() => setOnboardingKey(prev => prev + 1)}
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-all duration-200"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Reset Animation
+                </button>
+              )}
+            </div>
+
             {/* Onboarding Frame */}
             <div className="bg-card rounded-2xl shadow-lg border border-border overflow-hidden min-h-[600px] relative">
               {/* Browser-like Header */}
@@ -726,7 +804,7 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
               {/* Render Area - Vertical ScrollArea */}
               <ScrollAreaPrimitive.Root className="relative overflow-hidden h-[800px]">
                 <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-[inherit]">
-                  <OnboardingView variant={activeOnboardingVariant} />
+                  <OnboardingView key={onboardingKey} variant={activeOnboardingVariant} />
                 </ScrollAreaPrimitive.Viewport>
                 <ScrollAreaPrimitive.Scrollbar
                   orientation="vertical"
