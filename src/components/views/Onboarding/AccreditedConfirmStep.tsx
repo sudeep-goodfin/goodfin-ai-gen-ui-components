@@ -97,6 +97,15 @@ export function AccreditedConfirmStep({
   };
 
   const hasSelection = selectedOptions.size > 0;
+  const isNotAccredited = selectedOptions.has('notAccredited');
+  const isAccredited = hasSelection && !isNotAccredited;
+
+  // Determine CTA button text based on selection
+  const getButtonText = () => {
+    if (!hasSelection) return 'Continue';
+    if (isNotAccredited) return "I'm not an accredited investor";
+    return "I agree I'm an accredited investor";
+  };
 
   // Reusable option row component
   const OptionRow = ({ option }: { option: { key: string; label: string; description: string } }) => (
@@ -272,7 +281,7 @@ export function AccreditedConfirmStep({
         {isLoading ? (
           <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
         ) : (
-          'Continue'
+          getButtonText()
         )}
       </button>
     </div>
