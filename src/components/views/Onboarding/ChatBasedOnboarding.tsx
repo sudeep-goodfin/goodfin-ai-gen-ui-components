@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { ChevronDown, Send, Mic, X } from 'lucide-react';
+import { ChevronDown, Send, Mic, X, Sparkles } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 import { colors, typography, buttonStyles } from './designTokens';
 import { AnimatedWordText } from '../AIGreeting/AnimatedWordText';
@@ -110,6 +110,15 @@ const CAROUSEL_SLIDES = [
 
 const CAROUSEL_AUTO_ADVANCE_MS = 4000;
 
+// Suggestions for non-accredited users after onboarding
+const NON_ACCREDITED_SUGGESTIONS = [
+  'Set up my research preferences',
+  'Explore market insights',
+  'Learn about private markets',
+  'Browse educational content',
+  'View trending topics',
+];
+
 type ChatBasedOnboardingProps = {
   onComplete?: (userData: OnboardingUserData) => void;
 };
@@ -142,6 +151,8 @@ export function ChatBasedOnboarding({ onComplete }: ChatBasedOnboardingProps) {
   const [showChatInput, setShowChatInput] = useState(false);
   const [chatInputValue, setChatInputValue] = useState('');
   const [isDeepResearchEnabled, setIsDeepResearchEnabled] = useState(false);
+  const [showBorderShine, setShowBorderShine] = useState(false);
+  const [isSuggestionsExpanded, setIsSuggestionsExpanded] = useState(false);
   const carouselTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Form data
@@ -325,6 +336,12 @@ export function ChatBasedOnboarding({ onComplete }: ChatBasedOnboardingProps) {
   const handleGetStarted = () => {
     // Show the chat input with animation
     setShowChatInput(true);
+    // Trigger border shine animation
+    setShowBorderShine(true);
+    // Remove shine after animation completes
+    setTimeout(() => {
+      setShowBorderShine(false);
+    }, 1500);
   };
 
   // Close dropdowns when clicking outside
@@ -572,11 +589,47 @@ export function ChatBasedOnboarding({ onComplete }: ChatBasedOnboardingProps) {
         background: `${bgSvg} no-repeat center bottom / 100% auto, ${colors.grey[100]}`,
       }}
     >
-      {/* Hide scrollbar CSS for WebKit */}
+      {/* Hide scrollbar CSS for WebKit + Border Shine Animation */}
       <style>{`
         #${scrollContainerId}::-webkit-scrollbar,
         [data-scrollable]::-webkit-scrollbar {
           display: none;
+        }
+
+        @keyframes borderShine {
+          0% {
+            background-position: -200% center;
+          }
+          100% {
+            background-position: 200% center;
+          }
+        }
+
+        .border-shine {
+          position: relative;
+          overflow: hidden;
+        }
+
+        .border-shine::before {
+          content: '';
+          position: absolute;
+          top: -2px;
+          left: -2px;
+          right: -2px;
+          bottom: -2px;
+          border-radius: 26px;
+          background: linear-gradient(
+            90deg,
+            transparent 0%,
+            transparent 40%,
+            rgba(255, 149, 74, 0.6) 50%,
+            transparent 60%,
+            transparent 100%
+          );
+          background-size: 200% 100%;
+          animation: borderShine 1.5s ease-in-out;
+          pointer-events: none;
+          z-index: -1;
         }
       `}</style>
 
@@ -1344,15 +1397,28 @@ export function ChatBasedOnboarding({ onComplete }: ChatBasedOnboardingProps) {
             )}
 
             {/* Gen UI Carousel */}
-            {naShowCarousel && (
+            {naShowCarousel && !showChatInput && (
               <div
                 className={cn(
-                  'w-full transition-opacity duration-500',
+                  'w-full transition-all duration-500',
                   naShowCarousel ? 'opacity-100' : 'opacity-0'
                 )}
                 onMouseEnter={() => setCarouselPaused(true)}
                 onMouseLeave={() => setCarouselPaused(false)}
               >
+                {/* Intro Label */}
+                <div className="flex items-center gap-2 px-1 mb-4">
+                  <Sparkles className="w-4 h-4" style={{ color: colors.grey[500] }} />
+                  <span
+                    className="text-sm"
+                    style={{
+                      color: colors.grey[500],
+                      fontFamily: typography.paragraph.sm.fontFamily,
+                    }}
+                  >
+                    Intro
+                  </span>
+                </div>
                 {/* Carousel Card */}
                 <div
                   className="w-full rounded-2xl overflow-hidden"
@@ -1491,6 +1557,85 @@ export function ChatBasedOnboarding({ onComplete }: ChatBasedOnboardingProps) {
                 )}
               </div>
             )}
+
+            {/* Suggestions - Appears when chat input is shown */}
+            {showChatInput && (
+              <div
+                className="w-full transition-all duration-700"
+                style={{
+                  opacity: showChatInput ? 1 : 0,
+                  transform: showChatInput ? 'translateY(0)' : 'translateY(20px)',
+                  transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+                  transitionDelay: '200ms',
+                }}
+              >
+                {/* Suggestions Label */}
+                <div className="flex items-center gap-2 px-1 mb-4">
+                  <Sparkles className="w-4 h-4" style={{ color: colors.grey[500] }} />
+                  <span
+                    className="text-sm"
+                    style={{
+                      color: colors.grey[500],
+                      fontFamily: typography.paragraph.sm.fontFamily,
+                    }}
+                  >
+                    Suggestions for you
+                  </span>
+                </div>
+
+                {/* Suggestions Card */}
+                <div
+                  className="rounded-xl overflow-hidden"
+                  style={{
+                    backgroundColor: colors.white,
+                    border: '1px solid #E5E5E5',
+                    boxShadow: 'inset 0.5px 0.5px 1px 0px rgba(255, 255, 255, 0.5)',
+                  }}
+                >
+                  {(isSuggestionsExpanded ? NON_ACCREDITED_SUGGESTIONS : NON_ACCREDITED_SUGGESTIONS.slice(0, 3)).map((suggestion, index, arr) => (
+                    <button
+                      key={index}
+                      onClick={() => setChatInputValue(suggestion)}
+                      className={cn(
+                        'w-full text-left px-4 py-3 transition-colors duration-200',
+                        'hover:bg-gray-50 cursor-pointer'
+                      )}
+                      style={{
+                        borderBottom: index !== arr.length - 1 || NON_ACCREDITED_SUGGESTIONS.length > 3 ? `1px solid ${colors.grey[200]}` : 'none',
+                      }}
+                    >
+                      <span
+                        className="text-sm"
+                        style={{
+                          color: colors.grey[900],
+                          fontFamily: typography.paragraph.sm.fontFamily,
+                        }}
+                      >
+                        {suggestion}
+                      </span>
+                    </button>
+                  ))}
+
+                  {/* Show More/Less Toggle */}
+                  {NON_ACCREDITED_SUGGESTIONS.length > 3 && (
+                    <button
+                      onClick={() => setIsSuggestionsExpanded(!isSuggestionsExpanded)}
+                      className="w-full text-left px-4 py-3 transition-colors duration-200 hover:bg-gray-50 cursor-pointer"
+                    >
+                      <span
+                        className="text-sm"
+                        style={{
+                          color: colors.grey[500],
+                          fontFamily: typography.paragraph.sm.fontFamily,
+                        }}
+                      >
+                        {isSuggestionsExpanded ? 'Show less...' : 'Show more...'}
+                      </span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </section>
       </div>
@@ -1539,7 +1684,10 @@ export function ChatBasedOnboarding({ onComplete }: ChatBasedOnboardingProps) {
         <div className="max-w-3xl mx-auto flex flex-col items-center">
           {/* Input Container */}
           <div
-            className="w-full flex flex-col gap-2 px-3 py-2"
+            className={cn(
+              'w-full flex flex-col gap-2 px-3 py-2',
+              showBorderShine && 'border-shine'
+            )}
             style={{
               backgroundColor: colors.white,
               border: '2px solid #FFFFFF',
