@@ -81,6 +81,37 @@ export function AccreditationStep({ onNext, onBack, isLoading = false }: Accredi
     onNext(isAccredited, Array.from(selectedOptions));
   };
 
+  const hasSelection = selectedOptions.size > 0;
+  const isNotAccredited = selectedOptions.has('notAccredited');
+  const isQualifiedClient = selectedOptions.has('qualifiedClient');
+  const isQualifiedPurchaser = selectedOptions.has('qualifiedPurchaser');
+
+  // Determine CTA button text based on selection
+  const getButtonText = () => {
+    if (!hasSelection) return 'Continue';
+    if (isNotAccredited) return "I'm not an accredited investor";
+
+    // Build the status text based on selections
+    const statuses: string[] = ['accredited investor'];
+
+    if (isQualifiedClient) {
+      statuses.push('qualified client');
+    }
+    if (isQualifiedPurchaser) {
+      statuses.push('qualified purchaser');
+    }
+
+    // Format: "I agree I'm an accredited investor", "I agree I'm an accredited investor & qualified client", etc.
+    if (statuses.length === 1) {
+      return "I agree I'm an accredited investor";
+    } else if (statuses.length === 2) {
+      return `I agree I'm an ${statuses[0]} & ${statuses[1]}`;
+    } else {
+      // 3 items: "accredited investor, qualified client & qualified purchaser"
+      return `I agree I'm an ${statuses[0]}, ${statuses[1]} & ${statuses[2]}`;
+    }
+  };
+
   return (
     <div className="w-full max-w-[560px] flex flex-col relative">
       {/* Back Arrow */}
@@ -180,20 +211,20 @@ export function AccreditationStep({ onNext, onBack, isLoading = false }: Accredi
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={isLoading}
+          disabled={!hasSelection || isLoading}
           className="w-full h-[59px] rounded-2xl flex items-center justify-center transition-all duration-200"
           style={{
             marginTop: '40px',
-            ...buttonStyles.gradient.enabled,
+            ...(hasSelection ? buttonStyles.gradient.enabled : buttonStyles.gradient.disabled),
             color: '#F4F3F5',
-            cursor: isLoading ? 'not-allowed' : 'pointer',
+            cursor: hasSelection && !isLoading ? 'pointer' : 'not-allowed',
             ...typography.label.md,
           }}
         >
           {isLoading ? (
             <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : (
-            'Next'
+            getButtonText()
           )}
         </button>
       </div>

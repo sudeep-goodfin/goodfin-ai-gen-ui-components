@@ -99,12 +99,33 @@ export function AccreditedConfirmStep({
   const hasSelection = selectedOptions.size > 0;
   const isNotAccredited = selectedOptions.has('notAccredited');
   const isAccredited = hasSelection && !isNotAccredited;
+  const isQualifiedClient = selectedOptions.has('qualifiedClient');
+  const isQualifiedPurchaser = selectedOptions.has('qualifiedPurchaser');
 
   // Determine CTA button text based on selection
   const getButtonText = () => {
     if (!hasSelection) return 'Continue';
     if (isNotAccredited) return "I'm not an accredited investor";
-    return "I agree I'm an accredited investor";
+
+    // Build the status text based on selections
+    const statuses: string[] = ['accredited investor'];
+
+    if (isQualifiedClient) {
+      statuses.push('qualified client');
+    }
+    if (isQualifiedPurchaser) {
+      statuses.push('qualified purchaser');
+    }
+
+    // Format: "I agree I'm an accredited investor", "I agree I'm an accredited investor & qualified client", etc.
+    if (statuses.length === 1) {
+      return "I agree I'm an accredited investor";
+    } else if (statuses.length === 2) {
+      return `I agree I'm an ${statuses[0]} & ${statuses[1]}`;
+    } else {
+      // 3 items: "accredited investor, qualified client & qualified purchaser"
+      return `I agree I'm an ${statuses[0]}, ${statuses[1]} & ${statuses[2]}`;
+    }
   };
 
   // Reusable option row component
