@@ -1670,11 +1670,10 @@ export function ChatBasedOnboarding({ onComplete }: ChatBasedOnboardingProps) {
       {/* Chat Input - Fades in with bezier curve animation */}
       <div
         className={cn(
-          'fixed bottom-0 left-0 right-0 pt-6 pb-6 px-4 z-50',
+          'fixed bottom-0 left-0 right-0 pt-6 pb-10 px-4 z-50',
           'transition-all duration-700'
         )}
         style={{
-          background: `linear-gradient(to top, ${colors.grey[100]} 70%, transparent)`,
           opacity: showChatInput ? 1 : 0,
           transform: showChatInput ? 'translateY(0)' : 'translateY(40px)',
           transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
