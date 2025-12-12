@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
-import { MessageSquare, Layers, Sparkles, DollarSign, Link2, Check, RotateCcw } from 'lucide-react';
+import { MessageSquare, Layers, Sparkles, DollarSign, Link2, Check, RotateCcw, UserPlus } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Checkbox, Button } from './ui';
 import { ConversationView, aiGreetingConversationFlow, spaceXInvestmentFlow } from './chat';
@@ -8,8 +8,11 @@ import {
   AIGreetingContent,
   accreditedSubStates,
   nonAccreditedSubStates,
+  OnboardingView,
+  onboardingVariants,
   type AIGreetingVariant,
   type AccreditationStatus,
+  type OnboardingVariant,
 } from './views';
 
 // URL parameter helpers
@@ -67,7 +70,7 @@ type ComponentOption = {
   variants?: VariantOption[];
 };
 
-type ViewMode = 'component' | 'conversation';
+type ViewMode = 'component' | 'conversation' | 'onboarding';
 
 type ComponentShowcaseProps = {
   options: ComponentOption[];
@@ -83,7 +86,14 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const params = getUrlParams();
     const mode = params.get('view');
-    return mode === 'conversation' ? 'conversation' : 'component';
+    if (mode === 'conversation') return 'conversation';
+    if (mode === 'onboarding') return 'onboarding';
+    return 'component';
+  });
+  const [activeOnboardingVariant, setActiveOnboardingVariant] = useState<OnboardingVariant>(() => {
+    const params = getUrlParams();
+    const variant = params.get('onboardingVariant');
+    return (variant as OnboardingVariant) || 'signup';
   });
   const [activeConversationFlow, setActiveConversationFlow] = useState(() => {
     const params = getUrlParams();
@@ -153,6 +163,7 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
       accreditation: viewMode === 'conversation' && activeConversationFlow === 'ai-greeting' ? accreditationStatus : undefined,
       accreditedState: viewMode === 'conversation' && activeConversationFlow === 'ai-greeting' && accreditationStatus === 'accredited' ? accreditedSubState : undefined,
       nonAccreditedState: viewMode === 'conversation' && activeConversationFlow === 'ai-greeting' && accreditationStatus === 'non-accredited' ? nonAccreditedSubState : undefined,
+      onboardingVariant: viewMode === 'onboarding' ? activeOnboardingVariant : undefined,
     };
 
     // Add block-04 specific params
@@ -164,7 +175,7 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
     }
 
     updateUrlParams(params);
-  }, [viewMode, activeId, variantStates, activeConversationFlow, accreditationStatus, accreditedSubState, nonAccreditedSubState, showPresets, showStepper, showSuggestions, presetCount]);
+  }, [viewMode, activeId, variantStates, activeConversationFlow, accreditationStatus, accreditedSubState, nonAccreditedSubState, showPresets, showStepper, showSuggestions, presetCount, activeOnboardingVariant]);
 
   // Copy current URL to clipboard
   const copyShareLink = useCallback(() => {
@@ -265,6 +276,20 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
             >
               <MessageSquare className="w-4 h-4" />
               Conversation
+            </button>
+            <button
+              onClick={() => setViewMode('onboarding')}
+              className={cn(
+                'flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg transition-all'
+              )}
+              style={{
+                backgroundColor: viewMode === 'onboarding' ? '#FFFFFF' : 'transparent',
+                color: viewMode === 'onboarding' ? '#030303' : '#7F7582',
+                boxShadow: viewMode === 'onboarding' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+              }}
+            >
+              <UserPlus className="w-4 h-4" />
+              Onboarding
             </button>
           </div>
 
@@ -610,6 +635,98 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
                     messages={activeConversationFlow === 'ai-greeting' ? aiGreetingConversationFlow : spaceXInvestmentFlow}
                     components={conversationComponents}
                   />
+                </ScrollAreaPrimitive.Viewport>
+                <ScrollAreaPrimitive.Scrollbar
+                  orientation="vertical"
+                  className="flex h-full w-2.5 touch-none select-none border-l border-l-transparent p-[1px] transition-colors"
+                >
+                  <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-grey-300 hover:bg-grey-400 transition-colors" />
+                </ScrollAreaPrimitive.Scrollbar>
+                <ScrollAreaPrimitive.Corner />
+              </ScrollAreaPrimitive.Root>
+            </div>
+          </>
+        )}
+
+        {/* Onboarding View - Goodfin onboarding flows */}
+        {viewMode === 'onboarding' && (
+          <>
+            {/* Onboarding Flow Selector */}
+            <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
+              <h2 className="text-xl font-semibold text-foreground mb-4 font-heading">
+                Mocked Goodfin Onboarding Flows
+              </h2>
+
+              {/* Flow Selector Thumbnails */}
+              <ScrollAreaPrimitive.Root className="relative overflow-hidden">
+                <ScrollAreaPrimitive.Viewport className="w-full">
+                  <div className="flex gap-4 pb-3">
+                    {onboardingVariants.map((variant) => (
+                      <button
+                        key={variant.id}
+                        onClick={() => setActiveOnboardingVariant(variant.id as OnboardingVariant)}
+                        className={cn(
+                          'flex flex-col items-center gap-3 min-w-[140px] p-4 rounded-xl border-2 transition-all duration-200 group flex-shrink-0',
+                          activeOnboardingVariant === variant.id
+                            ? 'border-grey-950 bg-grey-100'
+                            : 'border-border hover:border-grey-400 hover:bg-muted'
+                        )}
+                      >
+                        {/* Thumbnail Preview Placeholder */}
+                        <div
+                          className={cn(
+                            'w-full aspect-video rounded-lg flex items-center justify-center transition-colors',
+                            activeOnboardingVariant === variant.id
+                              ? 'bg-grey-200 text-grey-950'
+                              : 'bg-muted text-muted-foreground group-hover:bg-card group-hover:text-grey-700'
+                          )}
+                        >
+                          <UserPlus className="w-6 h-6" />
+                        </div>
+
+                        <span
+                          className={cn(
+                            'text-sm font-medium',
+                            activeOnboardingVariant === variant.id ? 'text-grey-950' : 'text-muted-foreground'
+                          )}
+                        >
+                          {variant.label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </ScrollAreaPrimitive.Viewport>
+                <ScrollAreaPrimitive.Scrollbar
+                  orientation="horizontal"
+                  className="flex h-2.5 touch-none select-none flex-col border-t border-t-transparent p-[1px] transition-colors"
+                >
+                  <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-grey-300 hover:bg-grey-400 transition-colors" />
+                </ScrollAreaPrimitive.Scrollbar>
+                <ScrollAreaPrimitive.Corner />
+              </ScrollAreaPrimitive.Root>
+            </div>
+
+            {/* Onboarding Frame */}
+            <div className="bg-card rounded-2xl shadow-lg border border-border overflow-hidden min-h-[600px] relative">
+              {/* Browser-like Header */}
+              <div className="bg-muted border-b border-border px-4 py-2 flex items-center gap-2">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                  <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+                  <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                </div>
+                <div className="flex-1 text-center">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-card rounded-md border border-border text-xs text-muted-foreground font-medium">
+                    <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                    {onboardingVariants.find(v => v.id === activeOnboardingVariant)?.label || 'Onboarding'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Render Area - Vertical ScrollArea */}
+              <ScrollAreaPrimitive.Root className="relative overflow-hidden h-[800px]">
+                <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-[inherit]">
+                  <OnboardingView variant={activeOnboardingVariant} />
                 </ScrollAreaPrimitive.Viewport>
                 <ScrollAreaPrimitive.Scrollbar
                   orientation="vertical"

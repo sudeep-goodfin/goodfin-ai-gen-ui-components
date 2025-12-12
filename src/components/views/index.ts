@@ -63,3 +63,7 @@ export type {
   AccreditedSubState,
   NonAccreditedSubState,
 } from './AIGreeting';
+
+// Onboarding
+export { OnboardingView, onboardingVariants } from './Onboarding';
+export type { OnboardingVariant, OnboardingStep, OnboardingUserData } from './Onboarding';
