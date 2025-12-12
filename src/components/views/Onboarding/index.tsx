@@ -178,7 +178,17 @@ export function OnboardingView({ variant = 'animated-flow' }: OnboardingViewProp
             firstName={userData.firstName}
             onNext={(isAccredited, selections) => {
               handleUpdateUserData({ isAccredited, isAccreditedConfirmed: isAccredited, accreditationSelections: selections });
-              handleNextStep('summary');
+              // Skip summary for non-accredited users
+              if (isAccredited) {
+                handleNextStep('summary');
+              } else {
+                // Non-accredited flow - submit directly
+                setIsLoading(true);
+                setTimeout(() => {
+                  setIsLoading(false);
+                  alert('Thank you for signing up! We\'ll keep you updated on learning resources.');
+                }, 1500);
+              }
             }}
             onBack={() => handlePrevStep('phone')}
             isLoading={isLoading}
@@ -228,25 +238,6 @@ export function OnboardingView({ variant = 'animated-flow' }: OnboardingViewProp
           />
         )}
       </main>
-
-      {/* Footer - Step indicator for full flow or animated flow */}
-      {(isFullFlow || isAnimatedFlow) && stepToShow !== 'summary' && (
-        <footer className="py-4 flex justify-center">
-          <div className="flex items-center gap-2">
-            {steps.slice(0, -1).map((step, index) => (
-              <div
-                key={step}
-                className="w-2 h-2 rounded-full transition-all duration-300"
-                style={{
-                  background: index <= currentStepIndex
-                    ? colors.grey[950]
-                    : colors.grey[300],
-                }}
-              />
-            ))}
-          </div>
-        </footer>
-      )}
     </div>
   );
 }
