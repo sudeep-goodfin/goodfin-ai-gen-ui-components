@@ -1313,7 +1313,7 @@ export function ChatBasedOnboarding({ onComplete }: ChatBasedOnboardingProps) {
         {/* Section 5: Non-Accredited Complete */}
         <section
           ref={(el) => { sectionRefs.current['non-accredited-complete'] = el; }}
-          className="min-h-screen w-full flex items-center justify-center px-4 py-8 snap-start snap-always"
+          className="min-h-screen w-full flex items-start justify-center px-4 pt-[15vh] pb-8 snap-start snap-always"
         >
           <div className="w-full max-w-[560px] flex flex-col">
             {/* AI Avatar */}
