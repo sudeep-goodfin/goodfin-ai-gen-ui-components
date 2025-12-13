@@ -2,6 +2,10 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 
+// Fixed dimensions for consistent layout
+const MODAL_IMAGE_HEIGHT = 340;
+const MODAL_CONTENT_HEIGHT = 180;
+
 type GoodfinAIOnboardingModalProps = {
   open: boolean;
   onClose: (status: 'done' | 'skip') => void;
@@ -13,6 +17,8 @@ export function GoodfinAIOnboardingModal({
   onClose,
 }: GoodfinAIOnboardingModalProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [displayStep, setDisplayStep] = useState(0);
 
   const steps = useMemo(() => [
     {
@@ -50,22 +56,45 @@ export function GoodfinAIOnboardingModal({
   useEffect(() => {
     if (open) {
       setCurrentStep(0);
+      setDisplayStep(0);
+      setIsTransitioning(false);
     }
   }, [open]);
 
+  // Handle step transition with fade animation
+  const transitionToStep = useCallback((newStep: number) => {
+    if (isTransitioning) return;
+
+    setIsTransitioning(true);
+
+    // After fade out, change the content
+    setTimeout(() => {
+      setDisplayStep(newStep);
+      setCurrentStep(newStep);
+      // Small delay before fade in
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 50);
+    }, 150);
+  }, [isTransitioning]);
+
   const handleNext = useCallback(() => {
+    if (isTransitioning) return;
+
     if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+      transitionToStep(currentStep + 1);
     } else {
       onClose('done');
     }
-  }, [currentStep, steps.length, onClose]);
+  }, [currentStep, steps.length, onClose, transitionToStep, isTransitioning]);
 
   const handleBack = useCallback(() => {
+    if (isTransitioning) return;
+
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+      transitionToStep(currentStep - 1);
     }
-  }, [currentStep]);
+  }, [currentStep, transitionToStep, isTransitioning]);
 
   const handleSkip = useCallback(() => {
     onClose('skip');
@@ -93,6 +122,7 @@ export function GoodfinAIOnboardingModal({
           'shadow-[0_8px_32px_rgba(0,0,0,0.15)]',
           'animate-in fade-in-0 zoom-in-95 duration-200'
         )}
+        style={{ height: `${MODAL_IMAGE_HEIGHT + MODAL_CONTENT_HEIGHT}px` }}
       >
         {/* Close Button */}
         <button
@@ -103,32 +133,52 @@ export function GoodfinAIOnboardingModal({
           <X className="w-5 h-5 text-[var(--grey-600)]" />
         </button>
 
-        {/* Image Section */}
-        <div className="w-full">
+        {/* Image Section - Fixed Height */}
+        <div
+          className={cn(
+            'w-full overflow-hidden transition-opacity duration-200',
+            isTransitioning ? 'opacity-0' : 'opacity-100'
+          )}
+          style={{
+            height: `${MODAL_IMAGE_HEIGHT}px`,
+            transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+          }}
+        >
           <img
-            src={steps[currentStep].image}
-            alt={steps[currentStep].title}
-            className="w-full h-auto object-cover"
+            src={steps[displayStep].image}
+            alt={steps[displayStep].title}
+            className="w-full h-full object-cover object-top"
           />
         </div>
 
-        {/* Content Section */}
-        <div className="px-6 pb-6 pt-4 text-center">
-          {/* Title */}
-          <h2
-            id="goodfin-ai-onboarding-title"
-            className="text-xl font-semibold text-[var(--grey-950)] mb-2 font-[var(--font-heading)]"
-          >
-            {steps[currentStep].title}
-          </h2>
+        {/* Content Section - Fixed Height */}
+        <div
+          className={cn(
+            'px-6 pb-6 pt-4 text-center flex flex-col justify-between transition-opacity duration-200',
+            isTransitioning ? 'opacity-0' : 'opacity-100'
+          )}
+          style={{
+            height: `${MODAL_CONTENT_HEIGHT}px`,
+            transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+          }}
+        >
+          <div>
+            {/* Title */}
+            <h2
+              id="goodfin-ai-onboarding-title"
+              className="text-xl font-semibold text-[var(--grey-950)] mb-2 font-[var(--font-heading)]"
+            >
+              {steps[displayStep].title}
+            </h2>
 
-          {/* Description */}
-          <p className="text-sm text-[var(--grey-800)] mb-6 max-w-[400px] mx-auto font-[var(--font-primary-light)]">
-            {steps[currentStep].description}
-          </p>
+            {/* Description */}
+            <p className="text-sm text-[var(--grey-800)] max-w-[400px] mx-auto font-[var(--font-primary-light)]">
+              {steps[displayStep].description}
+            </p>
+          </div>
 
           {/* Navigation */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mt-4">
             {/* Skip (desktop) / Back (mobile) */}
             <div className="w-[100px]">
               <button
