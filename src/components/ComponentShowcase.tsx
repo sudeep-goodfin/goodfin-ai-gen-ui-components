@@ -70,18 +70,44 @@ type ComponentOption = {
   variants?: VariantOption[];
 };
 
+type ComponentGroup = {
+  id: string;
+  label: string;
+  components: ComponentOption[];
+};
+
 type ViewMode = 'component' | 'conversation' | 'onboarding';
 
 type ComponentShowcaseProps = {
   options: ComponentOption[];
+  groups?: ComponentGroup[];
 };
 
-export function ComponentShowcase({ options }: ComponentShowcaseProps) {
+export function ComponentShowcase({ options, groups }: ComponentShowcaseProps) {
+  // Flatten all components from groups if provided, otherwise use options
+  const allComponents = groups
+    ? groups.flatMap(g => g.components)
+    : options;
+
   // Initialize state from URL parameters
+  const [activeGroupId, setActiveGroupId] = useState(() => {
+    if (!groups) return '';
+    const params = getUrlParams();
+    const groupId = params.get('group');
+    return groupId && groups.some(g => g.id === groupId) ? groupId : groups[0].id;
+  });
+
   const [activeId, setActiveId] = useState(() => {
     const params = getUrlParams();
     const componentId = params.get('component');
-    return componentId && options.some(opt => opt.id === componentId) ? componentId : options[0].id;
+    if (componentId && allComponents.some(opt => opt.id === componentId)) {
+      return componentId;
+    }
+    // Default to first component in first group, or first option
+    if (groups && groups.length > 0) {
+      return groups[0].components[0]?.id || '';
+    }
+    return options[0]?.id || '';
   });
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const params = getUrlParams();
@@ -117,7 +143,7 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
   const [variantStates, setVariantStates] = useState<Record<string, string>>(() => {
     const params = getUrlParams();
     const initial: Record<string, string> = {};
-    options.forEach((opt) => {
+    allComponents.forEach((opt) => {
       if (opt.variants && opt.variants.length > 0) {
         const urlVariant = params.get(`variant_${opt.id}`);
         initial[opt.id] = urlVariant && opt.variants.some(v => v.id === urlVariant)
@@ -172,6 +198,7 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
   useEffect(() => {
     const params: Record<string, string | boolean | undefined> = {
       view: viewMode,
+      group: viewMode === 'component' && groups ? activeGroupId : undefined,
       component: viewMode === 'component' ? activeId : undefined,
       [`variant_${activeId}`]: viewMode === 'component' ? variantStates[activeId] : undefined,
       flow: viewMode === 'conversation' ? activeConversationFlow : undefined,
@@ -190,7 +217,7 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
     }
 
     updateUrlParams(params);
-  }, [viewMode, activeId, variantStates, activeConversationFlow, accreditationStatus, accreditedSubState, nonAccreditedSubState, showPresets, showStepper, showSuggestions, presetCount, activeOnboardingVariant]);
+  }, [viewMode, activeId, activeGroupId, groups, variantStates, activeConversationFlow, accreditationStatus, accreditedSubState, nonAccreditedSubState, showPresets, showStepper, showSuggestions, presetCount, activeOnboardingVariant]);
 
   // Copy current URL to clipboard
   const copyShareLink = useCallback(() => {
@@ -200,8 +227,10 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
     });
   }, []);
 
-  const activeOption = options.find((opt) => opt.id === activeId);
+  const activeOption = allComponents.find((opt) => opt.id === activeId);
   const activeVariant = variantStates[activeId];
+  const activeGroup = groups?.find(g => g.id === activeGroupId);
+  const displayComponents = groups ? (activeGroup?.components || []) : options;
 
   // Build component options for block-04
   const componentOptions: ComponentOptions = {
@@ -219,11 +248,20 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
 
   // Build components map for the conversation view
   const getComponentForId = (id: string) => {
-    const option = options.find((opt) => opt.id === id);
+    const option = allComponents.find((opt) => opt.id === id);
     if (!option) return null;
     return typeof option.component === 'function'
       ? option.component(variantStates[id] || (option.variants?.[0]?.id ?? ''))
       : option.component;
+  };
+
+  // Handler for changing groups
+  const handleGroupChange = (groupId: string) => {
+    setActiveGroupId(groupId);
+    const group = groups?.find(g => g.id === groupId);
+    if (group && group.components.length > 0) {
+      setActiveId(group.components[0].id);
+    }
   };
 
   // Derive the greeting variant from two-level state
@@ -368,11 +406,39 @@ export function ComponentShowcase({ options }: ComponentShowcaseProps) {
               Mocked Goodfin AI Interface Design
             </h2>
 
+            {/* Group Selector - Only show if groups are provided */}
+            {groups && groups.length > 0 && (
+              <div className="mb-4">
+                <p className="text-sm text-muted-foreground mb-2">User Flow</p>
+                <div
+                  className="flex gap-1 p-1 rounded-xl w-fit"
+                  style={{ backgroundColor: '#F0EEF0' }}
+                >
+                  {groups.map((group) => (
+                    <button
+                      key={group.id}
+                      onClick={() => handleGroupChange(group.id)}
+                      className={cn(
+                        'px-4 py-2 text-sm font-medium rounded-lg transition-all'
+                      )}
+                      style={{
+                        backgroundColor: activeGroupId === group.id ? '#FFFFFF' : 'transparent',
+                        color: activeGroupId === group.id ? '#030303' : '#7F7582',
+                        boxShadow: activeGroupId === group.id ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                      }}
+                    >
+                      {group.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Horizontal ScrollArea for thumbnails */}
             <ScrollAreaPrimitive.Root className="relative overflow-hidden">
               <ScrollAreaPrimitive.Viewport className="w-full">
                 <div className="flex gap-4 pb-3">
-                  {options.map((option) => (
+                  {displayComponents.map((option) => (
                     <button
                       key={option.id}
                       onClick={() => setActiveId(option.id)}

@@ -67,3 +67,11 @@ export type {
 // Onboarding
 export { OnboardingView, onboardingVariants } from './Onboarding';
 export type { OnboardingVariant, OnboardingStep, OnboardingUserData } from './Onboarding';
+
+// Introducing Investor Ticker
+export { IntroducingTickerView, IntroducingTickerModal, introducingTickerVariants } from './IntroducingInvestorTicker';
+export type { IntroducingTickerVariant } from './IntroducingInvestorTicker';
+
+// Introducing Goodfin AI
+export { IntroducingGoodfinAIView, GoodfinAIOnboardingModal, introducingGoodfinAIVariants } from './IntroducingGoodfinAI';
+export type { IntroducingGoodfinAIVariant } from './IntroducingGoodfinAI';
