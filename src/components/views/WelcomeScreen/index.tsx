@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Briefcase, Clock, Users } from 'lucide-react';
 import { colors } from '../Onboarding/designTokens';
+import { cn } from '../../../lib/utils';
 import {
   HeroSection,
   LastViewedDealsSection,
@@ -14,6 +16,16 @@ import {
   communityTopics,
   mockPortfolioChart,
 } from './mockData';
+
+// Mobile tab type
+type MobileTab = 'portfolio' | 'recent-activity' | 'community';
+
+// Mobile tab configuration
+const mobileTabs: { id: MobileTab; label: string; icon: React.ElementType }[] = [
+  { id: 'portfolio', label: 'Portfolio', icon: Briefcase },
+  { id: 'recent-activity', label: 'Recent Activity', icon: Clock },
+  { id: 'community', label: 'Community', icon: Users },
+];
 
 // Variant type definition
 export type WelcomeScreenVariant =
@@ -72,6 +84,9 @@ const mockData = {
 export function WelcomeScreenView({
   variant = 'active-engaged',
 }: WelcomeScreenViewProps) {
+  // Mobile tab state
+  const [activeTab, setActiveTab] = useState<MobileTab>('portfolio');
+
   // Generate greeting based on time and user
   const greeting = {
     headline: `${getTimeGreeting()}, ${mockData.user.firstName}`,
@@ -119,6 +134,52 @@ export function WelcomeScreenView({
     console.log('Summarize clicked');
   };
 
+  // Render mobile tab content
+  const renderMobileTabContent = () => {
+    switch (activeTab) {
+      case 'portfolio':
+        return (
+          <PortfolioChartSection
+            totalValue={mockPortfolioChart.totalValue}
+            percentageChange={mockPortfolioChart.percentageChange}
+            amountInvested={mockPortfolioChart.amountInvested}
+            returns={mockPortfolioChart.returns}
+            lastUpdated={mockPortfolioChart.lastUpdated}
+            chartData={mockPortfolioChart.chartData}
+            onViewAllDeals={handleViewAllDeals}
+          />
+        );
+      case 'recent-activity':
+        return (
+          <LastViewedDealsSection
+            resumeDeal={mockData.resumeDeal}
+            deals={mockDealCards}
+            onResumeDeal={handleResumeDeal}
+            onViewAllDeals={handleViewAllDeals}
+            onDealClick={handleDealClick}
+            onAskAI={handleAskAI}
+          />
+        );
+      case 'community':
+        return (
+          <div className="space-y-6">
+            <EventsSection
+              events={mockEventCards}
+              onViewAllEvents={handleViewAllEvents}
+              onEventClick={handleEventClick}
+            />
+            <CommunityInsightsSection
+              topics={communityTopics}
+              onJoinConversation={handleJoinConversation}
+              onSummarize={handleSummarize}
+            />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div
       className="min-h-screen w-full"
@@ -126,8 +187,63 @@ export function WelcomeScreenView({
     >
       {/* Main Content Container */}
       <div className="max-w-[1800px] mx-auto">
-        {/* Two Column Layout */}
-        <div className="flex flex-col lg:flex-row">
+        {/* Mobile Layout */}
+        <div className="lg:hidden px-4 pt-6 pb-8">
+          {/* Hero Section with Gradient */}
+          <HeroSection
+            greeting={greeting}
+            suggestions={mockData.suggestions}
+            onSuggestionClick={handleSuggestionClick}
+            onSendMessage={handleSendMessage}
+            className="mb-6"
+          />
+
+          {/* Mobile Tabs */}
+          <div
+            className="flex rounded-xl p-1 mb-6"
+            style={{ backgroundColor: colors.grey[200] }}
+          >
+            {mobileTabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    'flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg transition-all duration-200',
+                    isActive ? 'shadow-sm' : ''
+                  )}
+                  style={{
+                    backgroundColor: isActive ? colors.white : 'transparent',
+                  }}
+                >
+                  <Icon
+                    className="w-4 h-4"
+                    style={{ color: isActive ? colors.grey[900] : colors.grey[500] }}
+                  />
+                  <span
+                    className="text-xs font-medium"
+                    style={{
+                      fontFamily: 'Inter, sans-serif',
+                      color: isActive ? colors.grey[900] : colors.grey[500],
+                    }}
+                  >
+                    {tab.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Mobile Tab Content */}
+          <div className="animate-in fade-in duration-200">
+            {renderMobileTabContent()}
+          </div>
+        </div>
+
+        {/* Desktop Layout - Two Column */}
+        <div className="hidden lg:flex flex-row">
           {/* Left Column - Main Content (~60%) */}
           <div className="flex-1 lg:max-w-[1000px] px-6 pt-8 pb-12">
             {/* Hero Section with Gradient */}
