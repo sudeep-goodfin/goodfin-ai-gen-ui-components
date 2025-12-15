@@ -32,6 +32,8 @@ import {
   introducingTickerVariants,
   IntroducingGoodfinAIView,
   introducingGoodfinAIVariants,
+  WelcomeScreenView,
+  welcomeScreenVariants,
 } from './components/views';
 import {
   Layout,
@@ -50,6 +52,7 @@ import {
   MessageSquare,
   BarChart3,
   Sparkles,
+  Home,
 } from 'lucide-react';
 
 export function App() {
@@ -183,6 +186,19 @@ export function App() {
           component: (variant: string) => <IntroducingGoodfinAIView variant={variant as 'modal' | 'inline'} />,
           icon: <Sparkles className="w-6 h-6" />,
           variants: introducingGoodfinAIVariants,
+        },
+      ],
+    },
+    {
+      id: 'welcome-screen',
+      label: 'Welcome Screen',
+      components: [
+        {
+          id: 'welcome-accredited',
+          label: 'Accredited Welcome',
+          component: (variant: string) => <WelcomeScreenView variant={variant as 'first-time' | 'returning' | 'invested' | 'coffee-chat' | 'upcoming-events' | 'active-engaged'} />,
+          icon: <Home className="w-6 h-6" />,
+          variants: welcomeScreenVariants,
         },
       ],
     },

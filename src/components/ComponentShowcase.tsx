@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
-import { MessageSquare, Layers, Sparkles, DollarSign, Link2, Check, RotateCcw, UserPlus, Maximize2, X, Trash2 } from 'lucide-react';
+import { MessageSquare, Layers, Sparkles, DollarSign, Link2, Check, RotateCcw, UserPlus, Maximize2, X, Trash2, Home } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Checkbox, Button } from './ui';
 import { ConversationView, aiGreetingConversationFlow, spaceXInvestmentFlow } from './chat';
@@ -18,9 +18,12 @@ import {
   CountrySelectionContent,
   WireInstructionsContent,
   SignableDocumentCard,
+  WelcomeScreenView,
+  welcomeScreenVariants,
   type AIGreetingVariant,
   type AccreditationStatus,
   type OnboardingVariant,
+  type WelcomeScreenVariant,
 } from './views';
 
 // URL parameter helpers
@@ -84,7 +87,7 @@ type ComponentGroup = {
   components: ComponentOption[];
 };
 
-type ViewMode = 'component' | 'conversation' | 'onboarding';
+type ViewMode = 'component' | 'conversation' | 'onboarding' | 'welcome';
 
 type ComponentShowcaseProps = {
   options: ComponentOption[];
@@ -122,7 +125,13 @@ export function ComponentShowcase({ options, groups }: ComponentShowcaseProps) {
     const mode = params.get('view');
     if (mode === 'conversation') return 'conversation';
     if (mode === 'onboarding') return 'onboarding';
+    if (mode === 'welcome') return 'welcome';
     return 'component';
+  });
+  const [activeWelcomeVariant, setActiveWelcomeVariant] = useState<WelcomeScreenVariant>(() => {
+    const params = getUrlParams();
+    const variant = params.get('welcomeVariant');
+    return (variant as WelcomeScreenVariant) || 'first-time';
   });
   const [activeOnboardingVariant, setActiveOnboardingVariant] = useState<OnboardingVariant>(() => {
     const params = getUrlParams();
@@ -214,6 +223,7 @@ export function ComponentShowcase({ options, groups }: ComponentShowcaseProps) {
       accreditedState: viewMode === 'conversation' && activeConversationFlow === 'ai-greeting' && accreditationStatus === 'accredited' ? accreditedSubState : undefined,
       nonAccreditedState: viewMode === 'conversation' && activeConversationFlow === 'ai-greeting' && accreditationStatus === 'non-accredited' ? nonAccreditedSubState : undefined,
       onboardingVariant: viewMode === 'onboarding' ? activeOnboardingVariant : undefined,
+      welcomeVariant: viewMode === 'welcome' ? activeWelcomeVariant : undefined,
     };
 
     // Add block-04 specific params
@@ -225,7 +235,7 @@ export function ComponentShowcase({ options, groups }: ComponentShowcaseProps) {
     }
 
     updateUrlParams(params);
-  }, [viewMode, activeId, activeGroupId, groups, variantStates, activeConversationFlow, accreditationStatus, accreditedSubState, nonAccreditedSubState, showPresets, showStepper, showSuggestions, presetCount, activeOnboardingVariant]);
+  }, [viewMode, activeId, activeGroupId, groups, variantStates, activeConversationFlow, accreditationStatus, accreditedSubState, nonAccreditedSubState, showPresets, showStepper, showSuggestions, presetCount, activeOnboardingVariant, activeWelcomeVariant]);
 
   // Copy current URL to clipboard
   const copyShareLink = useCallback(() => {
@@ -350,6 +360,9 @@ export function ComponentShowcase({ options, groups }: ComponentShowcaseProps) {
           {viewMode === 'onboarding' && (
             <OnboardingView variant={activeOnboardingVariant} />
           )}
+          {viewMode === 'welcome' && (
+            <WelcomeScreenView variant={activeWelcomeVariant} />
+          )}
         </div>
       </div>
     );
@@ -405,6 +418,20 @@ export function ComponentShowcase({ options, groups }: ComponentShowcaseProps) {
             >
               <UserPlus className="w-4 h-4" />
               Onboarding
+            </button>
+            <button
+              onClick={() => setViewMode('welcome')}
+              className={cn(
+                'flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg transition-all'
+              )}
+              style={{
+                backgroundColor: viewMode === 'welcome' ? '#FFFFFF' : 'transparent',
+                color: viewMode === 'welcome' ? '#030303' : '#7F7582',
+                boxShadow: viewMode === 'welcome' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+              }}
+            >
+              <Home className="w-4 h-4" />
+              Welcome
             </button>
           </div>
 
@@ -912,6 +939,98 @@ export function ComponentShowcase({ options, groups }: ComponentShowcaseProps) {
               <ScrollAreaPrimitive.Root className="relative overflow-hidden h-[800px]">
                 <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-[inherit]">
                   <OnboardingView key={onboardingKey} variant={activeOnboardingVariant} />
+                </ScrollAreaPrimitive.Viewport>
+                <ScrollAreaPrimitive.Scrollbar
+                  orientation="vertical"
+                  className="flex h-full w-2.5 touch-none select-none border-l border-l-transparent p-[1px] transition-colors"
+                >
+                  <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-grey-300 hover:bg-grey-400 transition-colors" />
+                </ScrollAreaPrimitive.Scrollbar>
+                <ScrollAreaPrimitive.Corner />
+              </ScrollAreaPrimitive.Root>
+            </div>
+          </>
+        )}
+
+        {/* Welcome View - Accredited investors welcome screen */}
+        {viewMode === 'welcome' && (
+          <>
+            {/* Welcome Flow Selector */}
+            <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
+              <h2 className="text-xl font-semibold text-foreground mb-4 font-heading">
+                Accredited Users Welcome Screen
+              </h2>
+
+              {/* Variant Selector Thumbnails */}
+              <ScrollAreaPrimitive.Root className="relative overflow-hidden">
+                <ScrollAreaPrimitive.Viewport className="w-full">
+                  <div className="flex gap-4 pb-3">
+                    {welcomeScreenVariants.map((variant) => (
+                      <button
+                        key={variant.id}
+                        onClick={() => setActiveWelcomeVariant(variant.id as WelcomeScreenVariant)}
+                        className={cn(
+                          'flex flex-col items-center gap-3 min-w-[140px] p-4 rounded-xl border-2 transition-all duration-200 group flex-shrink-0',
+                          activeWelcomeVariant === variant.id
+                            ? 'border-grey-950 bg-grey-100'
+                            : 'border-border hover:border-grey-400 hover:bg-muted'
+                        )}
+                      >
+                        {/* Thumbnail Preview Placeholder */}
+                        <div
+                          className={cn(
+                            'w-full aspect-video rounded-lg flex items-center justify-center transition-colors',
+                            activeWelcomeVariant === variant.id
+                              ? 'bg-grey-200 text-grey-950'
+                              : 'bg-muted text-muted-foreground group-hover:bg-card group-hover:text-grey-700'
+                          )}
+                        >
+                          <Home className="w-6 h-6" />
+                        </div>
+
+                        <span
+                          className={cn(
+                            'text-sm font-medium',
+                            activeWelcomeVariant === variant.id ? 'text-grey-950' : 'text-muted-foreground'
+                          )}
+                        >
+                          {variant.label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </ScrollAreaPrimitive.Viewport>
+                <ScrollAreaPrimitive.Scrollbar
+                  orientation="horizontal"
+                  className="flex h-2.5 touch-none select-none flex-col border-t border-t-transparent p-[1px] transition-colors"
+                >
+                  <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-grey-300 hover:bg-grey-400 transition-colors" />
+                </ScrollAreaPrimitive.Scrollbar>
+                <ScrollAreaPrimitive.Corner />
+              </ScrollAreaPrimitive.Root>
+            </div>
+
+            {/* Welcome Frame */}
+            <div className="bg-card rounded-2xl shadow-lg border border-border overflow-hidden min-h-[600px] relative">
+              {/* Browser-like Header */}
+              <div className="bg-muted border-b border-border px-4 py-2 flex items-center gap-2">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                  <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+                  <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                </div>
+                <div className="flex-1 text-center">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-card rounded-md border border-border text-xs text-muted-foreground font-medium">
+                    <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                    {welcomeScreenVariants.find(v => v.id === activeWelcomeVariant)?.label || 'Welcome'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Render Area - Vertical ScrollArea */}
+              <ScrollAreaPrimitive.Root className="relative overflow-hidden h-[800px]">
+                <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-[inherit]">
+                  <WelcomeScreenView variant={activeWelcomeVariant} />
                 </ScrollAreaPrimitive.Viewport>
                 <ScrollAreaPrimitive.Scrollbar
                   orientation="vertical"

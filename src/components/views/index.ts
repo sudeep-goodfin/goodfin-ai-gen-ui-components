@@ -82,3 +82,7 @@ export type { IntroducingTickerVariant } from './IntroducingInvestorTicker';
 // Introducing Goodfin AI
 export { IntroducingGoodfinAIView, GoodfinAIOnboardingModal, introducingGoodfinAIVariants } from './IntroducingGoodfinAI';
 export type { IntroducingGoodfinAIVariant } from './IntroducingGoodfinAI';
+
+// Welcome Screen
+export { WelcomeScreenView, WelcomeScreenContent, welcomeScreenVariants } from './WelcomeScreen';
+export type { WelcomeScreenVariant } from './WelcomeScreen';
