@@ -352,10 +352,135 @@ export const investmentFlowConversation: ConversationMessage[] = [
   // Show signature component
   { type: 'component', content: null, componentId: 'signature-input' },
 
-  // Section 5: Final Confirmation
+  // Section 5: Document Signing
+  { type: 'section-header', content: 'Document Signing' },
+
+  { type: 'user', content: "I'm ready to sign" },
+
+  {
+    type: 'ai',
+    content: (
+      <p>
+        I've prepared the documents for your signature. Please review and sign each document to proceed with your investment.
+      </p>
+    ),
+  },
+
+  // Show document signing component
+  { type: 'component', content: null, componentId: 'document-signing' },
+
+  // Section 6: Apply Credit
+  { type: 'section-header', content: 'Apply Credit' },
+
+  { type: 'user', content: 'Confirmed. Please proceed with this identity' },
+
+  {
+    type: 'ai',
+    content: (
+      <p>
+        Checking your account... Let me see if you have any credits available to apply to this investment.
+      </p>
+    ),
+  },
+
+  // Show apply credit component
+  { type: 'component', content: null, componentId: 'apply-credit' },
+
+  // Section 7: Promo Code
+  { type: 'section-header', content: 'Promo Code' },
+
+  { type: 'user', content: "I don't want to apply any credit to this investment." },
+
+  {
+    type: 'ai',
+    content: (
+      <p>
+        No problem! Do you have a promo code for this investment? If so, enter it below to receive any applicable discounts.
+      </p>
+    ),
+  },
+
+  // Show promo code component
+  { type: 'component', content: null, componentId: 'promo-code' },
+
+  // Section 8: Investor Profile
+  { type: 'section-header', content: 'Investor Profile' },
+
+  { type: 'user', content: "I don't have a promo code to apply." },
+
+  {
+    type: 'ai',
+    content: (
+      <p>
+        Nice — documents are signed. Next up is identity verification for your {d.dealName} investment. This is standard for all investors and helps protect you.
+        <br /><br />
+        Please select your investor profile to continue.
+      </p>
+    ),
+  },
+
+  // Show investor profile component
+  { type: 'component', content: null, componentId: 'investor-profile' },
+
+  // Section 9: Country Selection
+  { type: 'section-header', content: 'Country Selection' },
+
+  { type: 'user', content: 'I have read the documents, and fully acknowledge the risks. Signed.' },
+
+  {
+    type: 'ai',
+    content: (
+      <p>
+        Perfect! Now let's get your wire transfer set up.
+        <br /><br />
+        First question: <strong>Where will you be wiring from?</strong> Please tell me your bank's country.
+      </p>
+    ),
+  },
+
+  // Show country selection component
+  { type: 'component', content: null, componentId: 'country-selection' },
+
+  // Section 10: Bank Selection
+  { type: 'section-header', content: 'Bank Selection' },
+
+  { type: 'user', content: 'United States' },
+
+  {
+    type: 'ai',
+    content: (
+      <p>
+        Great! What's the name of the bank you'll be wiring from?
+        <br /><br />
+        <span className="text-muted-foreground">(e.g., Chase, Bank of America, Wells Fargo, etc.)</span>
+      </p>
+    ),
+  },
+
+  // Show bank selection component
+  { type: 'component', content: null, componentId: 'bank-selection' },
+
+  // Section 11: Wire Instructions
+  { type: 'section-header', content: 'Wire Instructions' },
+
+  { type: 'user', content: 'Chase' },
+
+  {
+    type: 'ai',
+    content: (
+      <p>
+        Perfect! Here are your <strong>wire transfer instructions</strong> for {d.dealName}. You can use these details to send your investment from Chase.
+      </p>
+    ),
+  },
+
+  // Show wire instructions component
+  { type: 'component', content: null, componentId: 'wire-instructions' },
+
+  // Section 12: Final Confirmation
   { type: 'section-header', content: 'Investment Complete' },
 
-  { type: 'user', content: 'Ready to sign' },
+  { type: 'user', content: 'Yes' },
 
   {
     type: 'ai',
@@ -370,8 +495,8 @@ export const investmentFlowConversation: ConversationMessage[] = [
         </ul>
         <p className="mb-3"><strong>Next Steps:</strong></p>
         <ul className="list-none space-y-1 mb-3">
-          <li>1. You'll receive wire instructions via email within 24 hours</li>
-          <li>2. Complete the wire transfer within 5 business days</li>
+          <li>1. Complete the wire transfer using the instructions above</li>
+          <li>2. Wire must be received within 5 business days</li>
           <li>3. Once funded, you'll receive your official investor welcome packet</li>
         </ul>
         <p>Welcome to {d.dealName}! 🚀</p>

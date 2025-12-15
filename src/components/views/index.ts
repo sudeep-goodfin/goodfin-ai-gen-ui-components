@@ -20,6 +20,7 @@ export type { DocumentDetailVariant } from './DocumentDetail';
 
 // Signature Input
 export { SignatureInputView, SignatureCanvas, signatureInputVariants } from './SignatureInput';
+export { SimpleVariantContent as SignatureInputContent } from './SignatureInput/SimpleVariant';
 export type { SignatureInputVariant } from './SignatureInput';
 
 // Document Signing
@@ -27,26 +28,32 @@ export { DocumentAttachmentWithSign, SignableDocumentCard } from './DocumentSign
 
 // Apply Credit
 export { ApplyCreditView, CreditCard, applyCreditVariants } from './ApplyCredit';
+export { SimpleVariantContent as ApplyCreditContent } from './ApplyCredit/SimpleVariant';
 export type { ApplyCreditVariant } from './ApplyCredit';
 
 // Promo Code
 export { PromoCodeView, PromoCodeCard, promoCodeVariants } from './PromoCode';
+export { SimpleVariantContent as PromoCodeContent } from './PromoCode/SimpleVariant';
 export type { PromoCodeVariant } from './PromoCode';
 
 // Investor Profile
 export { InvestorProfileView, ProfileSelector, investorProfileVariants } from './InvestorProfile';
+export { SimpleVariantContent as InvestorProfileContent } from './InvestorProfile/SimpleVariant';
 export type { InvestorProfileVariant } from './InvestorProfile';
 
 // Bank Selection
 export { BankSelectionView, BankSearchDropdown, bankSelectionVariants } from './BankSelection';
+export { SimpleVariantContent as BankSelectionContent } from './BankSelection/SimpleVariant';
 export type { BankSelectionVariant } from './BankSelection';
 
 // Country Selection
 export { CountrySelectionView, CountrySearchDropdown, countrySelectionVariants } from './CountrySelection';
+export { SimpleVariantContent as CountrySelectionContent } from './CountrySelection/SimpleVariant';
 export type { CountrySelectionVariant } from './CountrySelection';
 
 // Wire Instructions
 export { WireInstructionsView, WireInstructionsCard, wireInstructionsVariants } from './WireInstructions';
+export { SimpleVariantContent as WireInstructionsContent } from './WireInstructions/SimpleVariant';
 export type { WireInstructionsVariant } from './WireInstructions';
 
 // AI Greeting

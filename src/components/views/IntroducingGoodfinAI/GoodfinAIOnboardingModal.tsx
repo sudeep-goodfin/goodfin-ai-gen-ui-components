@@ -20,16 +20,24 @@ export function GoodfinAIOnboardingModal({
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [displayStep, setDisplayStep] = useState(0);
 
+  // Staggered animation states
+  const [showImage, setShowImage] = useState(false);
+  const [showContent, setShowContent] = useState(false);
+  const [showActions, setShowActions] = useState(false);
+  const [hasInitialAnimationPlayed, setHasInitialAnimationPlayed] = useState(false);
+
   const steps = useMemo(() => [
     {
       image: '/img/introduction_goodfin_ai.png',
       title: 'Meet Goodfin AI',
       description: 'Purpose built intelligent private market assistant.',
+      objectFit: 'cover' as const,
     },
     {
       image: '/img/introduction_goodfin_ai_deep_research.png',
       title: 'Your new financial superpower',
       description: 'Ask anything, track your portfolio, explore new deals, and invest — all with the help of AI.',
+      objectFit: 'contain' as const,
     },
   ], []);
 
@@ -52,29 +60,48 @@ export function GoodfinAIOnboardingModal({
     };
   }, [open, onClose]);
 
-  // Reset step when modal opens
+  // Reset step and play initial staggered animation when modal opens
   useEffect(() => {
     if (open) {
       setCurrentStep(0);
       setDisplayStep(0);
       setIsTransitioning(false);
+      setHasInitialAnimationPlayed(false);
+      setShowImage(false);
+      setShowContent(false);
+      setShowActions(false);
+
+      // Staggered reveal animation on modal open
+      setTimeout(() => setShowImage(true), 100);
+      setTimeout(() => setShowContent(true), 200);
+      setTimeout(() => {
+        setShowActions(true);
+        setHasInitialAnimationPlayed(true);
+      }, 300);
     }
   }, [open]);
 
-  // Handle step transition with fade animation
+  // Handle step transition with staggered fade animation (only image and content, not actions)
   const transitionToStep = useCallback((newStep: number) => {
     if (isTransitioning) return;
 
     setIsTransitioning(true);
 
-    // After fade out, change the content
+    // Staggered fade out: content -> image (actions stay visible)
+    setShowContent(false);
+    setTimeout(() => setShowImage(false), 50);
+
+    // After fade out completes, change the content
     setTimeout(() => {
       setDisplayStep(newStep);
       setCurrentStep(newStep);
-      // Small delay before fade in
+
+      // Staggered fade in: image -> content (actions already visible)
+      setTimeout(() => setShowImage(true), 50);
       setTimeout(() => {
+        setShowContent(true);
         setIsTransitioning(false);
-      }, 50);
+      }, 150);
     }, 150);
   }, [isTransitioning]);
 
@@ -136,8 +163,8 @@ export function GoodfinAIOnboardingModal({
         {/* Image Section - Fixed Height */}
         <div
           className={cn(
-            'w-full overflow-hidden transition-opacity duration-200',
-            isTransitioning ? 'opacity-0' : 'opacity-100'
+            'w-full overflow-hidden transition-all duration-150',
+            showImage ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
           )}
           style={{
             height: `${MODAL_IMAGE_HEIGHT}px`,
@@ -147,22 +174,26 @@ export function GoodfinAIOnboardingModal({
           <img
             src={steps[displayStep].image}
             alt={steps[displayStep].title}
-            className="w-full h-full object-cover object-top"
+            className={cn(
+              'w-full h-full',
+              steps[displayStep].objectFit === 'contain' ? 'object-contain' : 'object-cover object-top'
+            )}
           />
         </div>
 
         {/* Content Section - Fixed Height */}
         <div
-          className={cn(
-            'px-6 pb-6 pt-4 text-center flex flex-col justify-between transition-opacity duration-200',
-            isTransitioning ? 'opacity-0' : 'opacity-100'
-          )}
-          style={{
-            height: `${MODAL_CONTENT_HEIGHT}px`,
-            transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
-          }}
+          className="px-6 pb-6 pt-4 text-center flex flex-col justify-between"
+          style={{ height: `${MODAL_CONTENT_HEIGHT}px` }}
         >
-          <div>
+          {/* Title & Description */}
+          <div
+            className={cn(
+              'transition-all duration-150',
+              showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
+            )}
+            style={{ transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}
+          >
             {/* Title */}
             <h2
               id="goodfin-ai-onboarding-title"
@@ -178,7 +209,13 @@ export function GoodfinAIOnboardingModal({
           </div>
 
           {/* Navigation */}
-          <div className="flex items-center justify-between mt-4">
+          <div
+            className={cn(
+              'flex items-center justify-between mt-4 transition-all duration-150',
+              showActions ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
+            )}
+            style={{ transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}
+          >
             {/* Skip (desktop) / Back (mobile) */}
             <div className="w-[100px]">
               <button

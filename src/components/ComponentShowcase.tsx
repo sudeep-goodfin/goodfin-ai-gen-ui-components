@@ -10,6 +10,14 @@ import {
   nonAccreditedSubStates,
   OnboardingView,
   onboardingVariants,
+  SignatureInputContent,
+  ApplyCreditContent,
+  PromoCodeContent,
+  InvestorProfileContent,
+  BankSelectionContent,
+  CountrySelectionContent,
+  WireInstructionsContent,
+  SignableDocumentCard,
   type AIGreetingVariant,
   type AccreditationStatus,
   type OnboardingVariant,
@@ -269,6 +277,31 @@ export function ComponentShowcase({ options, groups }: ComponentShowcaseProps) {
     ? `accredited-${accreditedSubState}` as AIGreetingVariant
     : `non-accredited-${nonAccreditedSubState}` as AIGreetingVariant;
 
+  // Document signing content component for conversation embedding
+  const DocumentSigningContent = () => (
+    <div className="space-y-4">
+      <p style={{ color: 'var(--chat-ai-foreground)' }}>
+        I've prepared the documents for your signature. Please review and sign
+        the Private Placement Memorandum to proceed.
+      </p>
+      <div className="space-y-3 pt-2">
+        <SignableDocumentCard
+          title="Subscription Agreement"
+          subtitle="Signed on Oct 24, 2023"
+          status="signed"
+        />
+        <SignableDocumentCard
+          title="Private Placement Memorandum"
+          subtitle="Waiting for signature"
+          status="pending"
+        />
+      </div>
+      <p className="text-sm pt-2" style={{ color: '#7F7582' }}>
+        Once signed, we'll process your investment allocation immediately.
+      </p>
+    </div>
+  );
+
   const conversationComponents: Record<string, React.ReactNode> = {
     // Use AIGreetingContent (without ChatLayout) for embedding in conversation
     // Key forces remount when variant changes to restart animation
@@ -286,7 +319,15 @@ export function ComponentShowcase({ options, groups }: ComponentShowcaseProps) {
     'investment-risk': getComponentForId('investment-risk'),
     'document-detail': getComponentForId('document-detail'),
     'document-detail-2': getComponentForId('document-detail'),
-    'signature-input': getComponentForId('signature-input'),
+    // Use content-only components for investment flow embedding
+    'signature-input': <SignatureInputContent />,
+    'document-signing': <DocumentSigningContent />,
+    'apply-credit': <ApplyCreditContent />,
+    'promo-code': <PromoCodeContent />,
+    'investor-profile': <InvestorProfileContent />,
+    'country-selection': <CountrySelectionContent />,
+    'bank-selection': <BankSelectionContent />,
+    'wire-instructions': <WireInstructionsContent />,
   };
 
   const handleVariantChange = (variantId: string) => {
