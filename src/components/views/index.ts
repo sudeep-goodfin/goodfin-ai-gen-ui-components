@@ -86,3 +86,20 @@ export type { IntroducingGoodfinAIVariant } from './IntroducingGoodfinAI';
 // Welcome Screen
 export { WelcomeScreenView, WelcomeScreenContent, welcomeScreenVariants } from './WelcomeScreen';
 export type { WelcomeScreenVariant } from './WelcomeScreen';
+
+// Welcome 0.2 (New Dashboard Design)
+export {
+  Welcome02,
+  Header as Welcome02Header,
+  Sidebar as Welcome02Sidebar,
+  WelcomeDashboard as Welcome02Dashboard,
+  InputBar as Welcome02InputBar,
+  HomeContent as Welcome02HomeContent,
+  DashboardContent as Welcome02DashboardContent,
+  SuggestionCard as Welcome02SuggestionCard,
+  SUGGESTIONS_DATA as Welcome02SuggestionsData,
+  Greeting as Welcome02Greeting,
+  ProgressWidget as Welcome02ProgressWidget,
+  ProgressCircle as Welcome02ProgressCircle,
+} from './Welcome02';
+export type { Welcome02Variant, ChatMode as Welcome02ChatMode, MoreMode as Welcome02MoreMode } from './Welcome02';
