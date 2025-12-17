@@ -77,16 +77,19 @@ export function LastViewedDealsSection({
         onResume={onResumeDeal}
       />
 
-      {/* Deal Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-6">
-        {deals.map((deal) => (
-          <DealCard
-            key={deal.id}
-            deal={deal}
-            onClick={() => onDealClick?.(deal.id)}
-            onAskAI={() => onAskAI?.(deal.id)}
-          />
-        ))}
+      {/* Deal Cards Horizontal Scroll */}
+      <div className="pt-6 -mx-4 px-4 overflow-x-auto scrollbar-hide">
+        <div className="flex gap-4 pb-2">
+          {deals.map((deal) => (
+            <DealCard
+              key={deal.id}
+              deal={deal}
+              onClick={() => onDealClick?.(deal.id)}
+              onAskAI={() => onAskAI?.(deal.id)}
+              className="w-[320px] min-w-[320px] flex-shrink-0"
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

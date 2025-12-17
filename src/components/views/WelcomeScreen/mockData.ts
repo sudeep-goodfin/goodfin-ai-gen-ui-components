@@ -157,13 +157,23 @@ const returningUser: UserProfile = {
   memberSince: '2024-06-15T00:00:00.000Z',
 };
 
+// Early brand logo URLs for allDeals (before BRAND_LOGOS is defined)
+const EARLY_LOGOS = {
+  SpaceX: 'https://companieslogo.com/img/orig/SPACE-47ee9544.png',
+  Stripe: 'https://companieslogo.com/img/orig/STRIP-a42b4e5d.png',
+  Anthropic: 'https://companieslogo.com/img/orig/anthropic-f375cfdb.png',
+  Databricks: 'https://companieslogo.com/img/orig/databricks-f27a2b0f.png',
+  Discord: 'https://companieslogo.com/img/orig/discord-a643bd52.png',
+  Plaid: 'https://companieslogo.com/img/orig/plaid-73f3c5f3.png',
+};
+
 // Mock Deals
 const allDeals: Deal[] = [
   {
     id: 'spacex',
     name: 'SpaceX',
     description: 'Space exploration and satellite internet',
-    logoUrl: '/logos/spacex.png',
+    logoUrl: EARLY_LOGOS.SpaceX,
     status: 'live',
     valuation: '$350B',
     minInvestment: 10000,
@@ -175,7 +185,7 @@ const allDeals: Deal[] = [
     id: 'databricks',
     name: 'Databricks',
     description: 'Data analytics and AI platform',
-    logoUrl: '/logos/databricks.png',
+    logoUrl: EARLY_LOGOS.Databricks,
     status: 'live',
     valuation: '$43B',
     minInvestment: 5000,
@@ -187,7 +197,7 @@ const allDeals: Deal[] = [
     id: 'stripe',
     name: 'Stripe',
     description: 'Payment infrastructure for the internet',
-    logoUrl: '/logos/stripe.png',
+    logoUrl: EARLY_LOGOS.Stripe,
     status: 'closing-soon',
     valuation: '$50B',
     minInvestment: 5000,
@@ -199,7 +209,7 @@ const allDeals: Deal[] = [
     id: 'anthropic',
     name: 'Anthropic',
     description: 'AI safety and research company',
-    logoUrl: '/logos/anthropic.png',
+    logoUrl: EARLY_LOGOS.Anthropic,
     status: 'live',
     valuation: '$18B',
     minInvestment: 10000,
@@ -211,7 +221,7 @@ const allDeals: Deal[] = [
     id: 'discord',
     name: 'Discord',
     description: 'Communication platform for communities',
-    logoUrl: '/logos/discord.png',
+    logoUrl: EARLY_LOGOS.Discord,
     status: 'coming-soon',
     valuation: '$15B',
     minInvestment: 5000,
@@ -222,7 +232,7 @@ const allDeals: Deal[] = [
     id: 'plaid',
     name: 'Plaid',
     description: 'Financial data connectivity',
-    logoUrl: '/logos/plaid.png',
+    logoUrl: EARLY_LOGOS.Plaid,
     status: 'live',
     valuation: '$13B',
     minInvestment: 2500,
@@ -477,13 +487,34 @@ const mockInvestors: Investor[] = [
   { id: 'inv-4', name: 'Peter Thiel', avatarUrl: '/investors/founders-fund.png' },
 ];
 
+// Brand logo URLs from goodfin-web-prototype
+const BRAND_LOGOS = {
+  SpaceX: 'https://companieslogo.com/img/orig/SPACE-47ee9544.png',
+  Stripe: 'https://companieslogo.com/img/orig/STRIP-a42b4e5d.png',
+  Anthropic: 'https://companieslogo.com/img/orig/anthropic-f375cfdb.png',
+  Glean: 'https://goodfin-site-asset.s3.us-east-1.amazonaws.com/z8j8a10l_400x400_1762719486703',
+  Anduril: 'https://goodfin-site-asset.s3.us-east-1.amazonaws.com/anduril.com_1760768896713',
+  ShieldAI: 'https://goodfin-site-asset.s3.us-east-1.amazonaws.com/MIXQiJiz_400x400_1739507012966',
+  Ramp: 'https://goodfin-site-asset.s3.us-east-1.amazonaws.com/images_1762127960971',
+  Zipline: 'https://goodfin-site-asset.s3.us-east-1.amazonaws.com/Screenshot_2025-11-18_at_12.38.34_PM_1763487522482',
+  Vercel: 'https://goodfin-site-asset.s3.us-east-1.amazonaws.com/images_1756325209692',
+  MistralAI: 'https://goodfin-site-asset.s3.us-east-1.amazonaws.com/Mistral_AI_logo_2025%E2%80%93_1757459566470',
+  Polymarket: 'https://goodfin-site-asset.s3.us-east-1.amazonaws.com/1_gJ8aceaPJTvHj9dxrKXGrA_1752166428379',
+  PsiQuantum: 'https://goodfin-site-asset.s3.us-east-1.amazonaws.com/PsiQuantum-Symbol-Black-Digital_1759100318214',
+  Groq: 'https://goodfin-site-asset.s3.amazonaws.com/groq.png',
+  xAI: 'https://goodfin-site-asset.s3.amazonaws.com/xAI.png',
+  FoundersFund: 'https://goodfin-site-asset.s3.us-east-1.amazonaws.com/1631346747811_1740622458797',
+  YCombinator: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Y_Combinator_logo.svg/2048px-Y_Combinator_logo.svg.png',
+  Erebor: 'https://goodfin-site-asset.s3.us-east-1.amazonaws.com/ezgif-674d4b85aa8822_1752706176382',
+};
+
 // Mock Deal Cards
 export const mockDealCards: DealCardData[] = [
   {
     id: 'spacex',
     name: 'SpaceX',
     description: 'Space travel with reusable rockets and interplanetary ambitions',
-    logoUrl: '/logos/spacex.png',
+    logoUrl: BRAND_LOGOS.SpaceX,
     category: 'SPACE TECH',
     status: 'live',
     investors: mockInvestors.slice(0, 4),
@@ -491,8 +522,8 @@ export const mockDealCards: DealCardData[] = [
   {
     id: 'stripe',
     name: 'Stripe',
-    description: 'Space travel with reusable rockets and interplanetary ambitions',
-    logoUrl: '/logos/stripe.png',
+    description: 'Payment infrastructure powering millions of businesses worldwide',
+    logoUrl: BRAND_LOGOS.Stripe,
     category: 'FINTECH',
     status: 'closing-soon',
     investors: mockInvestors.slice(0, 4),
@@ -501,9 +532,36 @@ export const mockDealCards: DealCardData[] = [
     id: 'anthropic',
     name: 'Anthropic',
     description: 'Anthropic is an AI safety and research company that is working to build steerable AI systems.',
-    logoUrl: '/logos/anthropic.png',
+    logoUrl: BRAND_LOGOS.Anthropic,
     category: 'AI',
     status: 'premium',
+    investors: mockInvestors.slice(0, 4),
+  },
+  {
+    id: 'anduril',
+    name: 'Anduril',
+    description: 'Next-generation defense technology revolutionizing military and national security systems.',
+    logoUrl: BRAND_LOGOS.Anduril,
+    category: 'DEFENSE TECH',
+    status: 'live',
+    investors: mockInvestors.slice(0, 4),
+  },
+  {
+    id: 'glean',
+    name: 'Glean',
+    description: 'AI-powered enterprise search transforming how companies find knowledge and automate tasks.',
+    logoUrl: BRAND_LOGOS.Glean,
+    category: 'AI',
+    status: 'live',
+    investors: mockInvestors.slice(0, 4),
+  },
+  {
+    id: 'ramp',
+    name: 'Ramp',
+    description: 'The fastest-growing spend management and finance automation platform for businesses.',
+    logoUrl: BRAND_LOGOS.Ramp,
+    category: 'FINTECH',
+    status: 'closing-soon',
     investors: mockInvestors.slice(0, 4),
   },
 ];

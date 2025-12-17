@@ -188,7 +188,7 @@ export function WelcomeScreenView({
       {/* Main Content Container */}
       <div className="max-w-[1800px] mx-auto">
         {/* Mobile Layout */}
-        <div className="lg:hidden px-4 pt-6 pb-8">
+        <div className="desktop:hidden px-4 pt-6 pb-8">
           {/* Hero Section with Gradient */}
           <HeroSection
             greeting={greeting}
@@ -243,9 +243,9 @@ export function WelcomeScreenView({
         </div>
 
         {/* Desktop Layout - Two Column */}
-        <div className="hidden lg:flex flex-row">
-          {/* Left Column - Main Content (~60%) */}
-          <div className="flex-1 lg:max-w-[1000px] px-6 pt-8 pb-12">
+        <div className="hidden desktop:flex flex-row w-full">
+          {/* Left Column - Main Content (60%) */}
+          <div className="w-[60%] px-6 pt-8 pb-12">
             {/* Hero Section with Gradient */}
             <HeroSection
               greeting={greeting}
@@ -278,9 +278,9 @@ export function WelcomeScreenView({
             />
           </div>
 
-          {/* Right Column - Sidebar (~40%) */}
+          {/* Right Column - Sidebar (40%) */}
           <div
-            className="lg:w-[800px] p-6 pt-8"
+            className="w-[40%] p-6 pt-8"
             style={{ backgroundColor: colors.grey[200] }}
           >
             {/* Events Section */}
@@ -314,9 +314,9 @@ export function WelcomeScreenContent({
   };
 
   return (
-    <div className="flex flex-col lg:flex-row">
-      {/* Left Column */}
-      <div className="flex-1 lg:max-w-[1000px] p-4 space-y-6">
+    <div className="flex flex-col desktop:flex-row w-full">
+      {/* Left Column (60%) */}
+      <div className="w-full desktop:w-[60%] p-4 space-y-6">
         <HeroSection
           greeting={greeting}
           suggestions={mockData.suggestions}
@@ -337,9 +337,9 @@ export function WelcomeScreenContent({
         />
       </div>
 
-      {/* Right Column */}
+      {/* Right Column (40%) */}
       <div
-        className="lg:w-[800px] p-4 space-y-6"
+        className="w-full desktop:w-[40%] p-4 space-y-6"
         style={{ backgroundColor: colors.grey[200] }}
       >
         <EventsSection events={mockEventCards} />
