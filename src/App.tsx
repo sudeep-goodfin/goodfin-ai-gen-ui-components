@@ -1,5 +1,6 @@
-import React from 'react';
-import { ComponentShowcase } from './components/ComponentShowcase';
+import React, { useCallback, useRef } from 'react';
+import { DocsLayout } from './components/layout';
+import { ConversationView, aiGreetingConversationFlow, spaceXInvestmentFlow } from './components/chat';
 import {
   InvestmentReviewChat,
   investmentReviewVariants,
@@ -28,12 +29,26 @@ import {
   wireInstructionsVariants,
   AIGreetingView,
   aiGreetingVariants,
+  AIGreetingContent,
   IntroducingTickerView,
   introducingTickerVariants,
   IntroducingGoodfinAIView,
   introducingGoodfinAIVariants,
   WelcomeScreenView,
   welcomeScreenVariants,
+  OnboardingView,
+  onboardingVariants,
+  SignatureInputContent,
+  ApplyCreditContent,
+  PromoCodeContent,
+  InvestorProfileContent,
+  BankSelectionContent,
+  CountrySelectionContent,
+  WireInstructionsContent,
+  SignableDocumentCard,
+  type AIGreetingVariant,
+  type OnboardingVariant,
+  type WelcomeScreenVariant,
 } from './components/views';
 import {
   Layout,
@@ -56,6 +71,16 @@ import {
 } from 'lucide-react';
 
 export function App() {
+  // Replay function ref for AI greeting animation
+  const replayFnRef = useRef<(() => void) | null>(null);
+
+  const handleReplayRequest = useCallback((replayFn: () => void) => {
+    replayFnRef.current = replayFn;
+  }, []);
+
+  // Default greeting variant for conversation view
+  const conversationGreetingVariant: AIGreetingVariant = 'accredited-first-time';
+
   // Component groups organized by user flow
   const componentGroups = [
     {
@@ -204,8 +229,80 @@ export function App() {
     },
   ];
 
-  // Flatten all components for backwards compatibility (options prop)
-  const allComponents = componentGroups.flatMap(g => g.components);
+  // Document signing content component for conversation embedding
+  const DocumentSigningContent = () => (
+    <div className="space-y-4">
+      <p style={{ color: 'var(--chat-ai-foreground)' }}>
+        I've prepared the documents for your signature. Please review and sign
+        the Private Placement Memorandum to proceed.
+      </p>
+      <div className="space-y-3 pt-2">
+        <SignableDocumentCard
+          title="Subscription Agreement"
+          subtitle="Signed on Oct 24, 2023"
+          status="signed"
+        />
+        <SignableDocumentCard
+          title="Private Placement Memorandum"
+          subtitle="Waiting for signature"
+          status="pending"
+        />
+      </div>
+      <p className="text-sm pt-2" style={{ color: '#7F7582' }}>
+        Once signed, we'll process your investment allocation immediately.
+      </p>
+    </div>
+  );
 
-  return <ComponentShowcase options={allComponents} groups={componentGroups} />;
+  // Build components map for conversation view
+  const conversationComponents: Record<string, React.ReactNode> = {
+    'ai-greeting': (
+      <div key={conversationGreetingVariant}>
+        <AIGreetingContent
+          variant={conversationGreetingVariant}
+          showReplayButton={false}
+          onReplayRequest={handleReplayRequest}
+        />
+      </div>
+    ),
+    'deal-preview': <DealPreviewView variant="full" />,
+    'investment-risk': <InvestmentRiskView variant="full" />,
+    'document-detail': <DocumentDetailView variant="full" />,
+    'document-detail-2': <DocumentDetailView variant="full" />,
+    'signature-input': <SignatureInputContent />,
+    'document-signing': <DocumentSigningContent />,
+    'apply-credit': <ApplyCreditContent />,
+    'promo-code': <PromoCodeContent />,
+    'investor-profile': <InvestorProfileContent />,
+    'country-selection': <CountrySelectionContent />,
+    'bank-selection': <BankSelectionContent />,
+    'wire-instructions': <WireInstructionsContent />,
+  };
+
+  // Conversation flow options
+  const conversationFlowOptions = [
+    { id: 'ai-greeting', label: 'AI Greeting' },
+    { id: 'investment-flow', label: 'Investment Flow' },
+  ];
+
+  return (
+    <DocsLayout
+      groups={componentGroups}
+      renderConversationView={(flow) => (
+        <ConversationView
+          messages={flow === 'ai-greeting' ? aiGreetingConversationFlow : spaceXInvestmentFlow}
+          components={conversationComponents}
+        />
+      )}
+      renderOnboardingView={(variant, key) => (
+        <OnboardingView key={key} variant={variant as OnboardingVariant} />
+      )}
+      renderWelcomeView={(variant) => (
+        <WelcomeScreenView variant={variant as WelcomeScreenVariant} />
+      )}
+      onboardingVariants={onboardingVariants}
+      welcomeVariants={welcomeScreenVariants}
+      conversationFlowOptions={conversationFlowOptions}
+    />
+  );
 }
