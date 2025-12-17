@@ -269,7 +269,7 @@ export function DocsLayout({
         },
         {
           id: 'welcome',
-          label: 'Welcome',
+          label: 'Welcome 0.1',
           icon: viewModeIcons.welcome,
           children: welcomeVariants.map(v => ({ id: v.id, label: v.label })),
         },
@@ -405,7 +405,7 @@ export function DocsLayout({
       const variantLabel = onboardingVariants.find(v => v.id === activeOnboardingVariant)?.label;
       if (variantLabel) crumbs.push({ label: variantLabel });
     } else if (viewMode === 'welcome') {
-      crumbs.push({ label: 'Welcome' });
+      crumbs.push({ label: 'Welcome 0.1' });
       const variantLabel = welcomeVariants.find(v => v.id === activeWelcomeVariant)?.label;
       if (variantLabel) crumbs.push({ label: variantLabel });
     }
@@ -703,7 +703,7 @@ export function DocsLayout({
             {viewMode === 'welcome' && (
               <>
                 <PageHeader
-                  title="Welcome Screen"
+                  title="Welcome 0.1"
                   description="Preview the welcome screen for accredited investors."
                 />
 
