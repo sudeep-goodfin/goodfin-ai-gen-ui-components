@@ -1,8 +1,9 @@
 import React from 'react';
-import { Icon, CustomIcon } from '../Icon';
-import { svgPaths } from '../../svgPaths';
+import { CustomIcon } from '../Icon';
+import svgPaths from '../../imports/svg-68p9mk74mk';
 import { SuggestionCard, SUGGESTIONS_DATA } from './DashboardContent';
 import { ChatMode } from './InputBar';
+import { Greeting } from './Greeting';
 import { ArrowRight } from 'lucide-react';
 
 // Background container for explore cards
@@ -37,15 +38,6 @@ function SectionHeader({ icon, text }: { icon: React.ReactNode; text: string }) 
   );
 }
 
-// AI Avatar component
-function AIAvatar() {
-  return (
-    <div className="relative w-12 h-12 rounded-full overflow-hidden shadow-[0px_1px_3px_0px_rgba(0,0,0,0.1),0px_1px_2px_-1px_rgba(0,0,0,0.1)] border border-[#f8f8f8]">
-      <div className="w-full h-full bg-gradient-to-br from-[#f4d1ff] via-[#f8bcd8] to-[#fcedd6] opacity-90" />
-    </div>
-  );
-}
-
 // Resume card (pick up where you left off)
 function ResumeCard({ onClick }: { onClick?: () => void }) {
   return (
@@ -61,7 +53,7 @@ function ResumeCard({ onClick }: { onClick?: () => void }) {
               <div className="flex items-center shrink-0">
                 <CustomIcon viewBox="0 0 20 20" width={20} height={20}>
                   <g clipPath="url(#clip_history_resume)">
-                    <path d={svgPaths.history} fill="#F7F7F8" />
+                    <path d={svgPaths.p2b204f00} fill="#F7F7F8" />
                   </g>
                   <defs>
                     <clipPath id="clip_history_resume">
@@ -147,17 +139,7 @@ export function HomeContent({ onModeChange }: { onModeChange?: (mode: ChatMode) 
       <div className="flex flex-col gap-[40px] grow items-center w-full">
 
         {/* Greeting Section */}
-        <div className="flex flex-col gap-[24px] items-start w-full">
-          <AIAvatar />
-          <div className="flex flex-col gap-[6px] items-start text-[#48424a] w-full">
-            <p className="font-serif leading-[33.6px] text-[28px] tracking-[-0.7px] w-full">
-              Good afternoon, Alex
-            </p>
-            <p className="leading-normal text-[20px] w-full font-light">
-              Your portfolio increased by $154k (+12.4%) this month, primarily driven by secondary market activity in SpaceX. You have 3 priority allocations expiring soon.
-            </p>
-          </div>
-        </div>
+        <Greeting />
 
         {/* Sections Container */}
         <div className="flex flex-col gap-[10px] items-center w-full">
@@ -167,7 +149,7 @@ export function HomeContent({ onModeChange }: { onModeChange?: (mode: ChatMode) 
             icon={
               <CustomIcon viewBox="0 0 20 20" width={20} height={20}>
                 <g clipPath="url(#clip_history)">
-                  <path d={svgPaths.history} fill="#373338" />
+                  <path d={svgPaths.p2b204f00} fill="#373338" />
                 </g>
                 <defs>
                   <clipPath id="clip_history">
@@ -193,7 +175,7 @@ export function HomeContent({ onModeChange }: { onModeChange?: (mode: ChatMode) 
               icon={
                 <CustomIcon viewBox="0 0 20 20" width={20} height={20}>
                   <g clipPath="url(#clip_explore)">
-                    <path d={svgPaths.explore} fill="#373338" />
+                    <path d={svgPaths.pa245280} fill="#373338" />
                   </g>
                   <defs>
                     <clipPath id="clip_explore">
@@ -261,7 +243,7 @@ export function HomeContent({ onModeChange }: { onModeChange?: (mode: ChatMode) 
               icon={
                 <CustomIcon viewBox="0 0 20 20" width={20} height={20}>
                   <g clipPath="url(#clip_calendar)">
-                    <path d={svgPaths.calendarToday} fill="#373338" />
+                    <path d={svgPaths.p1e918d00} fill="#373338" />
                   </g>
                   <defs>
                     <clipPath id="clip_calendar">

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Icon } from '../Icon';
-import { svgPaths } from '../../svgPaths';
+import svgPaths from '../../imports/svg-191opiemcf';
 
 // Goodfin Logo component
 function GoodfinLogo() {
@@ -40,7 +40,7 @@ export function Header() {
       <div className="flex items-center gap-4">
         {/* Mobile Menu Icon */}
         <button className="w-8 h-8 p-1 rounded hover:bg-black/5 transition-colors">
-          <Icon path={svgPaths.menu} size={24} fillColor="#373338" />
+          <Icon path={svgPaths.p1d821780} size={24} fillColor="#373338" />
         </button>
 
         {/* Logo */}
@@ -54,11 +54,11 @@ export function Header() {
         {/* Action Buttons */}
         <div className="hidden md:flex items-center gap-2">
           <button className="flex items-center gap-2 px-3 py-1.5 rounded text-[#48424A] hover:bg-black/5 transition-colors">
-            <Icon path={svgPaths.giftCard} size={18} fillColor="#48424A" />
+            <Icon path={svgPaths.p1bc18500} size={18} fillColor="#48424A" />
             <span className="text-sm font-medium">Gift Card</span>
           </button>
           <button className="flex items-center gap-2 px-3 py-1.5 rounded text-[#48424A] hover:bg-black/5 transition-colors">
-            <Icon path={svgPaths.referrals} size={18} fillColor="#48424A" />
+            <Icon path={svgPaths.p36a8ec00} size={18} fillColor="#48424A" />
             <span className="text-sm font-medium">Referrals</span>
           </button>
         </div>

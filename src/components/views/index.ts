@@ -101,5 +101,14 @@ export {
   Greeting as Welcome02Greeting,
   ProgressWidget as Welcome02ProgressWidget,
   ProgressCircle as Welcome02ProgressCircle,
+  NewsContent as Welcome02NewsContent,
+  EventsContent as Welcome02EventsContent,
+  EventCard as Welcome02EventCard,
+  EVENTS_DATA as Welcome02EventsData,
 } from './Welcome02';
-export type { Welcome02Variant, ChatMode as Welcome02ChatMode, MoreMode as Welcome02MoreMode } from './Welcome02';
+export type {
+  Welcome02Variant,
+  ChatMode as Welcome02ChatMode,
+  MoreMode as Welcome02MoreMode,
+  EventCardProps as Welcome02EventCardProps,
+} from './Welcome02';

@@ -4,7 +4,7 @@ import { DashboardContent } from './DashboardContent';
 import { HomeContent } from './HomeContent';
 import { InputBar, ChatMode, MoreMode } from './InputBar';
 import { Icon, CustomIcon } from '../Icon';
-import { svgPaths } from '../../svgPaths';
+import svgPaths from '../../imports/svg-68p9mk74mk';
 
 // Component for the top right history/action icons
 function TopActions() {
@@ -12,22 +12,22 @@ function TopActions() {
     <div className="flex items-center gap-3 self-end md:self-auto ml-auto px-6 py-4 opacity-50 hover:opacity-100 transition-opacity">
       <button className="p-1 hover:bg-black/5 rounded">
         <CustomIcon viewBox="0 0 18 18" width={18} height={18}>
-          <path d={svgPaths.clock} fill="#69606D" />
+          <path d={svgPaths.p63f5500} fill="#69606D" />
         </CustomIcon>
       </button>
       <div className="flex items-center gap-2">
         <button className="p-1 hover:bg-black/5 rounded">
           <CustomIcon viewBox="0 0 18 18" width={18} height={18}>
-            <path d={svgPaths.clock} fill="#69606D" />
+            <path d={svgPaths.p63f5500} fill="#69606D" />
           </CustomIcon>
         </button>
         <button className="bg-[#dfdce1] p-1 rounded hover:bg-[#d0cdd2]">
           <CustomIcon viewBox="0 0 18 18" width={18} height={18}>
-            <path d={svgPaths.plus} fill="#69606D" />
+            <path d={svgPaths.pe17e0a0} fill="#69606D" />
           </CustomIcon>
         </button>
         <button className="p-1 hover:bg-black/5 rounded rotate-90">
-          <Icon path={svgPaths.threeDots} size={18} fillColor="#373338" />
+          <Icon path={svgPaths.p3f6d0000} size={18} fillColor="#373338" />
         </button>
       </div>
     </div>
@@ -103,7 +103,7 @@ export function WelcomeDashboard() {
             <HomeContent onModeChange={handleModeChange} />
           </div>
         ) : (
-          <div className="flex flex-col gap-10 w-full max-w-3xl mt-10">
+          <div className={`flex flex-col gap-10 w-full mt-10 ${currentMode === 'news' ? 'max-w-6xl' : 'max-w-3xl'}`}>
             <Greeting
               title={content.title}
               description={content.description}

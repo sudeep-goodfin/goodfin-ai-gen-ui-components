@@ -1,7 +1,8 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Icon, CustomIcon } from '../Icon';
-import { svgPaths } from '../../svgPaths';
+import svgPaths from '../../imports/svg-191opiemcf';
+import { CommunityIcon } from '../dashboard/icons';
 
 interface SidebarItemProps {
   label: string;
@@ -34,27 +35,14 @@ function GoodfinAIIcon() {
       <div className="absolute inset-0 rounded-[6px] overflow-hidden bg-gradient-to-br from-[#f4d1ff] via-[#f8bcd8] to-[#fcedd6]" />
       {/* Sparkle overlay */}
       <div className="absolute -top-1 -right-1">
-        <CustomIcon viewBox="0 0 9 10" width={9} height={10}>
+        <CustomIcon viewBox="0 0 16 16" width={12} height={12}>
           <path
-            clipRule="evenodd"
-            d={svgPaths.sparkle}
+            d={svgPaths.p131a1900}
             fill="#746876"
-            fillRule="evenodd"
           />
         </CustomIcon>
       </div>
     </div>
-  );
-}
-
-// Community Icon (custom multi-path)
-function CommunityIcon({ className, color = "#8A7F91" }: { className?: string; color?: string }) {
-  return (
-    <CustomIcon viewBox="0 0 24 24" className={className} width={24} height={24}>
-      <path clipRule="evenodd" d={svgPaths.community1} fill={color} fillRule="evenodd" />
-      <path d={svgPaths.community2} fill={color} />
-      <path clipRule="evenodd" d={svgPaths.community3} fill={color} fillRule="evenodd" />
-    </CustomIcon>
   );
 }
 
@@ -69,18 +57,18 @@ export function Sidebar() {
           <span className="text-[10px] leading-4 font-medium text-[#29272a]">Goodfin AI</span>
         </button>
 
-        <SidebarItem label="Deals" iconPath={svgPaths.deals} />
-        <SidebarItem label="Dashboard" iconPath={svgPaths.dashboard} />
-        <SidebarItem label="Wishlist" iconPath={svgPaths.wishlist} />
-        <SidebarItem label="Memberships" iconPath={svgPaths.memberships} />
+        <SidebarItem label="Deals" iconPath={svgPaths.p3fc6c580} />
+        <SidebarItem label="Dashboard" iconPath={svgPaths.p1b13d600} />
+        <SidebarItem label="Wishlist" iconPath={svgPaths.p29b8e6f1} />
+        <SidebarItem label="Memberships" iconPath={svgPaths.p1b20f380} />
         <SidebarItem label="Community" icon={<CommunityIcon className="text-[#8A7F91]" />} />
-        <SidebarItem label="Events" iconPath={svgPaths.events} />
-        <SidebarItem label="Referrals" iconPath={svgPaths.referrals} />
+        <SidebarItem label="Events" iconPath={svgPaths.p3ace5780} />
+        <SidebarItem label="Referrals" iconPath={svgPaths.p36a8ec00} />
       </div>
 
       {/* Bottom Help */}
       <div className="mt-auto pt-4 flex flex-col w-full items-center">
-        <SidebarItem label="Help" iconPath={svgPaths.help} />
+        <SidebarItem label="Help" iconPath={svgPaths.p1a65d500} />
       </div>
     </div>
   );
