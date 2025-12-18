@@ -292,6 +292,11 @@ export function App() {
     { id: 'investment-flow', label: 'Investment Flow' },
   ];
 
+  // Welcome02 variants
+  const welcome02Variants = [
+    { id: 'default', label: 'Default' },
+  ];
+
   return (
     <DocsLayout
       groups={componentGroups}
@@ -307,8 +312,12 @@ export function App() {
       renderWelcomeView={(variant) => (
         <WelcomeScreenView variant={variant as WelcomeScreenVariant} />
       )}
+      renderWelcome02View={() => (
+        <Welcome02 />
+      )}
       onboardingVariants={onboardingVariants}
       welcomeVariants={welcomeScreenVariants}
+      welcome02Variants={welcome02Variants}
       conversationFlowOptions={conversationFlowOptions}
     />
   );

@@ -1,9 +1,9 @@
 import svgPaths from "./svg-191opiemcf";
 import clsx from "clsx";
-import imgGoodfin from "figma:asset/9c30836276b7a564e9e4e57f94a03905ffed3039.png";
-import imgRectangle34464 from "figma:asset/b5053ea3d4524deff6ef4fbc4a0d9e23900ba0c3.png";
-import imgRectangle34465 from "figma:asset/f94c573b549fdddf2f033ceac5667a855932a43d.png";
-import imgRectangle161681 from "figma:asset/4d0b2c28bd95aa5be274f3511f4196cdd51cac17.png";
+import imgGoodfin from "@/assets/goodfin-logo.png";
+import imgRectangle34464 from "@/assets/user-avatar.png";
+import imgRectangle34465 from "@/assets/user-avatar-alt.png";
+import imgRectangle161681 from "@/assets/goodfin-ai-avatar.png";
 
 function BackgroundImage2({ children }: React.PropsWithChildren<{}>) {
   return (

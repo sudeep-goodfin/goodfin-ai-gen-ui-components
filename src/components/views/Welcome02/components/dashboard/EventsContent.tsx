@@ -1,8 +1,8 @@
 import React from 'react';
 import svgPathsEvents from '../../imports/svg-tyig23frby';
-import imgFrame2147226923 from "../../assets/1cb12a14575cb7f38920f88624784aab0bc1576e.png";
-import imgImage48 from "../../assets/3d7e9f4eb85c2e97a2dafb31d4e86737fa2a82e6.png";
-import imgImage50 from "../../assets/2d81954c4781b7a7f2986e16cf0f1118fc56fe44.png";
+import imgEventBrunch from "../../assets/event-summit-brunch.png";
+import imgEventSummit from "../../assets/event-summit-alt.png";
+import imgExploreEvents from "../../assets/explore-events.png";
 
 export interface EventCardProps {
   day: string;
@@ -78,7 +78,7 @@ export const EVENTS_DATA: EventCardProps[] = [
         location: "San Rafael, California",
         weekday: "Saturday",
         time: "2:00 - 6:00 PM PDT",
-        image: imgFrame2147226923
+        image: imgEventBrunch
     },
     {
         day: "15",
@@ -88,7 +88,7 @@ export const EVENTS_DATA: EventCardProps[] = [
         location: "San Francisco, CA",
         weekday: "Monday",
         time: "9:00 AM - 5:00 PM PST",
-        image: imgImage48
+        image: imgEventSummit
     },
     {
         day: "05",
@@ -98,7 +98,7 @@ export const EVENTS_DATA: EventCardProps[] = [
         location: "New York, NY",
         weekday: "Friday",
         time: "7:00 - 10:00 PM EST",
-        image: imgImage50
+        image: imgExploreEvents
     }
 ];
 

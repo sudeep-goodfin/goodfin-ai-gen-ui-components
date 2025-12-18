@@ -1,20 +1,19 @@
 import React from 'react';
 import { Sparkles } from 'lucide-react';
 
-// Import assets
-import imgAvatar from '../../assets/10df166f7198e8da05436d3281063f16e1f07bc1.png';
-import imgAvatar1 from '../../assets/1830935ea2c094f22dc1588316bf9f66314f08e4.png';
-import imgAvatar2 from '../../assets/b7750590925b5ef18bc762d4295c388d5e60d5ab.png';
-import imgLogo from '../../assets/89ff9bd9a3ef0fddbaa7d7445894f1e0838eb847.png';
-import imgFrame2147227118 from '../../assets/09a2e0a0a7fcf07ef6185e0499b732f2ad2f46bf.png';
-import imgImage from '../../assets/0f341f9d92c1bb1dc422aefe1dfaf4bd1750bfe5.png';
-import imgLogo1 from '../../assets/8c08bf17886d2e5eded3ea02d23762fafe2f06d9.png';
-import imgLogo2 from '../../assets/021465063bfbaa97baac60fd1ad1fdf8491924d4.png';
-import imgFrame2147227120 from '../../assets/fe2e41e4dcf3f8fead730dc807f37215dc7f41ff.png';
-import imgImage45 from '../../assets/5ee5084dbd236e72ef086f5c1942df262c85e222.png';
-import imgImage2 from '../../assets/9d97ecdfbe1e339c6a3678b65e2303240e4b4253.png';
-import imgImage3 from '../../assets/d9d8c1dcb9a6b4962ed33a9f691a396eae17fe68.png';
-import imgImage4 from '../../assets/bb659a0a4ede0ada209cf49f1560f4ddc5536152.png';
+// Import assets with new named files
+import imgAvatarSpaceX from '../../assets/avatar-spacex.png';
+import imgAvatarAnthropic from '../../assets/avatar-anthropic.png';
+import imgAvatarOpenAI from '../../assets/avatar-openai.png';
+import imgLogoFox from '../../assets/logo-fox-news.png';
+import imgLogoBBC from '../../assets/logo-bbc-news.png';
+import imgLogoCBS from '../../assets/logo-cbs-news.png';
+import imgNewsHero from '../../assets/news-hero-spacex.png';
+import imgNewsCard1 from '../../assets/news-card-spacex.png';
+import imgNewsCard2 from '../../assets/news-card-spacex-2.png';
+import imgNewsThumbnail1 from '../../assets/news-thumbnail-1.png';
+import imgNewsThumbnail2 from '../../assets/news-thumbnail-2.png';
+import imgNewsThumbnail3 from '../../assets/news-thumbnail-3.png';
 
 // Reusable chip component
 function NewsChip({ icon, label, active = false }: { icon?: React.ReactNode; label: string; active?: boolean }) {
@@ -76,18 +75,16 @@ export function NewsContent() {
         <div className="w-full bg-[#f0eef0] rounded-lg p-1 overflow-x-auto no-scrollbar">
           <div className="flex items-center gap-1 min-w-max">
             <NewsChip label="Top News" active />
-            <NewsChip label="SpaceX" icon={<img src={imgAvatar} className="w-4 h-4 rounded-sm object-cover" />} />
+            <NewsChip label="SpaceX" icon={<img src={imgAvatarSpaceX} className="w-4 h-4 rounded-sm object-cover" />} />
             <NewsChip
               label="Anthropic"
               icon={
                 <div className="flex -space-x-1">
-                  <img src={imgAvatar} className="w-4 h-4 rounded-sm object-cover z-20 ring-1 ring-white" />
-                  <img src={imgAvatar1} className="w-4 h-4 rounded-sm object-cover z-10 ring-1 ring-white" />
+                  <img src={imgAvatarAnthropic} className="w-4 h-4 rounded-sm object-cover z-20 ring-1 ring-white" />
                 </div>
               }
             />
-            <NewsChip label="Perplexity" icon={<img src={imgAvatar1} className="w-4 h-4 rounded-sm object-cover" />} />
-            <NewsChip label="OpenAI" icon={<img src={imgAvatar2} className="w-4 h-4 rounded-sm object-cover" />} />
+            <NewsChip label="OpenAI" icon={<img src={imgAvatarOpenAI} className="w-4 h-4 rounded-sm object-cover" />} />
           </div>
         </div>
       </div>
@@ -104,7 +101,7 @@ export function NewsContent() {
             {/* Hero Card */}
             <div className="relative w-full h-[280px] md:h-[320px] rounded-xl overflow-hidden group cursor-pointer">
               <img
-                src={imgFrame2147227118}
+                src={imgNewsHero}
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/80" />
@@ -116,7 +113,7 @@ export function NewsContent() {
 
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center gap-2 text-white/90 text-sm">
-                    <img src={imgLogo} className="w-5 h-5 rounded-full bg-white p-0.5" />
+                    <img src={imgLogoFox} className="w-5 h-5 rounded-full bg-white p-0.5" />
                     <span>Fox News</span>
                     <span className="opacity-60">•</span>
                     <span>12 min ago</span>
@@ -136,7 +133,7 @@ export function NewsContent() {
               <div className="flex flex-col gap-3 group cursor-pointer">
                 <div className="h-[140px] rounded-lg overflow-hidden relative">
                   <img
-                    src={imgImage}
+                    src={imgNewsCard1}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                 </div>
@@ -150,8 +147,8 @@ export function NewsContent() {
                   </p>
                   <div className="flex items-center justify-between mt-1">
                     <div className="flex items-center -space-x-1.5">
-                      <img src={imgLogo1} className="w-5 h-5 rounded-full border border-white bg-white object-contain" />
-                      <img src={imgLogo2} className="w-5 h-5 rounded-full border border-white bg-white object-contain" />
+                      <img src={imgLogoBBC} className="w-5 h-5 rounded-full border border-white bg-white object-contain" />
+                      <img src={imgLogoCBS} className="w-5 h-5 rounded-full border border-white bg-white object-contain" />
                       <div className="w-5 h-5 rounded-full border border-white bg-gray-100 flex items-center justify-center text-[8px] text-gray-500 font-medium z-10">
                         +3
                       </div>
@@ -168,7 +165,7 @@ export function NewsContent() {
               <div className="flex flex-col gap-3 group cursor-pointer">
                 <div className="h-[140px] rounded-lg overflow-hidden relative">
                   <img
-                    src={imgFrame2147227120}
+                    src={imgNewsCard2}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -195,26 +192,20 @@ export function NewsContent() {
               title="SpaceX loses the upper stage (ship) after catching its booster"
               source="BBC News"
               time="22 min ago"
-              image={imgImage2}
+              image={imgNewsThumbnail1}
             />
             <NewsListItem
               title="SpaceX completes final test ahead of a crucial Starship launch"
               source="CBS News"
               time="32 min ago"
-              image={imgImage3}
-              sourceLogo={imgImage45}
+              image={imgNewsThumbnail2}
+              sourceLogo={imgLogoCBS}
             />
             <NewsListItem
               title="SpaceX launches 28 Starlink satellites on Falcon 9 with Starship"
               source="Fox News"
               time="45 min ago"
-              image={imgImage45}
-            />
-            <NewsListItem
-              title="SpaceX launches 28 Starlink satellites on Falcon 9 with Starship"
-              source="Euro News"
-              time="50 min ago"
-              image={imgImage4}
+              image={imgNewsThumbnail3}
             />
           </div>
         </div>

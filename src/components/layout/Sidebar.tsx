@@ -1,5 +1,6 @@
-import React from 'react';
-import { ChevronRight } from 'lucide-react';
+import React, { useEffect } from 'react';
+import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
+import { ChevronRight, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 // Types
@@ -28,6 +29,8 @@ type SidebarProps = {
   activeItem?: string;
   activeSubItem?: string;
   expandedItems?: string[];
+  isOpen?: boolean;
+  onClose?: () => void;
   onSectionClick?: (sectionId: string) => void;
   onItemClick?: (sectionId: string, itemId: string) => void;
   onSubItemClick?: (sectionId: string, itemId: string, subItemId: string) => void;
@@ -40,14 +43,38 @@ export function Sidebar({
   activeItem,
   activeSubItem,
   expandedItems = [],
+  isOpen = false,
+  onClose,
   onSectionClick,
   onItemClick,
   onSubItemClick,
   onToggleExpand,
 }: SidebarProps) {
-  return (
-    <aside className="w-[280px] flex-shrink-0 border-r border-border h-full overflow-y-auto">
-      <div className="py-6 pr-4">
+  // Close sidebar on escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose?.();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  // Prevent body scroll when sidebar is open on mobile
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  const sidebarContent = (
+    <div className="py-6 pr-4">
         {sections.map((section) => (
           <div key={section.id} className="mb-6">
             {/* Section Header */}
@@ -77,6 +104,8 @@ export function Sidebar({
                       onClick={() => {
                         if (hasChildren) {
                           onToggleExpand?.(item.id);
+                        } else {
+                          onClose?.(); // Close mobile sidebar when selecting item without children
                         }
                         onItemClick?.(section.id, item.id);
                       }}
@@ -116,7 +145,10 @@ export function Sidebar({
                         {item.children!.map((subItem) => (
                           <button
                             key={subItem.id}
-                            onClick={() => onSubItemClick?.(section.id, item.id, subItem.id)}
+                            onClick={() => {
+                              onSubItemClick?.(section.id, item.id, subItem.id);
+                              onClose?.(); // Close mobile sidebar on selection
+                            }}
                             className={cn(
                               'w-full text-left px-2 py-1.5 text-sm rounded-md transition-colors',
                               activeSubItem === subItem.id
@@ -136,6 +168,69 @@ export function Sidebar({
           </div>
         ))}
       </div>
-    </aside>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar - always visible on lg+ */}
+      <aside className="hidden lg:flex w-[280px] flex-shrink-0 border-r border-border h-full bg-background">
+        <ScrollAreaPrimitive.Root className="relative overflow-hidden w-full h-full">
+          <ScrollAreaPrimitive.Viewport className="w-full h-full">
+            {sidebarContent}
+          </ScrollAreaPrimitive.Viewport>
+          <ScrollAreaPrimitive.Scrollbar
+            orientation="vertical"
+            className="flex w-2.5 touch-none select-none border-l border-l-transparent p-[1px] transition-colors"
+          >
+            <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-border hover:bg-muted-foreground/50 transition-colors" />
+          </ScrollAreaPrimitive.Scrollbar>
+          <ScrollAreaPrimitive.Corner />
+        </ScrollAreaPrimitive.Root>
+      </aside>
+
+      {/* Mobile Sidebar - overlay */}
+      {/* Backdrop */}
+      <div
+        className={cn(
+          'fixed inset-0 z-40 bg-black/50 lg:hidden transition-opacity duration-200',
+          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        )}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      {/* Slide-out panel */}
+      <aside
+        className={cn(
+          'fixed top-0 left-0 z-50 h-full w-[280px] bg-background border-r border-border lg:hidden flex flex-col',
+          'transform transition-transform duration-200 ease-out',
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
+        {/* Close button */}
+        <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
+          <span className="font-semibold text-foreground">Navigation</span>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Close menu"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <ScrollAreaPrimitive.Root className="relative overflow-hidden flex-1">
+          <ScrollAreaPrimitive.Viewport className="w-full h-full">
+            {sidebarContent}
+          </ScrollAreaPrimitive.Viewport>
+          <ScrollAreaPrimitive.Scrollbar
+            orientation="vertical"
+            className="flex w-2.5 touch-none select-none border-l border-l-transparent p-[1px] transition-colors"
+          >
+            <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-border hover:bg-muted-foreground/50 transition-colors" />
+          </ScrollAreaPrimitive.Scrollbar>
+          <ScrollAreaPrimitive.Corner />
+        </ScrollAreaPrimitive.Root>
+      </aside>
+    </>
   );
 }

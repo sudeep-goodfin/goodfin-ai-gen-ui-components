@@ -1,5 +1,5 @@
 import React from 'react';
-import imgRectangle161681 from "../../assets/4d0b2c28bd95aa5be274f3511f4196cdd51cac17.png";
+import imgRectangle161681 from "../../assets/goodfin-ai-avatar.png";
 
 interface GreetingProps {
   title?: string;

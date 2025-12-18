@@ -1,6 +1,6 @@
 import svgPaths from "./svg-tyig23frby";
-import imgFrame2147226923 from "figma:asset/1cb12a14575cb7f38920f88624784aab0bc1576e.png";
-import imgFrame2147225209 from "figma:asset/9dda8858906f2eea602db7a91d513b54b413a451.png";
+import imgFrame2147226923 from "@/assets/event-summit-brunch.png";
+import imgFrame2147225209 from "@/assets/event-summit-alt.png";
 
 function Helper() {
   return (

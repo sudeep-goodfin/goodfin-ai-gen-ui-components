@@ -1,17 +1,17 @@
 import svgPaths from "./svg-68p9mk74mk";
 import clsx from "clsx";
-import imgGoodfin from "figma:asset/9c30836276b7a564e9e4e57f94a03905ffed3039.png";
-import imgRectangle34464 from "figma:asset/b5053ea3d4524deff6ef4fbc4a0d9e23900ba0c3.png";
-import imgRectangle34465 from "figma:asset/f94c573b549fdddf2f033ceac5667a855932a43d.png";
-import imgRectangle161681 from "figma:asset/4d0b2c28bd95aa5be274f3511f4196cdd51cac17.png";
-import imgAvatar from "figma:asset/efdba89b6436b3d3f6977844dc213b4314620301.png";
-import imgAvatar1 from "figma:asset/1830935ea2c094f22dc1588316bf9f66314f08e4.png";
-import imgImage47 from "figma:asset/26a6c16b0bd2501bdeccb39daad1d730900e36e3.png";
-import imgImage48 from "figma:asset/3d7e9f4eb85c2e97a2dafb31d4e86737fa2a82e6.png";
-import imgImage49 from "figma:asset/e8690960d08b18a59d00d60d25087af43a0469a0.png";
-import imgImage50 from "figma:asset/2d81954c4781b7a7f2986e16cf0f1118fc56fe44.png";
-import imgFrame2147226923 from "figma:asset/1cb12a14575cb7f38920f88624784aab0bc1576e.png";
-import imgFrame2147225209 from "figma:asset/9dda8858906f2eea602db7a91d513b54b413a451.png";
+import imgGoodfin from "@/assets/goodfin-logo.png";
+import imgRectangle34464 from "@/assets/user-avatar.png";
+import imgRectangle34465 from "@/assets/user-avatar-alt.png";
+import imgRectangle161681 from "@/assets/goodfin-ai-avatar.png";
+import imgAvatar from "@/assets/avatar-anthropic.png";
+import imgAvatar1 from "@/assets/avatar-anthropic-alt.png";
+import imgImage47 from "@/assets/explore-deals.png";
+import imgImage48 from "@/assets/explore-events.png";
+import imgImage49 from "@/assets/explore-news.png";
+import imgImage50 from "@/assets/explore-insights.png";
+import imgFrame2147226923 from "@/assets/event-summit-brunch.png";
+import imgFrame2147225209 from "@/assets/event-summit-alt.png";
 
 function AiThumbCardsBackgroundImage({ children }: React.PropsWithChildren<{}>) {
   return (

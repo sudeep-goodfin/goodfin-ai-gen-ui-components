@@ -23,6 +23,7 @@ import {
   RotateCcw,
   Trash2,
   X,
+  Archive,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Sidebar, type SidebarSection } from './Sidebar';
@@ -58,6 +59,8 @@ const viewModeIcons: Record<string, React.ReactNode> = {
   conversation: <MessageSquare className="w-4 h-4" />,
   onboarding: <UserPlus className="w-4 h-4" />,
   welcome: <Home className="w-4 h-4" />,
+  welcome02: <Home className="w-4 h-4" />,
+  archive: <Archive className="w-4 h-4" />,
 };
 
 // Component icons map
@@ -107,15 +110,17 @@ type ComponentGroup = {
   components: ComponentOption[];
 };
 
-type ViewMode = 'component' | 'conversation' | 'onboarding' | 'welcome';
+type ViewMode = 'component' | 'conversation' | 'onboarding' | 'welcome' | 'welcome02';
 
 type DocsLayoutProps = {
   groups: ComponentGroup[];
   renderConversationView?: (flow: string) => React.ReactNode;
   renderOnboardingView?: (variant: string, key: number) => React.ReactNode;
   renderWelcomeView?: (variant: string) => React.ReactNode;
+  renderWelcome02View?: (variant: string) => React.ReactNode;
   onboardingVariants?: VariantOption[];
   welcomeVariants?: VariantOption[];
+  welcome02Variants?: VariantOption[];
   conversationFlowOptions?: { id: string; label: string }[];
 };
 
@@ -124,8 +129,10 @@ export function DocsLayout({
   renderConversationView,
   renderOnboardingView,
   renderWelcomeView,
+  renderWelcome02View,
   onboardingVariants = [],
   welcomeVariants = [],
+  welcome02Variants = [],
   conversationFlowOptions = [],
 }: DocsLayoutProps) {
   // Flatten all components from groups
@@ -138,6 +145,7 @@ export function DocsLayout({
     if (mode === 'conversation') return 'conversation';
     if (mode === 'onboarding') return 'onboarding';
     if (mode === 'welcome') return 'welcome';
+    if (mode === 'welcome02') return 'welcome02';
     return 'component';
   });
 
@@ -198,6 +206,10 @@ export function DocsLayout({
     const params = getUrlParams();
     return params.get('welcomeVariant') || welcomeVariants[0]?.id || 'first-time';
   });
+  const [activeWelcome02Variant, setActiveWelcome02Variant] = useState(() => {
+    const params = getUrlParams();
+    return params.get('welcome02Variant') || welcome02Variants[0]?.id || 'default';
+  });
   const [activeConversationFlow, setActiveConversationFlow] = useState(() => {
     const params = getUrlParams();
     return params.get('flow') || conversationFlowOptions[0]?.id || 'ai-greeting';
@@ -205,6 +217,9 @@ export function DocsLayout({
 
   // Fullscreen state
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Mobile sidebar state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Onboarding reset key
   const [onboardingKey, setOnboardingKey] = useState(0);
@@ -230,6 +245,7 @@ export function DocsLayout({
       flow: viewMode === 'conversation' ? activeConversationFlow : undefined,
       onboardingVariant: viewMode === 'onboarding' ? activeOnboardingVariant : undefined,
       welcomeVariant: viewMode === 'welcome' ? activeWelcomeVariant : undefined,
+      welcome02Variant: viewMode === 'welcome02' ? activeWelcome02Variant : undefined,
     };
 
     // Add block-04 specific params
@@ -241,7 +257,7 @@ export function DocsLayout({
     }
 
     updateUrlParams(params);
-  }, [viewMode, activeId, activeGroupId, variantStates, activeConversationFlow, activeOnboardingVariant, activeWelcomeVariant, showPresets, showStepper, showSuggestions, presetCount]);
+  }, [viewMode, activeId, activeGroupId, variantStates, activeConversationFlow, activeOnboardingVariant, activeWelcomeVariant, activeWelcome02Variant, showPresets, showStepper, showSuggestions, presetCount]);
 
   // Build sidebar sections based on view mode
   const buildSidebarSections = (): SidebarSection[] => {
@@ -268,10 +284,12 @@ export function DocsLayout({
           children: onboardingVariants.map(v => ({ id: v.id, label: v.label })),
         },
         {
-          id: 'welcome',
-          label: 'Welcome 0.1',
-          icon: viewModeIcons.welcome,
-          children: welcomeVariants.map(v => ({ id: v.id, label: v.label })),
+          id: 'welcome02',
+          label: 'Welcome Screen Flow 0.2',
+          icon: viewModeIcons.welcome02,
+          children: welcome02Variants.length > 0
+            ? welcome02Variants.map(v => ({ id: v.id, label: v.label }))
+            : undefined,
         },
       ],
     };
@@ -288,7 +306,21 @@ export function DocsLayout({
       })),
     }));
 
-    return [viewModes, ...componentSections];
+    // Archive section with older versions
+    const archiveSection: SidebarSection = {
+      id: 'archive',
+      label: 'Archive',
+      items: [
+        {
+          id: 'welcome',
+          label: 'Welcome Screen Flow 0.1',
+          icon: viewModeIcons.welcome,
+          children: welcomeVariants.map(v => ({ id: v.id, label: v.label })),
+        },
+      ],
+    };
+
+    return [viewModes, ...componentSections, archiveSection];
   };
 
   const sidebarSections = buildSidebarSections();
@@ -307,7 +339,12 @@ export function DocsLayout({
         setViewMode('conversation');
       } else if (itemId === 'onboarding') {
         setViewMode('onboarding');
-      } else if (itemId === 'welcome') {
+      } else if (itemId === 'welcome02') {
+        setViewMode('welcome02');
+      }
+    } else if (sectionId === 'archive') {
+      // Archive items
+      if (itemId === 'welcome') {
         setViewMode('welcome');
       }
     } else {
@@ -329,7 +366,13 @@ export function DocsLayout({
       } else if (itemId === 'onboarding') {
         setViewMode('onboarding');
         setActiveOnboardingVariant(subItemId);
-      } else if (itemId === 'welcome') {
+      } else if (itemId === 'welcome02') {
+        setViewMode('welcome02');
+        setActiveWelcome02Variant(subItemId);
+      }
+    } else if (sectionId === 'archive') {
+      // Archive sub-items
+      if (itemId === 'welcome') {
         setViewMode('welcome');
         setActiveWelcomeVariant(subItemId);
       }
@@ -377,6 +420,7 @@ export function DocsLayout({
     if (viewMode === 'conversation') return activeConversationFlow;
     if (viewMode === 'onboarding') return activeOnboardingVariant;
     if (viewMode === 'welcome') return activeWelcomeVariant;
+    if (viewMode === 'welcome02') return activeWelcome02Variant;
     if (viewMode === 'component') return variantStates[activeId];
     return undefined;
   };
@@ -404,8 +448,12 @@ export function DocsLayout({
       crumbs.push({ label: 'Onboarding' });
       const variantLabel = onboardingVariants.find(v => v.id === activeOnboardingVariant)?.label;
       if (variantLabel) crumbs.push({ label: variantLabel });
+    } else if (viewMode === 'welcome02') {
+      crumbs.push({ label: 'Welcome Screen Flow 0.2' });
+      const variantLabel = welcome02Variants.find(v => v.id === activeWelcome02Variant)?.label;
+      if (variantLabel) crumbs.push({ label: variantLabel });
     } else if (viewMode === 'welcome') {
-      crumbs.push({ label: 'Welcome 0.1' });
+      crumbs.push({ label: 'Archive' }, { label: 'Welcome Screen Flow 0.1' });
       const variantLabel = welcomeVariants.find(v => v.id === activeWelcomeVariant)?.label;
       if (variantLabel) crumbs.push({ label: variantLabel });
     }
@@ -430,6 +478,7 @@ export function DocsLayout({
           {viewMode === 'conversation' && renderConversationView?.(activeConversationFlow)}
           {viewMode === 'onboarding' && renderOnboardingView?.(activeOnboardingVariant, onboardingKey)}
           {viewMode === 'welcome' && renderWelcomeView?.(activeWelcomeVariant)}
+          {viewMode === 'welcome02' && renderWelcome02View?.(activeWelcome02Variant)}
         </div>
       </div>
     );
@@ -442,6 +491,8 @@ export function DocsLayout({
         title="Goodfin AI Primitives"
         breadcrumbs={buildBreadcrumbs()}
         onFullscreen={() => setIsFullscreen(true)}
+        onMenuToggle={() => setIsSidebarOpen(prev => !prev)}
+        showMenuButton={true}
       />
 
       {/* Main Content */}
@@ -452,11 +503,9 @@ export function DocsLayout({
           activeSection={viewMode === 'component' ? activeGroupId : 'flows'}
           activeItem={viewMode === 'component' ? activeId : viewMode}
           activeSubItem={getActiveSubItem()}
-          expandedItems={[
-            ...expandedItems,
-            viewMode, // Keep current view mode expanded
-            activeId, // Keep active component expanded
-          ]}
+          expandedItems={expandedItems}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
           onSectionClick={handleSectionClick}
           onItemClick={handleItemClick}
           onSubItemClick={handleSubItemClick}
@@ -465,7 +514,7 @@ export function DocsLayout({
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-auto">
-          <div className="p-8 max-w-5xl">
+          <div className="p-4 md:p-8 max-w-5xl">
             {/* Component View */}
             {viewMode === 'component' && (
               <>
@@ -699,12 +748,12 @@ export function DocsLayout({
               </>
             )}
 
-            {/* Welcome View */}
+            {/* Welcome View (Archive) */}
             {viewMode === 'welcome' && (
               <>
                 <PageHeader
-                  title="Welcome 0.1"
-                  description="Preview the welcome screen for accredited investors."
+                  title="Welcome Screen Flow 0.1"
+                  description="Archived version - Preview the welcome screen for accredited investors."
                 />
 
                 {/* Variant Selector Pills */}
@@ -738,6 +787,58 @@ export function DocsLayout({
                   <ScrollAreaPrimitive.Root className="relative overflow-hidden">
                     <ScrollAreaPrimitive.Viewport className="w-full min-h-[600px] max-h-[800px]">
                       {renderWelcomeView?.(activeWelcomeVariant)}
+                    </ScrollAreaPrimitive.Viewport>
+                    <ScrollAreaPrimitive.Scrollbar
+                      orientation="vertical"
+                      className="flex w-2.5 touch-none select-none border-l border-l-transparent p-[1px] transition-colors"
+                    >
+                      <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-grey-300 hover:bg-grey-400 transition-colors" />
+                    </ScrollAreaPrimitive.Scrollbar>
+                    <ScrollAreaPrimitive.Corner />
+                  </ScrollAreaPrimitive.Root>
+                </div>
+              </>
+            )}
+
+            {/* Welcome 0.2 View */}
+            {viewMode === 'welcome02' && (
+              <>
+                <PageHeader
+                  title="Welcome Screen Flow 0.2"
+                  description="Preview the welcome screen flow version 0.2."
+                />
+
+                {/* Variant Selector Pills */}
+                {welcome02Variants.length > 0 && (
+                  <div className="mb-6">
+                    <p className="text-sm text-muted-foreground mb-2">Variant</p>
+                    <div
+                      className="inline-flex gap-1 p-1 rounded-xl flex-wrap"
+                      style={{ backgroundColor: 'var(--grey-100)' }}
+                    >
+                      {welcome02Variants.map((variant) => (
+                        <button
+                          key={variant.id}
+                          onClick={() => setActiveWelcome02Variant(variant.id)}
+                          className={cn('px-3 py-1.5 text-sm font-medium rounded-lg transition-all')}
+                          style={{
+                            backgroundColor: activeWelcome02Variant === variant.id ? '#FFFFFF' : 'transparent',
+                            color: activeWelcome02Variant === variant.id ? 'var(--grey-950)' : 'var(--grey-500)',
+                            boxShadow: activeWelcome02Variant === variant.id ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                          }}
+                        >
+                          {variant.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Preview Container */}
+                <div className="border border-border rounded-xl overflow-hidden bg-muted/30">
+                  <ScrollAreaPrimitive.Root className="relative overflow-hidden">
+                    <ScrollAreaPrimitive.Viewport className="w-full min-h-[600px] max-h-[800px]">
+                      {renderWelcome02View?.(activeWelcome02Variant)}
                     </ScrollAreaPrimitive.Viewport>
                     <ScrollAreaPrimitive.Scrollbar
                       orientation="vertical"
