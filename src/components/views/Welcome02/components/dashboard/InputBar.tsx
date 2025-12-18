@@ -1,54 +1,37 @@
 import React, { useState } from 'react';
 import { chatSvgPaths } from './chat-icons';
 import { cn } from '@/lib/utils';
-import { FileText, Calendar, Briefcase, X, Home } from "lucide-react";
+import { FileText, Calendar, Briefcase, Home } from "lucide-react";
 
-// Reusing the Wrapper from the import logic
-function Wrapper({ children }: React.PropsWithChildren<{}>) {
-  return (
-    <div className="relative shrink-0 size-[20px]">
-      <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 20 20">
-        {children}
-      </svg>
-    </div>
-  );
-}
-
-function TypographyText({ text }: { text: string }) {
-  return (
-    <span className="text-[#29272a] text-[14px] leading-[20px] font-normal whitespace-nowrap">
-      {text}
-    </span>
-  );
-}
 
 interface ChipProps {
   icon: React.ReactNode;
+  activeIcon?: React.ReactNode;
   label: string;
   onClick?: () => void;
   isActive?: boolean;
 }
 
-function Chip({ icon, label, onClick, isActive }: ChipProps) {
+function Chip({ icon, activeIcon, label, onClick, isActive }: ChipProps) {
   return (
     <div
         onClick={onClick}
         className={cn(
-            "group flex gap-[2px] items-center pl-[4px] pr-[12px] py-[4px] relative rounded-[36px] shrink-0 cursor-pointer transition-colors border border-transparent select-none",
-            isActive ? "bg-purple-100 border-purple-200" : "bg-white hover:bg-gray-50"
+            "group flex gap-[4px] items-center pl-[8px] pr-[12px] py-[4px] relative rounded-[36px] shrink-0 cursor-pointer transition-colors select-none",
+            isActive
+              ? "bg-[#685f6a]"
+              : "bg-white hover:bg-gray-50"
         )}
     >
       <div className="flex items-center relative shrink-0">
-          {icon}
+          {isActive && activeIcon ? activeIcon : icon}
       </div>
-      <TypographyText text={label} />
-
-      {/* Close Icon (only if active) */}
-      {isActive && (
-         <div className="absolute -top-[2px] -right-[2px] bg-white rounded-full p-[1px] border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm z-10 flex items-center justify-center">
-             <X className="w-[10px] h-[10px] text-gray-500" />
-         </div>
-      )}
+      <span className={cn(
+        "text-[14px] leading-[20px] font-light whitespace-nowrap",
+        isActive ? "text-[#f0eef0]" : "text-[#29272a]"
+      )}>
+        {label}
+      </span>
     </div>
   );
 }
@@ -145,9 +128,10 @@ export function InputBar({ currentMode = 'default', extraSlotItem, onModeChange 
             isActive={currentMode === extraSlotItem}
             onClick={() => handleToggle(extraSlotItem)}
             icon={
-                <div className="flex items-center justify-center w-[20px] h-[20px]">
-                    <IconComponent className="h-[16px] w-[16px] text-[#373338]" />
-                </div>
+                <IconComponent className="size-[11px] text-[#7f7582]" />
+            }
+            activeIcon={
+                <IconComponent className="size-[11px] text-[#f0eef0]" />
             }
         />
     );
@@ -162,22 +146,22 @@ export function InputBar({ currentMode = 'default', extraSlotItem, onModeChange 
   return (
     <div className="w-full max-w-3xl flex flex-col items-center gap-2">
       {/* Input Box Container */}
-      <div className="bg-white relative rounded-[16px] shrink-0 w-full min-h-[108px] flex flex-col">
+      <div className="bg-white relative rounded-[16px] shrink-0 w-full h-[108px] flex flex-col">
         {/* Border & Shadow Layer */}
         <div aria-hidden="true" className="absolute border border-[#f0eef0] border-solid inset-0 pointer-events-none rounded-[16px] shadow-[-1px_1px_8px_0px_rgba(164,140,160,0.2)]" />
 
-        <div className="relative z-10 flex flex-col w-full h-full p-1">
+        <div className="relative z-10 flex flex-col justify-between w-full h-full p-[16px]">
             {/* Input Area */}
-            <div className="flex-1 px-[12px] py-[8px] flex items-start">
+            <div className="flex h-[24px] items-center">
                  <input
                     type="text"
                     placeholder="Ask anything..."
-                    className="w-full text-[16px] leading-[24px] text-[#29272a] placeholder:text-[#7f7582] bg-transparent outline-none font-light"
+                    className="w-full text-[16px] leading-normal text-[#29272a] placeholder:text-[#7f7582] bg-transparent outline-none font-light tracking-[-0.3px]"
                  />
             </div>
 
             {/* Bottom Toolbar */}
-            <div className="flex items-end justify-between px-[12px] pb-0">
+            <div className="flex items-end justify-between">
                 {/* Left Actions (Chips) */}
                 <div className="flex gap-[4px] items-center flex-wrap">
                     {/* Home */}
@@ -186,9 +170,10 @@ export function InputBar({ currentMode = 'default', extraSlotItem, onModeChange 
                         isActive={currentMode === 'default'}
                         onClick={() => handleToggle('default')}
                         icon={
-                            <div className="flex items-center justify-center w-[20px] h-[20px]">
-                                <Home className="h-[16px] w-[16px] text-[#373338]" />
-                            </div>
+                            <Home className="size-[11px] text-[#7f7582]" />
+                        }
+                        activeIcon={
+                            <Home className="size-[11px] text-[#f0eef0]" />
                         }
                     />
 
@@ -198,19 +183,18 @@ export function InputBar({ currentMode = 'default', extraSlotItem, onModeChange 
                         isActive={currentMode === 'research'}
                         onClick={() => handleToggle('research')}
                         icon={
-                            <div className="overflow-clip relative shrink-0 size-[20px]">
-                               <div className="absolute inset-[8.33%_20.83%_12.5%_20.83%]">
-                                  <div className="absolute inset-[0_0_-0.01%_0]">
-                                    <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 12 16">
-                                      <g>
-                                        <path d={chatSvgPaths.p282ff240} fill="#BEB9C0" />
-                                        <path d={chatSvgPaths.pda45600} fill="#373338" />
-                                        <path d={chatSvgPaths.p27a45c00} fill="#373338" />
-                                      </g>
-                                    </svg>
-                                  </div>
-                               </div>
-                            </div>
+                            <svg className="size-[11px]" fill="none" viewBox="0 0 12 16">
+                              <path d={chatSvgPaths.p282ff240} fill="#7f7582" />
+                              <path d={chatSvgPaths.pda45600} fill="#7f7582" />
+                              <path d={chatSvgPaths.p27a45c00} fill="#7f7582" />
+                            </svg>
+                        }
+                        activeIcon={
+                            <svg className="size-[11px]" fill="none" viewBox="0 0 12 16">
+                              <path d={chatSvgPaths.p282ff240} fill="#f0eef0" />
+                              <path d={chatSvgPaths.pda45600} fill="#f0eef0" />
+                              <path d={chatSvgPaths.p27a45c00} fill="#f0eef0" />
+                            </svg>
                         }
                     />
 
@@ -220,13 +204,18 @@ export function InputBar({ currentMode = 'default', extraSlotItem, onModeChange 
                         isActive={currentMode === 'deals'}
                         onClick={() => handleToggle('deals')}
                         icon={
-                           <Wrapper>
-                                <g>
-                                  <path d={chatSvgPaths.pbe91080} stroke="#29272A" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                  <path d={chatSvgPaths.p3fc7e680} stroke="#29272A" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                  <path d={chatSvgPaths.p553b480} stroke="#29272A" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                </g>
-                           </Wrapper>
+                            <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
+                              <path d={chatSvgPaths.pbe91080} stroke="#7f7582" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                              <path d={chatSvgPaths.p3fc7e680} stroke="#7f7582" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                              <path d={chatSvgPaths.p553b480} stroke="#7f7582" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                            </svg>
+                        }
+                        activeIcon={
+                            <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
+                              <path d={chatSvgPaths.pbe91080} stroke="#f0eef0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                              <path d={chatSvgPaths.p3fc7e680} stroke="#f0eef0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                              <path d={chatSvgPaths.p553b480} stroke="#f0eef0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                            </svg>
                         }
                     />
 
@@ -236,16 +225,14 @@ export function InputBar({ currentMode = 'default', extraSlotItem, onModeChange 
                         isActive={currentMode === 'news'}
                         onClick={() => handleToggle('news')}
                         icon={
-                            <Wrapper>
-                                <defs>
-                                    <clipPath id="clip_news">
-                                        <rect width="20" height="20" fill="white"/>
-                                    </clipPath>
-                                </defs>
-                                <g clipPath="url(#clip_news)">
-                                    <path d={chatSvgPaths.p36490700} fill="#BEB9C0" />
-                                </g>
-                            </Wrapper>
+                            <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
+                              <path d={chatSvgPaths.p36490700} fill="#7f7582" />
+                            </svg>
+                        }
+                        activeIcon={
+                            <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
+                              <path d={chatSvgPaths.p36490700} fill="#f0eef0" />
+                            </svg>
                         }
                     />
 
@@ -261,16 +248,9 @@ export function InputBar({ currentMode = 'default', extraSlotItem, onModeChange 
                         label="More"
                         isActive={false}
                         icon={
-                          <Wrapper>
-                            <defs>
-                              <clipPath id="clip_more">
-                                <rect width="20" height="20" fill="white"/>
-                              </clipPath>
-                            </defs>
-                            <g clipPath="url(#clip_more)">
-                              <path d={chatSvgPaths.p24b71d80} fill="#373338" />
-                            </g>
-                          </Wrapper>
+                            <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
+                              <path d={chatSvgPaths.p24b71d80} fill="#7f7582" />
+                            </svg>
                         }
                       />
                     </SimpleDropdown>
