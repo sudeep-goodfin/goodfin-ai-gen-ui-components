@@ -312,8 +312,8 @@ export function App() {
       renderWelcomeView={(variant) => (
         <WelcomeScreenView variant={variant as WelcomeScreenVariant} />
       )}
-      renderWelcome02View={() => (
-        <Welcome02 />
+      renderWelcome02View={(_variant, showChrome) => (
+        <Welcome02 showChrome={showChrome} />
       )}
       onboardingVariants={onboardingVariants}
       welcomeVariants={welcomeScreenVariants}

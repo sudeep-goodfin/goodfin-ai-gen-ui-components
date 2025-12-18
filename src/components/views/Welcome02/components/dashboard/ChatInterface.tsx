@@ -2,13 +2,12 @@ import React from 'react';
 import { Sparkles, Building2, ArrowRight } from 'lucide-react';
 import ContainerCollapse from './wizard/ContainerCollapse';
 import { AllDealsView } from './AllDealsView';
-import imgGoodfinAI from "../../assets/goodfin-ai-avatar.png";
 
 export function ThinkingBubble() {
     return (
         <div className="flex gap-4 w-full animate-fade-in items-start">
-            <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-gray-100 shadow-sm">
-                <img src={imgGoodfinAI} alt="AI" className="w-full h-full object-cover" />
+            <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 shadow-[0px_5px_5px_0px_rgba(190,185,192,0.33)] border border-[#F8F8F8]">
+                <img src="/conciergeIcon.png" alt="AI" className="w-full h-full object-cover" />
             </div>
             <div className="flex flex-col gap-2 pt-1 w-full max-w-[80%]">
                 <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse" />
@@ -23,8 +22,8 @@ export function AIResponse({ content, isStreaming }: { content: string, isStream
 
     return (
         <div className="flex gap-4 w-full animate-fade-in items-start">
-            <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-gray-100 shadow-sm">
-                <img src={imgGoodfinAI} alt="AI" className="w-full h-full object-cover" />
+            <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 shadow-[0px_5px_5px_0px_rgba(190,185,192,0.33)] border border-[#F8F8F8]">
+                <img src="/conciergeIcon.png" alt="AI" className="w-full h-full object-cover" />
             </div>
             <div className="flex flex-col gap-2 pt-1 w-full max-w-[90%]">
                 <p className="text-[#29272a] text-[15px] leading-6 font-light whitespace-pre-wrap">

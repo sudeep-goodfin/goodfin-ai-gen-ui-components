@@ -5,12 +5,16 @@ import { WelcomeDashboard } from './components/dashboard/WelcomeDashboard';
 
 export type Welcome02Variant = 'default';
 
-export function Welcome02() {
+type Welcome02Props = {
+  showChrome?: boolean;
+};
+
+export function Welcome02({ showChrome = true }: Welcome02Props) {
   return (
     <div className="flex flex-col h-screen w-full bg-[#f0eef0] overflow-hidden font-sans text-[#373338]">
-      <Header />
+      {showChrome && <Header />}
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
+        {showChrome && <Sidebar />}
         <WelcomeDashboard />
       </div>
     </div>

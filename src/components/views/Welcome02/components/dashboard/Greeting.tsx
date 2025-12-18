@@ -1,5 +1,4 @@
 import React from 'react';
-import imgRectangle161681 from "../../assets/goodfin-ai-avatar.png";
 
 interface GreetingProps {
   title?: string;
@@ -13,8 +12,8 @@ export function Greeting({
   return (
     <div className="flex flex-col gap-6 w-full max-w-3xl">
        {/* Greeting Header with Avatar */}
-       <div className="relative w-12 h-12 rounded-full overflow-hidden shadow-sm border border-white">
-           <img src={imgRectangle161681} alt="Goodfin AI" className="w-full h-full object-cover" />
+       <div className="relative w-12 h-12 rounded-full overflow-hidden shadow-[0px_5px_5px_0px_rgba(190,185,192,0.33)] border border-[#F8F8F8]">
+           <img src="/conciergeIcon.png" alt="Goodfin AI" className="w-full h-full object-cover" />
        </div>
 
        {/* Text */}

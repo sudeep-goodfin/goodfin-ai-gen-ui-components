@@ -24,6 +24,8 @@ import {
   Trash2,
   X,
   Archive,
+  PanelLeftClose,
+  PanelLeft,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Sidebar, type SidebarSection } from './Sidebar';
@@ -117,7 +119,7 @@ type DocsLayoutProps = {
   renderConversationView?: (flow: string) => React.ReactNode;
   renderOnboardingView?: (variant: string, key: number) => React.ReactNode;
   renderWelcomeView?: (variant: string) => React.ReactNode;
-  renderWelcome02View?: (variant: string) => React.ReactNode;
+  renderWelcome02View?: (variant: string, showChrome: boolean) => React.ReactNode;
   onboardingVariants?: VariantOption[];
   welcomeVariants?: VariantOption[];
   welcome02Variants?: VariantOption[];
@@ -215,8 +217,15 @@ export function DocsLayout({
     return params.get('flow') || conversationFlowOptions[0]?.id || 'ai-greeting';
   });
 
-  // Fullscreen state
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  // Fullscreen state (from URL)
+  const [isFullscreen, setIsFullscreen] = useState(() => {
+    return getBoolParam(getUrlParams(), 'fullscreen', false);
+  });
+
+  // Welcome02 chrome toggle (header/sidebar visibility)
+  const [showWelcome02Chrome, setShowWelcome02Chrome] = useState(() => {
+    return getBoolParam(getUrlParams(), 'chrome', true);
+  });
 
   // Mobile sidebar state
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -246,6 +255,10 @@ export function DocsLayout({
       onboardingVariant: viewMode === 'onboarding' ? activeOnboardingVariant : undefined,
       welcomeVariant: viewMode === 'welcome' ? activeWelcomeVariant : undefined,
       welcome02Variant: viewMode === 'welcome02' ? activeWelcome02Variant : undefined,
+      // Fullscreen state (only store if true to keep URLs cleaner)
+      fullscreen: isFullscreen ? true : undefined,
+      // Chrome toggle for welcome02 (only store if false since true is default)
+      chrome: viewMode === 'welcome02' && !showWelcome02Chrome ? false : undefined,
     };
 
     // Add block-04 specific params
@@ -257,7 +270,7 @@ export function DocsLayout({
     }
 
     updateUrlParams(params);
-  }, [viewMode, activeId, activeGroupId, variantStates, activeConversationFlow, activeOnboardingVariant, activeWelcomeVariant, activeWelcome02Variant, showPresets, showStepper, showSuggestions, presetCount]);
+  }, [viewMode, activeId, activeGroupId, variantStates, activeConversationFlow, activeOnboardingVariant, activeWelcomeVariant, activeWelcome02Variant, isFullscreen, showWelcome02Chrome, showPresets, showStepper, showSuggestions, presetCount]);
 
   // Build sidebar sections based on view mode
   const buildSidebarSections = (): SidebarSection[] => {
@@ -478,7 +491,7 @@ export function DocsLayout({
           {viewMode === 'conversation' && renderConversationView?.(activeConversationFlow)}
           {viewMode === 'onboarding' && renderOnboardingView?.(activeOnboardingVariant, onboardingKey)}
           {viewMode === 'welcome' && renderWelcomeView?.(activeWelcomeVariant)}
-          {viewMode === 'welcome02' && renderWelcome02View?.(activeWelcome02Variant)}
+          {viewMode === 'welcome02' && renderWelcome02View?.(activeWelcome02Variant, false)}
         </div>
       </div>
     );
@@ -808,37 +821,66 @@ export function DocsLayout({
                   description="Preview the welcome screen flow version 0.2."
                 />
 
-                {/* Variant Selector Pills */}
-                {welcome02Variants.length > 0 && (
-                  <div className="mb-6">
-                    <p className="text-sm text-muted-foreground mb-2">Variant</p>
-                    <div
-                      className="inline-flex gap-1 p-1 rounded-xl flex-wrap"
-                      style={{ backgroundColor: 'var(--grey-100)' }}
-                    >
-                      {welcome02Variants.map((variant) => (
-                        <button
-                          key={variant.id}
-                          onClick={() => setActiveWelcome02Variant(variant.id)}
-                          className={cn('px-3 py-1.5 text-sm font-medium rounded-lg transition-all')}
-                          style={{
-                            backgroundColor: activeWelcome02Variant === variant.id ? '#FFFFFF' : 'transparent',
-                            color: activeWelcome02Variant === variant.id ? 'var(--grey-950)' : 'var(--grey-500)',
-                            boxShadow: activeWelcome02Variant === variant.id ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
-                          }}
-                        >
-                          {variant.label}
-                        </button>
-                      ))}
+                {/* Options Row */}
+                <div className="mb-6 flex flex-wrap items-center gap-4">
+                  {/* Variant Selector Pills */}
+                  {welcome02Variants.length > 0 && (
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-2">Variant</p>
+                      <div
+                        className="inline-flex gap-1 p-1 rounded-xl flex-wrap"
+                        style={{ backgroundColor: 'var(--grey-100)' }}
+                      >
+                        {welcome02Variants.map((variant) => (
+                          <button
+                            key={variant.id}
+                            onClick={() => setActiveWelcome02Variant(variant.id)}
+                            className={cn('px-3 py-1.5 text-sm font-medium rounded-lg transition-all')}
+                            style={{
+                              backgroundColor: activeWelcome02Variant === variant.id ? '#FFFFFF' : 'transparent',
+                              color: activeWelcome02Variant === variant.id ? 'var(--grey-950)' : 'var(--grey-500)',
+                              boxShadow: activeWelcome02Variant === variant.id ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                            }}
+                          >
+                            {variant.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
+                  )}
+
+                  {/* Chrome Toggle */}
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">Display</p>
+                    <button
+                      onClick={() => setShowWelcome02Chrome(prev => !prev)}
+                      className={cn(
+                        'flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg border transition-all',
+                        showWelcome02Chrome
+                          ? 'border-border bg-background text-foreground'
+                          : 'border-primary bg-primary/10 text-primary'
+                      )}
+                    >
+                      {showWelcome02Chrome ? (
+                        <>
+                          <PanelLeft className="w-4 h-4" />
+                          <span>With Chrome</span>
+                        </>
+                      ) : (
+                        <>
+                          <PanelLeftClose className="w-4 h-4" />
+                          <span>App Only</span>
+                        </>
+                      )}
+                    </button>
                   </div>
-                )}
+                </div>
 
                 {/* Preview Container */}
                 <div className="border border-border rounded-xl overflow-hidden bg-muted/30">
                   <ScrollAreaPrimitive.Root className="relative overflow-hidden">
                     <ScrollAreaPrimitive.Viewport className="w-full min-h-[600px] max-h-[800px]">
-                      {renderWelcome02View?.(activeWelcome02Variant)}
+                      {renderWelcome02View?.(activeWelcome02Variant, showWelcome02Chrome)}
                     </ScrollAreaPrimitive.Viewport>
                     <ScrollAreaPrimitive.Scrollbar
                       orientation="vertical"
