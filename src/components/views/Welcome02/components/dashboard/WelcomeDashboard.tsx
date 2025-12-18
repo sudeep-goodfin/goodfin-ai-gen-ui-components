@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Greeting } from './Greeting';
 import { DashboardContent } from './DashboardContent';
 import { HomeContent } from './HomeContent';
+import { ChatInterface, ChatMessage } from './ChatInterface';
 import { InputBar, ChatMode, MoreMode } from './InputBar';
 import { Icon, CustomIcon } from '../Icon';
-import svgPaths from '../../imports/svg-68p9mk74mk';
+import { ArrowLeft } from 'lucide-react';
+import svgPaths from '../../imports/svg-191opiemcf';
 
 // Component for the top right history/action icons
 function TopActions() {
@@ -69,11 +71,112 @@ export function WelcomeDashboard() {
   const [currentMode, setCurrentMode] = useState<ChatMode>('default');
   const [extraSlotItem, setExtraSlotItem] = useState<MoreMode | null>(null);
 
+  // Chat State
+  const [chatState, setChatState] = useState<{
+    isActive: boolean;
+    messages: ChatMessage[];
+    isThinking: boolean;
+    streamingContent: string;
+  }>({ isActive: false, messages: [], isThinking: false, streamingContent: "" });
+
   const handleModeChange = (mode: ChatMode) => {
     setCurrentMode(mode);
     if (mode === 'insight' || mode === 'events' || mode === 'portfolio') {
       setExtraSlotItem(mode);
     }
+  };
+
+  // Reset chat when mode changes
+  useEffect(() => {
+    setChatState({ isActive: false, messages: [], isThinking: false, streamingContent: "" });
+  }, [currentMode]);
+
+  const handleStartChat = (text: string) => {
+    setChatState(prev => ({
+      isActive: true,
+      messages: [{ role: 'user', content: text }],
+      isThinking: true,
+      streamingContent: ""
+    }));
+
+    // Simulate thinking delay then streaming
+    setTimeout(() => {
+      setChatState(prev => ({ ...prev, isThinking: false }));
+
+      let fullResponse = "";
+      let componentMessage: ChatMessage | null = null;
+
+      if (text.includes("Anthropic")) {
+        fullResponse = "Let's resume the investment with Anthropic. I've secured a specialized allocation block for you in the Series C secondary round. Here are the details:";
+        componentMessage = {
+          role: 'ai',
+          content: '',
+          type: 'component',
+          componentName: 'wizard',
+          data: {}
+        };
+      } else if (text.toLowerCase().includes("show me all deals") || text.toLowerCase().includes("show all deals")) {
+        fullResponse = "Here's a comprehensive view of all available deals organized by category. You can filter by Pre-IPO, Featured, Venture Funds, Early-Stage Startups, and Private Equity Funds. Click on any deal to learn more.";
+        componentMessage = {
+          role: 'ai',
+          content: '',
+          type: 'component',
+          componentName: 'all-deals',
+          data: {}
+        };
+      } else {
+        fullResponse = "I've analyzed the latest secondary market data for SpaceX. The valuation has stabilized around $180B, driven by successful Starship test flights and increased Starlink revenue. \n\nComparing against the last 6 months:\n• Trading volume is up 15%\n• Buy-side demand exceeds supply by 2:1\n• Pricing is currently at a 5% premium to the last tender offer.\n\nWould you like me to drill down into specific transaction multiples?";
+      }
+
+      let i = 0;
+      const interval = setInterval(() => {
+        i++;
+        setChatState(prev => ({
+          ...prev,
+          streamingContent: fullResponse.slice(0, i)
+        }));
+
+        if (i >= fullResponse.length) {
+          clearInterval(interval);
+          // Finalize message
+          setChatState(prev => ({
+            ...prev,
+            messages: [
+              ...prev.messages,
+              { role: 'ai', content: fullResponse },
+              ...(componentMessage ? [componentMessage] : [])
+            ],
+            streamingContent: ""
+          }));
+        }
+      }, 15); // Streaming speed
+
+    }, 1500); // Thinking delay
+  };
+
+  const handleWizardComplete = () => {
+    // Append the post-completion message
+    setChatState(prev => {
+      // Prevent duplicate messages if clicked multiple times quickly
+      const lastMsg = prev.messages[prev.messages.length - 1];
+      if (lastMsg && lastMsg.role === 'ai' && lastMsg.content.includes("successfully transferred")) {
+        return prev;
+      }
+
+      const successMsg: ChatMessage = {
+        role: 'ai',
+        content: "Hey, since you've successfully transferred, now you can invite your network to co-invest in this exclusive Anthropic allocation. This helps you build your track record.\n\nWould you like to send an invite or set up performance monitoring for this position?"
+      };
+
+      return {
+        ...prev,
+        messages: [...prev.messages, successMsg]
+      };
+    });
+  };
+
+  const handleBack = () => {
+    setChatState({ isActive: false, messages: [], isThinking: false, streamingContent: "" });
   };
 
   const content = GREETING_DATA[currentMode];
@@ -91,25 +194,61 @@ export function WelcomeDashboard() {
         }}
       />
 
-      {/* Top Actions */}
-      <div className="relative z-10 w-full flex justify-end">
+      {/* Top Header Row */}
+      <div className="relative z-10 w-full flex items-center">
+        {/* Back Button (Left) */}
+        {chatState.isActive && (
+          <div className="absolute left-6 top-4 z-20">
+            <button
+              onClick={handleBack}
+              className="flex items-center gap-2 text-[#7f7582] hover:text-[#29272a] transition-colors px-2 py-1.5 rounded-lg hover:bg-black/5"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="text-sm font-medium">Back</span>
+            </button>
+          </div>
+        )}
+
+        {/* Actions (Right) */}
         <TopActions />
       </div>
 
       {/* Main Content Scrollable Area */}
       <div className="relative z-10 flex-1 flex flex-col items-center p-6 gap-10 overflow-y-auto w-full">
-        {currentMode === 'default' ? (
+        {/* If Chat is Active, show Chat Interface */}
+        {chatState.isActive ? (
           <div className="w-full max-w-3xl mt-6">
-            <HomeContent onModeChange={handleModeChange} />
+            <ChatInterface
+              messages={chatState.messages}
+              isThinking={chatState.isThinking}
+              streamingContent={chatState.streamingContent}
+              onWizardComplete={handleWizardComplete}
+              onCardClick={handleStartChat}
+            />
           </div>
         ) : (
-          <div className={`flex flex-col gap-10 w-full mt-10 ${currentMode === 'news' ? 'max-w-6xl' : 'max-w-3xl'}`}>
-            <Greeting
-              title={content.title}
-              description={content.description}
-            />
-            <DashboardContent mode={currentMode} />
-          </div>
+          /* Otherwise show standard Dashboard content */
+          <>
+            {currentMode === 'default' ? (
+              <div className="w-full max-w-3xl mt-6">
+                <HomeContent
+                  onModeChange={handleModeChange}
+                  onStartChat={handleStartChat}
+                />
+              </div>
+            ) : (
+              <div className={`flex flex-col gap-10 w-full mt-10 ${currentMode === 'news' ? 'max-w-6xl' : 'max-w-3xl'}`}>
+                <Greeting
+                  title={content.title}
+                  description={content.description}
+                />
+                <DashboardContent
+                  mode={currentMode}
+                  onSuggestionClick={handleStartChat}
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
 

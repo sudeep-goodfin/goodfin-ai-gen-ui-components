@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { chatSvgPaths } from './chat-icons';
 import { cn } from '@/lib/utils';
-import { FileText, Calendar, Briefcase, X, MoreHorizontal } from "lucide-react";
+import { FileText, Calendar, Briefcase, X, Home } from "lucide-react";
 
 // Reusing the Wrapper from the import logic
 function Wrapper({ children }: React.PropsWithChildren<{}>) {
@@ -180,6 +180,18 @@ export function InputBar({ currentMode = 'default', extraSlotItem, onModeChange 
             <div className="flex items-end justify-between px-[12px] pb-0">
                 {/* Left Actions (Chips) */}
                 <div className="flex gap-[4px] items-center flex-wrap">
+                    {/* Home */}
+                    <Chip
+                        label="Home"
+                        isActive={currentMode === 'default'}
+                        onClick={() => handleToggle('default')}
+                        icon={
+                            <div className="flex items-center justify-center w-[20px] h-[20px]">
+                                <Home className="h-[16px] w-[16px] text-[#373338]" />
+                            </div>
+                        }
+                    />
+
                     {/* Deep Research */}
                     <Chip
                         label="Deep Research"

@@ -125,7 +125,12 @@ function ExploreCardContent({ title, descriptions }: { title: string; descriptio
   );
 }
 
-export function HomeContent({ onModeChange }: { onModeChange?: (mode: ChatMode) => void }) {
+interface HomeContentProps {
+  onModeChange?: (mode: ChatMode) => void;
+  onStartChat?: (text: string) => void;
+}
+
+export function HomeContent({ onModeChange, onStartChat }: HomeContentProps) {
   // Gradient backgrounds for explore cards (simulating images)
   const cardGradients = [
     'linear-gradient(135deg, #fff8e1 0%, #ffecb3 50%, #ffe082 100%)',
@@ -164,7 +169,7 @@ export function HomeContent({ onModeChange }: { onModeChange?: (mode: ChatMode) 
           <div className="flex flex-col items-start w-full">
             <div className="flex gap-[16px] items-center w-full">
               <div className="flex-1">
-                <ResumeCard onClick={() => onModeChange?.('deals')} />
+                <ResumeCard onClick={() => onStartChat ? onStartChat('Resume investing in Anthropic') : onModeChange?.('deals')} />
               </div>
             </div>
           </div>

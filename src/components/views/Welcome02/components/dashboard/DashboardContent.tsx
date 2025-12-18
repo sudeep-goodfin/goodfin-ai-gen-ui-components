@@ -4,6 +4,7 @@ import { NewsContent } from './NewsContent';
 import { EventsContent } from './EventsContent';
 import { ChatMode } from './InputBar';
 import PortfolioSummary from '../../imports/Frame2147228782';
+import { DealsCardsGrid } from './DealsCardsGrid';
 import {
     Search,
     TrendingUp,
@@ -188,6 +189,31 @@ export function DashboardContent({ mode, onSuggestionClick }: { mode: ChatMode, 
 
     if (mode === 'events') {
         return <EventsContent />;
+    }
+
+    // Special Layout for Deals Mode with Cards Grid
+    if (mode === 'deals') {
+        const suggestions = SUGGESTIONS_DATA[mode] || [];
+        return (
+            <div className="w-full max-w-3xl flex flex-col gap-6">
+                {/* Deals Cards Grid */}
+                <DealsCardsGrid onCardClick={(title) => onSuggestionClick?.(title)} />
+
+                {/* Suggestions */}
+                <div className="flex flex-col gap-3">
+                    <div className="text-sm font-medium text-[#7f7582] uppercase tracking-wider mb-1 px-1">
+                        Suggested Actions
+                    </div>
+                    {suggestions.map((item, index) => (
+                        <SuggestionCard
+                            key={index}
+                            {...item}
+                            onClick={() => onSuggestionClick?.(item.title)}
+                        />
+                    ))}
+                </div>
+            </div>
+        );
     }
 
     // Special Layout for Portfolio Mode
