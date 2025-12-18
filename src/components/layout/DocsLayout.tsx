@@ -813,87 +813,69 @@ export function DocsLayout({
               </>
             )}
 
-            {/* Welcome 0.2 View */}
-            {viewMode === 'welcome02' && (
-              <>
-                <PageHeader
-                  title="Welcome Screen Flow 0.2"
-                  description="Preview the welcome screen flow version 0.2."
-                />
-
-                {/* Options Row */}
-                <div className="mb-6 flex flex-wrap items-center gap-4">
-                  {/* Variant Selector Pills */}
-                  {welcome02Variants.length > 0 && (
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-2">Variant</p>
-                      <div
-                        className="inline-flex gap-1 p-1 rounded-xl flex-wrap"
-                        style={{ backgroundColor: 'var(--grey-100)' }}
-                      >
-                        {welcome02Variants.map((variant) => (
-                          <button
-                            key={variant.id}
-                            onClick={() => setActiveWelcome02Variant(variant.id)}
-                            className={cn('px-3 py-1.5 text-sm font-medium rounded-lg transition-all')}
-                            style={{
-                              backgroundColor: activeWelcome02Variant === variant.id ? '#FFFFFF' : 'transparent',
-                              color: activeWelcome02Variant === variant.id ? 'var(--grey-950)' : 'var(--grey-500)',
-                              boxShadow: activeWelcome02Variant === variant.id ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
-                            }}
-                          >
-                            {variant.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Chrome Toggle */}
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-2">Display</p>
-                    <button
-                      onClick={() => setShowWelcome02Chrome(prev => !prev)}
-                      className={cn(
-                        'flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg border transition-all',
-                        showWelcome02Chrome
-                          ? 'border-border bg-background text-foreground'
-                          : 'border-primary bg-primary/10 text-primary'
-                      )}
-                    >
-                      {showWelcome02Chrome ? (
-                        <>
-                          <PanelLeft className="w-4 h-4" />
-                          <span>With Chrome</span>
-                        </>
-                      ) : (
-                        <>
-                          <PanelLeftClose className="w-4 h-4" />
-                          <span>App Only</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Preview Container */}
-                <div className="border border-border rounded-xl overflow-hidden bg-muted/30">
-                  <ScrollAreaPrimitive.Root className="relative overflow-hidden">
-                    <ScrollAreaPrimitive.Viewport className="w-full min-h-[600px] max-h-[800px]">
-                      {renderWelcome02View?.(activeWelcome02Variant, showWelcome02Chrome)}
-                    </ScrollAreaPrimitive.Viewport>
-                    <ScrollAreaPrimitive.Scrollbar
-                      orientation="vertical"
-                      className="flex w-2.5 touch-none select-none border-l border-l-transparent p-[1px] transition-colors"
-                    >
-                      <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-grey-300 hover:bg-grey-400 transition-colors" />
-                    </ScrollAreaPrimitive.Scrollbar>
-                    <ScrollAreaPrimitive.Corner />
-                  </ScrollAreaPrimitive.Root>
-                </div>
-              </>
-            )}
           </div>
+
+          {/* Welcome 0.2 View - renders outside the constrained container */}
+          {viewMode === 'welcome02' && (
+            <div className="flex flex-col h-full">
+              {/* Options Bar */}
+              <div className="flex flex-wrap items-center gap-4 px-4 md:px-8 py-3 border-b border-border bg-background/50">
+                {/* Variant Selector Pills */}
+                {welcome02Variants.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Variant:</span>
+                    <div
+                      className="inline-flex gap-1 p-1 rounded-lg"
+                      style={{ backgroundColor: 'var(--grey-100)' }}
+                    >
+                      {welcome02Variants.map((variant) => (
+                        <button
+                          key={variant.id}
+                          onClick={() => setActiveWelcome02Variant(variant.id)}
+                          className={cn('px-2.5 py-1 text-sm font-medium rounded-md transition-all')}
+                          style={{
+                            backgroundColor: activeWelcome02Variant === variant.id ? '#FFFFFF' : 'transparent',
+                            color: activeWelcome02Variant === variant.id ? 'var(--grey-950)' : 'var(--grey-500)',
+                            boxShadow: activeWelcome02Variant === variant.id ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                          }}
+                        >
+                          {variant.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Chrome Toggle */}
+                <button
+                  onClick={() => setShowWelcome02Chrome(prev => !prev)}
+                  className={cn(
+                    'flex items-center gap-2 px-2.5 py-1 text-sm font-medium rounded-md border transition-all',
+                    showWelcome02Chrome
+                      ? 'border-border bg-background text-muted-foreground hover:text-foreground'
+                      : 'border-primary bg-primary/10 text-primary'
+                  )}
+                >
+                  {showWelcome02Chrome ? (
+                    <>
+                      <PanelLeft className="w-4 h-4" />
+                      <span>With Chrome</span>
+                    </>
+                  ) : (
+                    <>
+                      <PanelLeftClose className="w-4 h-4" />
+                      <span>App Only</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Direct render - no container */}
+              <div className="flex-1 overflow-hidden">
+                {renderWelcome02View?.(activeWelcome02Variant, showWelcome02Chrome)}
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>
