@@ -1,10 +1,10 @@
 import React from 'react';
 import { CustomIcon } from '../Icon';
 import svgPaths from '../../imports/svg-68p9mk74mk';
-import { SuggestionCard, SUGGESTIONS_DATA } from './DashboardContent';
 import { ChatMode } from './InputBar';
 import { Greeting } from './Greeting';
 import { ArrowRight } from 'lucide-react';
+import { EventCard, EVENTS_DATA } from './EventsContent';
 
 // Background container for explore cards
 function ExploreCard({ children, onClick }: React.PropsWithChildren<{ onClick?: () => void }>) {
@@ -257,12 +257,12 @@ export function HomeContent({ onModeChange, onStartChat }: HomeContentProps) {
                   </defs>
                 </CustomIcon>
               }
-              text="Upcoming events"
+              text={`(${EVENTS_DATA.length}) Upcoming events`}
             />
 
             <div className="flex flex-col gap-3 w-full">
-              {SUGGESTIONS_DATA['events'].map((item, index) => (
-                <SuggestionCard
+              {EVENTS_DATA.map((item, index) => (
+                <EventCard
                   key={index}
                   {...item}
                   onClick={() => onModeChange?.('events')}

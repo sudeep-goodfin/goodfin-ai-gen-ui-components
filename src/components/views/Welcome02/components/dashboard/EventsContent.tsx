@@ -3,6 +3,7 @@ import svgPathsEvents from '../../imports/svg-tyig23frby';
 import imgEventBrunch from "../../assets/event-summit-brunch.png";
 import imgEventSummit from "../../assets/event-summit-alt.png";
 import imgExploreEvents from "../../assets/explore-events.png";
+import { Greeting } from './Greeting';
 
 export interface EventCardProps {
   day: string;
@@ -104,34 +105,45 @@ export const EVENTS_DATA: EventCardProps[] = [
 
 export function EventsContent() {
     return (
-        <div className="w-full flex flex-col gap-6">
-            <div className="flex flex-col gap-3 w-full">
-                <div className="text-sm font-medium text-[#7f7582] uppercase tracking-wider px-1">
-                    Events
-                </div>
-                {EVENTS_DATA.map((item, index) => (
-                    <EventCard
-                        key={index}
-                        {...item}
-                    />
-                ))}
-            </div>
+        <div className="flex flex-col items-center justify-center w-full max-w-3xl pb-20">
+            <div className="flex flex-col gap-[40px] grow items-center w-full">
+                {/* Greeting Section */}
+                <Greeting
+                    title="Events"
+                    description="Connect with fellow investors and industry leaders at exclusive Goodfin events. From intimate roundtables to our annual summit, there's always an opportunity to expand your network."
+                />
 
-            {/* Collapsed "More" Card */}
-            <div className="relative group cursor-pointer">
-                 {/* Stack effects */}
-                 <div className="absolute top-2 left-2 right-2 bottom-0 bg-white/50 border border-gray-200 rounded-[16px] z-0" />
-                 <div className="absolute top-1 left-1 right-1 bottom-0 bg-white/80 border border-gray-200 rounded-[16px] z-10" />
-
-                 {/* Main Button Card */}
-                 <div className="relative z-20 bg-white rounded-[16px] border border-[#e3e3e3] p-4 flex items-center justify-center gap-2 hover:border-purple-200 hover:shadow-md transition-all h-[60px]">
-                    <span className="text-[#48424a] font-medium text-sm group-hover:text-purple-700">
-                        View 5 more upcoming events
-                    </span>
-                    <div className="bg-[#f0eef0] text-[#7f7582] text-xs font-semibold px-2 py-1 rounded-full group-hover:bg-purple-100 group-hover:text-purple-700 transition-colors">
-                        +5
+                {/* Events Section */}
+                <div className="w-full flex flex-col gap-6">
+                    <div className="flex flex-col gap-3 w-full">
+                        <div className="text-sm font-medium text-[#7f7582] uppercase tracking-wider px-1">
+                            ({EVENTS_DATA.length}) Upcoming Events
+                        </div>
+                        {EVENTS_DATA.map((item, index) => (
+                            <EventCard
+                                key={index}
+                                {...item}
+                            />
+                        ))}
                     </div>
-                 </div>
+
+                    {/* Collapsed "More" Card */}
+                    <div className="relative group cursor-pointer">
+                         {/* Stack effects */}
+                         <div className="absolute top-2 left-2 right-2 bottom-0 bg-white/50 border border-gray-200 rounded-[16px] z-0" />
+                         <div className="absolute top-1 left-1 right-1 bottom-0 bg-white/80 border border-gray-200 rounded-[16px] z-10" />
+
+                         {/* Main Button Card */}
+                         <div className="relative z-20 bg-white rounded-[16px] border border-[#e3e3e3] p-4 flex items-center justify-center gap-2 hover:border-purple-200 hover:shadow-md transition-all h-[60px]">
+                            <span className="text-[#48424a] font-medium text-sm group-hover:text-purple-700">
+                                View 5 more upcoming events
+                            </span>
+                            <div className="bg-[#f0eef0] text-[#7f7582] text-xs font-semibold px-2 py-1 rounded-full group-hover:bg-purple-100 group-hover:text-purple-700 transition-colors">
+                                +5
+                            </div>
+                         </div>
+                    </div>
+                </div>
             </div>
         </div>
     );

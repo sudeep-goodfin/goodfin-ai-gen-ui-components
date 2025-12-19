@@ -238,10 +238,13 @@ export function WelcomeDashboard() {
               </div>
             ) : (
               <div className={`flex flex-col gap-10 w-full mt-10 ${currentMode === 'news' ? 'max-w-6xl' : 'max-w-3xl'}`}>
-                <Greeting
-                  title={content.title}
-                  description={content.description}
-                />
+                {/* Only show greeting for modes that don't have their own greeting in DashboardContent */}
+                {currentMode !== 'events' && (
+                  <Greeting
+                    title={content.title}
+                    description={content.description}
+                  />
+                )}
                 <DashboardContent
                   mode={currentMode}
                   onSuggestionClick={handleStartChat}
