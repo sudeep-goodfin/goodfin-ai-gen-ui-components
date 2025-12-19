@@ -3,6 +3,8 @@ import { chatSvgPaths } from './chat-icons';
 import { cn } from '@/lib/utils';
 import { FileText, Calendar, Briefcase, Home, X } from "lucide-react";
 import { CommandPanel, Recipe, Context, Pill, PanelMode } from './command-panel';
+import { useRecording } from './hooks/useRecording';
+import { VoiceRecordingInterface } from './VoiceRecordingInterface';
 
 
 interface ChipProps {
@@ -132,6 +134,33 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
   const [triggerQuery, setTriggerQuery] = useState('');
   const [selectedPills, setSelectedPills] = useState<Pill[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Voice recording hook
+  const {
+    recordingState,
+    isRecording,
+    isProcessing,
+    hasTranscription,
+    isPaused,
+    recordingTime,
+    transcription,
+    startRecording,
+    cancelRecording,
+    confirmRecording,
+    acceptTranscription,
+    discardTranscription,
+  } = useRecording();
+
+  // Show overlay when not idle
+  const showRecordingOverlay = recordingState !== 'idle';
+
+  const handleAcceptTranscription = () => {
+    const text = acceptTranscription();
+    if (text) {
+      setInputValue(text);
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -323,29 +352,54 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
         <div className="relative z-10 flex flex-col justify-between w-full h-full p-[16px]">
             {/* Input Area */}
             <div className="flex items-center gap-2 flex-wrap h-[24px] overflow-hidden">
-                {/* Selected Pills */}
-                {selectedPills.map((pill) => (
-                  <PillTag
-                    key={pill.id}
-                    pill={pill}
-                    onRemove={() => handleRemovePill(pill.id)}
-                  />
-                ))}
-
-                {/* Input */}
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={inputValue}
-                  onChange={handleInputChange}
-                  onKeyDown={handleKeyDown}
-                  placeholder={selectedPills.length > 0 ? "Add more context..." : "Ask anything... (type / or @ for commands)"}
-                  className="flex-1 min-w-[200px] text-[16px] leading-normal text-[#29272a] placeholder:text-[#7f7582] bg-transparent outline-none font-light tracking-[-0.3125px]"
+              {/* Selected Pills */}
+              {selectedPills.map((pill) => (
+                <PillTag
+                  key={pill.id}
+                  pill={pill}
+                  onRemove={() => handleRemovePill(pill.id)}
                 />
+              ))}
+
+              {/* Input - disabled when recording/processing/transcribed */}
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputValue}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                disabled={showRecordingOverlay}
+                placeholder={selectedPills.length > 0 ? "Add more context..." : "Ask anything... (type / or @ for commands)"}
+                className={cn(
+                  "flex-1 min-w-[200px] text-[16px] leading-normal text-[#29272a] placeholder:text-[#7f7582] bg-transparent outline-none font-light tracking-[-0.3125px]",
+                  showRecordingOverlay && "opacity-50 cursor-not-allowed"
+                )}
+              />
             </div>
 
-            {/* Bottom Toolbar */}
-            <div className="flex items-end justify-between pl-0 pr-[12px]">
+            {/* Bottom Section - relative container for overlay */}
+            <div className="relative">
+              {/* Voice Recording Interface - overlayed at bottom */}
+              {showRecordingOverlay && (
+                <div className="absolute inset-0 z-20 bg-white flex items-center">
+                  <VoiceRecordingInterface
+                    recordingState={recordingState}
+                    recordingTime={recordingTime}
+                    isPaused={isPaused}
+                    transcription={transcription}
+                    onCancel={cancelRecording}
+                    onConfirm={confirmRecording}
+                    onAccept={handleAcceptTranscription}
+                    onDiscard={discardTranscription}
+                  />
+                </div>
+              )}
+
+              {/* Bottom Toolbar - visible but behind overlay when recording */}
+              <div className={cn(
+                "flex items-end justify-between pl-0 pr-[12px]",
+                showRecordingOverlay && "opacity-30 pointer-events-none"
+              )}>
                 {/* Left Actions (Chips) */}
                 <div className="flex gap-[4px] items-center flex-wrap">
                     {/* Home */}
@@ -442,8 +496,11 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
 
                 {/* Right Actions (Mic & Waveform) */}
                 <div className="flex items-center gap-[8px] h-[36px] w-[72px]">
-                     {/* Mic Button */}
-                    <div className="flex items-center justify-center size-[28px] rounded-[40px] hover:bg-gray-100 cursor-pointer transition-colors">
+                     {/* Mic Button - triggers voice recording */}
+                    <button
+                      onClick={startRecording}
+                      className="flex items-center justify-center size-[28px] rounded-[40px] hover:bg-gray-100 cursor-pointer transition-colors"
+                    >
                         <div className="relative shrink-0 size-[18px]">
                               <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 18">
                                 <defs>
@@ -456,7 +513,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                                 </g>
                               </svg>
                         </div>
-                    </div>
+                    </button>
 
                     {/* Waveform Button */}
                     <div className="bg-[rgba(229,220,227,0.56)] flex flex-col items-center justify-center rounded-[16px] shrink-0 w-[36px] h-[36px] hover:bg-[rgba(229,220,227,0.7)] cursor-pointer transition-colors">
@@ -467,6 +524,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                          </div>
                     </div>
                 </div>
+              </div>
             </div>
         </div>
       </div>
