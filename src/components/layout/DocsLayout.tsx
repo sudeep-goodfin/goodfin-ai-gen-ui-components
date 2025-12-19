@@ -31,6 +31,7 @@ import { cn } from '../../lib/utils';
 import { Sidebar, type SidebarSection } from './Sidebar';
 import { Header, PageHeader } from './Header';
 import { Checkbox } from '../ui';
+import { releases, getLatestRelease, getReleaseById, getComponentVersionForRelease } from '../../config/versions';
 
 // URL parameter helpers
 const getUrlParams = () => new URLSearchParams(window.location.search);
@@ -240,6 +241,16 @@ export function DocsLayout({
   // Onboarding reset key
   const [onboardingKey, setOnboardingKey] = useState(0);
 
+  // Global release version state (persisted to URL)
+  const [selectedRelease, setSelectedRelease] = useState(() => {
+    const params = getUrlParams();
+    const urlRelease = params.get('release');
+    if (urlRelease && releases.some(r => r.id === urlRelease)) {
+      return urlRelease;
+    }
+    return getLatestRelease().id;
+  });
+
   // Prototype mode notification
   const [showPrototypeNotification, setShowPrototypeNotification] = useState(false);
 
@@ -313,6 +324,8 @@ export function DocsLayout({
       chrome: viewMode === 'welcome02' && showWelcome02Chrome ? true : undefined,
       // Sidebar collapsed state (only store if true to keep URLs cleaner)
       collapsed: isSidebarCollapsed ? true : undefined,
+      // Release version (only store if not latest to keep URLs cleaner)
+      release: selectedRelease !== getLatestRelease().id ? selectedRelease : undefined,
     };
 
     // Add block-04 specific params
@@ -324,7 +337,7 @@ export function DocsLayout({
     }
 
     updateUrlParams(params);
-  }, [viewMode, activeId, activeGroupId, variantStates, activeConversationFlow, activeOnboardingVariant, activeWelcomeVariant, activeWelcome02Variant, isFullscreen, showWelcome02Chrome, isSidebarCollapsed, showPresets, showStepper, showSuggestions, presetCount]);
+  }, [viewMode, activeId, activeGroupId, variantStates, activeConversationFlow, activeOnboardingVariant, activeWelcomeVariant, activeWelcome02Variant, isFullscreen, showWelcome02Chrome, isSidebarCollapsed, selectedRelease, showPresets, showStepper, showSuggestions, presetCount]);
 
   // Build sidebar sections based on view mode
   const buildSidebarSections = (): SidebarSection[] => {
@@ -606,6 +619,14 @@ export function DocsLayout({
         onSidebarToggle={() => setIsSidebarCollapsed(prev => !prev)}
         isSidebarCollapsed={isSidebarCollapsed}
         showMenuButton={true}
+        versions={releases.map(r => ({
+          id: r.id,
+          label: r.label,
+          date: r.date,
+          isLatest: r.isLatest,
+        }))}
+        selectedVersion={selectedRelease}
+        onVersionChange={setSelectedRelease}
       />
 
       {/* Main Content */}

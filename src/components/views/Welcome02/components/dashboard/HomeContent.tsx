@@ -135,15 +135,13 @@ export function HomeContent({ onModeChange, onStartChat }: HomeContentProps) {
 
   return (
     <div className="flex flex-col items-center justify-center w-full max-w-3xl pb-20">
-      <div className="flex flex-col gap-[40px] grow items-center w-full">
+      <div className="flex flex-col gap-[32px] grow items-center w-full">
 
         {/* Greeting Section */}
         <Greeting />
 
-        {/* Sections Container */}
-        <div className="flex flex-col gap-[10px] items-center w-full">
-
-          {/* Pick up where you left off */}
+        {/* Pick up where you left off */}
+        <div className="flex flex-col gap-3 items-start w-full">
           <SectionHeader
             icon={
               <CustomIcon viewBox="0 0 20 20" width={20} height={20}>
@@ -159,17 +157,11 @@ export function HomeContent({ onModeChange, onStartChat }: HomeContentProps) {
             }
             text="Pick up where you left off"
           />
+          <ResumeCard onClick={() => onStartChat ? onStartChat('Resume investing in Anthropic') : onModeChange?.('deals')} />
+        </div>
 
-          <div className="flex flex-col items-start w-full">
-            <div className="flex gap-[16px] items-center w-full">
-              <div className="flex-1">
-                <ResumeCard onClick={() => onStartChat ? onStartChat('Resume investing in Anthropic') : onModeChange?.('deals')} />
-              </div>
-            </div>
-          </div>
-
-          {/* Explore Goodfin */}
-          <div className="flex flex-col gap-[10px] items-start w-full">
+        {/* Explore Goodfin */}
+        <div className="flex flex-col gap-3 items-start w-full">
             <SectionHeader
               icon={
                 <CustomIcon viewBox="0 0 20 20" width={20} height={20}>
@@ -186,9 +178,7 @@ export function HomeContent({ onModeChange, onStartChat }: HomeContentProps) {
               text="Explore Goodfin"
             />
 
-            {/* Overflow Container */}
-            <div className="relative w-full">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-[18px] w-[110%] -ml-[5%]">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
                 <ExploreCard onClick={() => onModeChange?.('deals')}>
                   <ExploreCardContent
                     title="New Deals"
@@ -236,12 +226,11 @@ export function HomeContent({ onModeChange, onStartChat }: HomeContentProps) {
                     }
                   />
                 </ExploreCard>
-              </div>
             </div>
-          </div>
+        </div>
 
-          {/* Upcoming Events */}
-          <div className="flex flex-col gap-[10px] items-start w-full">
+        {/* Upcoming Events */}
+        <div className="flex flex-col gap-3 items-start w-full">
             <SectionHeader
               icon={
                 <CustomIcon viewBox="0 0 20 20" width={20} height={20}>
@@ -259,16 +248,14 @@ export function HomeContent({ onModeChange, onStartChat }: HomeContentProps) {
             />
 
             <div className="flex flex-col gap-3 w-full">
-              {EVENTS_DATA.map((item, index) => (
+              {EVENTS_DATA.slice(0, 3).map((item) => (
                 <EventCard
-                  key={index}
+                  key={item.id}
                   {...item}
                   onClick={() => onModeChange?.('events')}
                 />
               ))}
             </div>
-          </div>
-
         </div>
       </div>
     </div>

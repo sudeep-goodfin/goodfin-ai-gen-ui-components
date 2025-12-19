@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
 import { Greeting } from './Greeting';
 import { DashboardContent } from './DashboardContent';
 import { HomeContent } from './HomeContent';
@@ -362,47 +363,58 @@ export function WelcomeDashboard() {
         )}
       </div>
 
-      {/* Main Content Scrollable Area */}
-      <div className="relative z-10 flex-1 flex flex-col items-center p-6 gap-10 overflow-y-auto w-full">
-        {/* If Chat is Active, show Chat Interface */}
-        {chatState.isActive ? (
-          <div className="w-full max-w-3xl mt-6">
-            <ChatInterface
-              messages={chatState.messages}
-              isThinking={chatState.isThinking}
-              streamingContent={chatState.streamingContent}
-              onWizardComplete={handleWizardComplete}
-              onCardClick={handleStartChat}
-            />
-          </div>
-        ) : (
-          /* Otherwise show standard Dashboard content */
-          <>
-            {currentMode === 'default' ? (
+      {/* Main Content Scrollable Area - Using Radix UI ScrollArea */}
+      <ScrollAreaPrimitive.Root className="relative z-10 flex-1 w-full overflow-hidden">
+        <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-none [&>div]:!block">
+          <div className="flex flex-col items-center p-6 gap-10 w-full min-h-full">
+            {/* If Chat is Active, show Chat Interface */}
+            {chatState.isActive ? (
               <div className="w-full max-w-3xl mt-6">
-                <HomeContent
-                  onModeChange={handleModeChange}
-                  onStartChat={handleStartChat}
+                <ChatInterface
+                  messages={chatState.messages}
+                  isThinking={chatState.isThinking}
+                  streamingContent={chatState.streamingContent}
+                  onWizardComplete={handleWizardComplete}
+                  onCardClick={handleStartChat}
                 />
               </div>
             ) : (
-              <div className={`flex flex-col gap-10 w-full mt-10 ${currentMode === 'news' ? 'max-w-6xl' : 'max-w-3xl'}`}>
-                {/* Only show greeting for modes that don't have their own greeting in DashboardContent */}
-                {currentMode !== 'events' && (
-                  <Greeting
-                    title={content.title}
-                    description={content.description}
-                  />
+              /* Otherwise show standard Dashboard content */
+              <>
+                {currentMode === 'default' ? (
+                  <div className="w-full max-w-3xl mt-6">
+                    <HomeContent
+                      onModeChange={handleModeChange}
+                      onStartChat={handleStartChat}
+                    />
+                  </div>
+                ) : (
+                  <div className={`flex flex-col gap-10 w-full mt-10 ${currentMode === 'news' ? 'max-w-6xl' : 'max-w-3xl'}`}>
+                    {/* Only show greeting for modes that don't have their own greeting in DashboardContent */}
+                    {currentMode !== 'events' && (
+                      <Greeting
+                        title={content.title}
+                        description={content.description}
+                      />
+                    )}
+                    <DashboardContent
+                      mode={currentMode}
+                      onSuggestionClick={handleStartChat}
+                    />
+                  </div>
                 )}
-                <DashboardContent
-                  mode={currentMode}
-                  onSuggestionClick={handleStartChat}
-                />
-              </div>
+              </>
             )}
-          </>
-        )}
-      </div>
+          </div>
+        </ScrollAreaPrimitive.Viewport>
+        <ScrollAreaPrimitive.Scrollbar
+          orientation="vertical"
+          className="flex w-2.5 touch-none select-none border-l border-l-transparent p-[1px] transition-colors hover:bg-black/5"
+        >
+          <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-[#d0cdd2] hover:bg-[#beb9c0] transition-colors" />
+        </ScrollAreaPrimitive.Scrollbar>
+        <ScrollAreaPrimitive.Corner />
+      </ScrollAreaPrimitive.Root>
 
       {/* Sticky Bottom Input Bar */}
       <div className="relative z-20 w-full flex justify-center p-6 bg-gradient-to-t from-[#f7f7f8] via-[#f7f7f8]/80 to-transparent">

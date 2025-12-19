@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { Link2, Check, Play, ArrowLeft, ChevronRight, Menu, ChevronDown, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { Link2, Check, Play, ArrowLeft, ChevronRight, Menu, ChevronDown, PanelLeftClose, PanelLeft, Tag } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 type DropdownOption = {
@@ -15,6 +15,13 @@ type BreadcrumbItem = {
   onOptionSelect?: (optionId: string) => void;
 };
 
+type VersionOption = {
+  id: string;
+  label: string;
+  date?: string;
+  isLatest?: boolean;
+};
+
 type HeaderProps = {
   title: string;
   breadcrumbs?: BreadcrumbItem[];
@@ -24,6 +31,10 @@ type HeaderProps = {
   isSidebarCollapsed?: boolean;
   showMenuButton?: boolean;
   className?: string;
+  // Version selector props
+  versions?: VersionOption[];
+  selectedVersion?: string;
+  onVersionChange?: (versionId: string) => void;
 };
 
 // Dropdown component for breadcrumb items with options
@@ -106,6 +117,110 @@ function BreadcrumbDropdown({
   );
 }
 
+// Version Selector Dropdown
+function VersionSelector({
+  versions,
+  selectedVersion,
+  onVersionChange,
+}: {
+  versions: VersionOption[];
+  selectedVersion?: string;
+  onVersionChange?: (versionId: string) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const selected = versions.find(v => v.id === selectedVersion) || versions[0];
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  return (
+    <div ref={dropdownRef} className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={cn(
+          "flex items-center gap-1.5 px-2.5 py-1.5 text-sm rounded-md border transition-colors",
+          "border-border hover:bg-muted text-muted-foreground hover:text-foreground"
+        )}
+      >
+        <Tag className="w-3.5 h-3.5" />
+        <span className="font-medium">{selected?.label}</span>
+        {selected?.isLatest && (
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
+            Latest
+          </span>
+        )}
+        <ChevronDown className={cn(
+          "w-3.5 h-3.5 transition-transform",
+          isOpen && "rotate-180"
+        )} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-full right-0 mt-1 py-1 bg-background border border-border rounded-lg shadow-lg z-50 min-w-[200px]">
+          <div className="px-3 py-2 border-b border-border">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Release Version
+            </span>
+          </div>
+          {versions.map((version) => (
+            <button
+              key={version.id}
+              onClick={() => {
+                onVersionChange?.(version.id);
+                setIsOpen(false);
+              }}
+              className={cn(
+                "w-full text-left px-3 py-2 transition-colors",
+                "hover:bg-muted",
+                version.id === selectedVersion
+                  ? "bg-muted/50"
+                  : ""
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className={cn(
+                    "font-medium",
+                    version.id === selectedVersion ? "text-foreground" : "text-muted-foreground"
+                  )}>
+                    {version.label}
+                  </span>
+                  {version.isLatest && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
+                      Latest
+                    </span>
+                  )}
+                </div>
+                {version.id === selectedVersion && (
+                  <Check className="w-4 h-4 text-foreground" />
+                )}
+              </div>
+              {version.date && (
+                <span className="text-xs text-muted-foreground">{version.date}</span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Header({
   title,
   breadcrumbs = [],
@@ -115,6 +230,9 @@ export function Header({
   isSidebarCollapsed = false,
   showMenuButton = true,
   className,
+  versions,
+  selectedVersion,
+  onVersionChange,
 }: HeaderProps) {
   const [linkCopied, setLinkCopied] = useState(false);
 
@@ -242,6 +360,15 @@ export function Header({
 
       {/* Right: Actions */}
       <div className="flex items-center gap-2 flex-shrink-0">
+        {/* Version Selector */}
+        {versions && versions.length > 0 && (
+          <VersionSelector
+            versions={versions}
+            selectedVersion={selectedVersion}
+            onVersionChange={onVersionChange}
+          />
+        )}
+
         {/* Copy Link Button */}
         <button
           onClick={copyShareLink}
