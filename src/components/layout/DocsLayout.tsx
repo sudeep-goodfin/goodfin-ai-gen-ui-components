@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
 import {
   MessageSquare,
   Layers,
@@ -609,7 +610,7 @@ export function DocsLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* Header */}
       <Header
         title="Goodfin AI Primitives"
@@ -649,8 +650,12 @@ export function DocsLayout({
         />
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-auto">
-          <div className="p-4 md:p-8 max-w-5xl">
+        <main className={cn("flex-1 overflow-hidden", viewMode === 'welcome02' && "flex flex-col")}>
+          {/* Standard content wrapper with Radix ScrollArea - only shown for non-welcome02 views */}
+          {viewMode !== 'welcome02' && (
+          <ScrollAreaPrimitive.Root className="h-full w-full">
+            <ScrollAreaPrimitive.Viewport className="h-full w-full">
+              <div className="p-4 md:p-8 max-w-5xl">
             {/* Component View */}
             {viewMode === 'component' && (
               <>
@@ -892,11 +897,21 @@ export function DocsLayout({
               </>
             )}
 
-          </div>
+              </div>
+            </ScrollAreaPrimitive.Viewport>
+            <ScrollAreaPrimitive.Scrollbar
+              orientation="vertical"
+              className="flex w-2.5 touch-none select-none border-l border-l-transparent p-[1px] transition-colors hover:bg-black/5"
+            >
+              <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-border hover:bg-muted-foreground/30 transition-colors" />
+            </ScrollAreaPrimitive.Scrollbar>
+            <ScrollAreaPrimitive.Corner />
+          </ScrollAreaPrimitive.Root>
+          )}
 
           {/* Welcome 0.2 View - renders outside the constrained container */}
           {viewMode === 'welcome02' && (
-            <div className="flex flex-col h-full">
+            <div className="flex flex-col flex-1 min-h-0">
               {/* Options Bar */}
               <div className="flex flex-wrap items-center gap-4 px-4 md:px-8 py-3 border-b border-border bg-background/50">
                 {/* Variant Selector Pills */}
@@ -950,7 +965,7 @@ export function DocsLayout({
               </div>
 
               {/* Direct render - no container */}
-              <div className="flex-1 overflow-hidden">
+              <div className="flex-1 min-h-0 overflow-hidden">
                 {renderWelcome02View?.(activeWelcome02Variant, showWelcome02Chrome)}
               </div>
             </div>
