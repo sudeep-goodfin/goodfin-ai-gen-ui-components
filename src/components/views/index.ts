@@ -115,3 +115,6 @@ export type {
   EventCardProps as Welcome02EventCardProps,
   InputBarVersion,
 } from './Welcome02';
+
+// Components Landing
+export { ComponentsLanding } from './ComponentsLanding';

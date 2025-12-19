@@ -33,6 +33,7 @@ import { Sidebar, type SidebarSection } from './Sidebar';
 import { Header, PageHeader } from './Header';
 import { Checkbox } from '../ui';
 import { releases, getLatestRelease, getReleaseById, getComponentVersionForRelease } from '../../config/versions';
+import { ComponentsLanding } from '../views';
 
 // URL parameter helpers
 const getUrlParams = () => new URLSearchParams(window.location.search);
@@ -117,7 +118,7 @@ type ComponentGroup = {
   components: ComponentOption[];
 };
 
-type ViewMode = 'component' | 'conversation' | 'onboarding' | 'welcome' | 'welcome02';
+type ViewMode = 'landing' | 'component' | 'conversation' | 'onboarding' | 'welcome' | 'welcome02';
 
 type DocsLayoutProps = {
   groups: ComponentGroup[];
@@ -153,6 +154,10 @@ export function DocsLayout({
     if (mode === 'onboarding') return 'onboarding';
     if (mode === 'welcome') return 'welcome';
     if (mode === 'welcome02') return 'welcome02';
+    if (mode === 'landing') return 'landing';
+    // If no component is specified in URL, show landing page
+    const componentId = params.get('component');
+    if (!componentId) return 'landing';
     return 'component';
   });
 
@@ -168,7 +173,7 @@ export function DocsLayout({
     if (componentId && allComponents.some(opt => opt.id === componentId)) {
       return componentId;
     }
-    return groups[0]?.components[0]?.id || '';
+    return '';
   });
 
   const [variantStates, setVariantStates] = useState<Record<string, string>>(() => {
@@ -309,10 +314,25 @@ export function DocsLayout({
     }
   }, [isFullscreen]);
 
+  // Handle component click from landing page
+  const handleLandingComponentClick = (groupId: string, componentId: string) => {
+    setViewMode('component');
+    setActiveGroupId(groupId);
+    setActiveId(componentId);
+    // Set default variant if available
+    const component = allComponents.find(c => c.id === componentId);
+    if (component?.variants && component.variants.length > 0) {
+      setVariantStates(prev => ({
+        ...prev,
+        [componentId]: component.variants![0].id,
+      }));
+    }
+  };
+
   // Update URL when state changes
   useEffect(() => {
     const params: Record<string, string | boolean | undefined> = {
-      view: viewMode,
+      view: viewMode === 'landing' ? undefined : viewMode, // Don't show landing in URL
       group: viewMode === 'component' ? activeGroupId : undefined,
       component: viewMode === 'component' ? activeId : undefined,
       [`variant_${activeId}`]: viewMode === 'component' ? variantStates[activeId] : undefined,
@@ -343,17 +363,11 @@ export function DocsLayout({
 
   // Build sidebar sections based on view mode
   const buildSidebarSections = (): SidebarSection[] => {
-    // Flows section - main user flows
+    // Flows section - main user flows (reordered: Onboarding, Welcome Screen, Conversation)
     const flowsSection: SidebarSection = {
       id: 'flows',
       label: 'Flows',
       items: [
-        {
-          id: 'conversation',
-          label: 'Conversation',
-          icon: viewModeIcons.conversation,
-          children: conversationFlowOptions.map(f => ({ id: f.id, label: f.label })),
-        },
         {
           id: 'onboarding',
           label: 'Onboarding',
@@ -367,6 +381,12 @@ export function DocsLayout({
           children: welcome02Variants.length > 0
             ? welcome02Variants.map(v => ({ id: v.id, label: v.label }))
             : undefined,
+        },
+        {
+          id: 'conversation',
+          label: 'Conversation',
+          icon: viewModeIcons.conversation,
+          children: conversationFlowOptions.map(f => ({ id: f.id, label: f.label })),
         },
       ],
     };
@@ -510,9 +530,16 @@ export function DocsLayout({
       onOptionSelect?: (optionId: string) => void;
     };
 
-    const crumbs: BreadcrumbItem[] = [{ label: 'Goodfin AI Primitives' }];
+    const crumbs: BreadcrumbItem[] = [
+      {
+        label: 'Goodfin AI Primitives',
+        onClick: viewMode !== 'landing' ? () => setViewMode('landing') : undefined,
+      },
+    ];
 
-    if (viewMode === 'component' && activeGroup && activeOption) {
+    if (viewMode === 'landing') {
+      crumbs.push({ label: 'Components' });
+    } else if (viewMode === 'component' && activeGroup && activeOption) {
       crumbs.push(
         { label: activeGroup.label },
         { label: activeOption.label }
@@ -603,6 +630,12 @@ export function DocsLayout({
 
         {/* Prototype Preview Content */}
         <div className="h-full w-full overflow-auto">
+          {viewMode === 'landing' && (
+            <ComponentsLanding
+              groups={groups}
+              onComponentClick={handleLandingComponentClick}
+            />
+          )}
           {viewMode === 'component' && activeComponent}
           {viewMode === 'conversation' && renderConversationView?.(activeConversationFlow)}
           {viewMode === 'onboarding' && renderOnboardingView?.(activeOnboardingVariant, onboardingKey)}
@@ -639,8 +672,8 @@ export function DocsLayout({
         {/* Sidebar */}
         <Sidebar
           sections={sidebarSections}
-          activeSection={viewMode === 'component' ? activeGroupId : 'flows'}
-          activeItem={viewMode === 'component' ? activeId : viewMode}
+          activeSection={viewMode === 'component' ? activeGroupId : viewMode === 'landing' ? undefined : 'flows'}
+          activeItem={viewMode === 'component' ? activeId : viewMode === 'landing' ? undefined : viewMode}
           activeSubItem={getActiveSubItem()}
           expandedItems={expandedItems}
           isOpen={isSidebarOpen}
@@ -659,7 +692,15 @@ export function DocsLayout({
           {viewMode !== 'welcome02' && (
           <ScrollAreaPrimitive.Root className="h-full w-full">
             <ScrollAreaPrimitive.Viewport className="h-full w-full">
-              <div className="p-4 md:p-8 max-w-5xl">
+              <div className="p-4 md:p-8 max-w-5xl mx-auto">
+            {/* Landing View */}
+            {viewMode === 'landing' && (
+              <ComponentsLanding
+                groups={groups}
+                onComponentClick={handleLandingComponentClick}
+              />
+            )}
+
             {/* Component View */}
             {viewMode === 'component' && (
               <>
