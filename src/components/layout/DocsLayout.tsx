@@ -21,11 +21,11 @@ import {
   Sparkles,
   RotateCcw,
   Trash2,
-  X,
   Archive,
   PanelLeftClose,
   PanelLeft,
   ThumbsUp,
+  Keyboard,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Sidebar, type SidebarSection } from './Sidebar';
@@ -240,15 +240,60 @@ export function DocsLayout({
   // Onboarding reset key
   const [onboardingKey, setOnboardingKey] = useState(0);
 
-  // ESC key handler for exiting fullscreen
+  // Prototype mode notification
+  const [showPrototypeNotification, setShowPrototypeNotification] = useState(false);
+
+  // Track ESC key presses for double-tap exit
+  const [escPressCount, setEscPressCount] = useState(0);
+  const escTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  // ESC key handler - requires pressing ESC twice continuously to exit
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isFullscreen) {
-        setIsFullscreen(false);
+        setEscPressCount(prev => {
+          const newCount = prev + 1;
+          if (newCount >= 2) {
+            setIsFullscreen(false);
+            return 0;
+          }
+          return newCount;
+        });
+
+        // Reset count after 500ms if second ESC not pressed
+        if (escTimeoutRef.current) {
+          clearTimeout(escTimeoutRef.current);
+        }
+        escTimeoutRef.current = setTimeout(() => {
+          setEscPressCount(0);
+        }, 500);
       }
     };
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      if (escTimeoutRef.current) {
+        clearTimeout(escTimeoutRef.current);
+      }
+    };
+  }, [isFullscreen]);
+
+  // Reset ESC count when exiting fullscreen
+  useEffect(() => {
+    if (!isFullscreen) {
+      setEscPressCount(0);
+    }
+  }, [isFullscreen]);
+
+  // Show notification when entering prototype mode
+  useEffect(() => {
+    if (isFullscreen) {
+      setShowPrototypeNotification(true);
+      const timer = setTimeout(() => {
+        setShowPrototypeNotification(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
   }, [isFullscreen]);
 
   // Update URL when state changes
@@ -512,18 +557,33 @@ export function DocsLayout({
     return crumbs;
   };
 
-  // Render fullscreen overlay
+  // Render prototype mode (fullscreen)
   if (isFullscreen) {
     return (
       <div className="fixed inset-0 z-50 bg-muted">
-        {/* Close button */}
-        <button
-          onClick={() => setIsFullscreen(false)}
-          className="fixed top-4 right-4 z-50 p-2 rounded-full bg-card border border-border shadow-lg hover:bg-muted transition-colors"
+        {/* Prototype Mode Notification Overlay */}
+        <div
+          className={cn(
+            "fixed inset-0 z-[60] flex items-center justify-center pointer-events-none transition-opacity duration-500",
+            showPrototypeNotification ? "opacity-100" : "opacity-0"
+          )}
         >
-          <X className="w-5 h-5" />
-        </button>
-        {/* Fullscreen Preview Content */}
+          {/* Blurred backdrop */}
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+
+          {/* Notification card */}
+          <div className="relative bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl px-8 py-6 max-w-sm mx-4 text-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Keyboard className="w-5 h-5 text-muted-foreground" />
+              <span className="text-sm font-medium text-muted-foreground">Prototype Mode</span>
+            </div>
+            <p className="text-foreground text-lg font-medium">
+              Press <kbd className="px-2 py-1 bg-muted rounded-md text-sm font-mono border border-border">ESC</kbd> twice to exit
+            </p>
+          </div>
+        </div>
+
+        {/* Prototype Preview Content */}
         <div className="h-full w-full overflow-auto">
           {viewMode === 'component' && activeComponent}
           {viewMode === 'conversation' && renderConversationView?.(activeConversationFlow)}
