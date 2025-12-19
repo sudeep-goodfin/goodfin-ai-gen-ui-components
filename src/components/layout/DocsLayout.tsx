@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
+import React, { useState, useEffect } from 'react';
 import {
   MessageSquare,
   Layers,
@@ -645,19 +644,8 @@ export function DocsLayout({
                 )}
 
                 {/* Preview Container */}
-                <div className="border border-border rounded-xl overflow-hidden bg-muted/30">
-                  <ScrollAreaPrimitive.Root className="relative overflow-hidden">
-                    <ScrollAreaPrimitive.Viewport className="w-full min-h-[600px] max-h-[800px]">
-                      {activeComponent}
-                    </ScrollAreaPrimitive.Viewport>
-                    <ScrollAreaPrimitive.Scrollbar
-                      orientation="vertical"
-                      className="flex w-2.5 touch-none select-none border-l border-l-transparent p-[1px] transition-colors"
-                    >
-                      <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-grey-300 hover:bg-grey-400 transition-colors" />
-                    </ScrollAreaPrimitive.Scrollbar>
-                    <ScrollAreaPrimitive.Corner />
-                  </ScrollAreaPrimitive.Root>
+                <div className="border border-border rounded-xl bg-muted/30">
+                  {activeComponent}
                 </div>
               </>
             )}
@@ -697,19 +685,8 @@ export function DocsLayout({
                 )}
 
                 {/* Preview Container */}
-                <div className="border border-border rounded-xl overflow-hidden bg-muted/30">
-                  <ScrollAreaPrimitive.Root className="relative overflow-hidden">
-                    <ScrollAreaPrimitive.Viewport className="w-full min-h-[600px] max-h-[800px]">
-                      {renderConversationView?.(activeConversationFlow)}
-                    </ScrollAreaPrimitive.Viewport>
-                    <ScrollAreaPrimitive.Scrollbar
-                      orientation="vertical"
-                      className="flex w-2.5 touch-none select-none border-l border-l-transparent p-[1px] transition-colors"
-                    >
-                      <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-grey-300 hover:bg-grey-400 transition-colors" />
-                    </ScrollAreaPrimitive.Scrollbar>
-                    <ScrollAreaPrimitive.Corner />
-                  </ScrollAreaPrimitive.Root>
+                <div className="border border-border rounded-xl bg-muted/30">
+                  {renderConversationView?.(activeConversationFlow)}
                 </div>
               </>
             )}
@@ -776,19 +753,8 @@ export function DocsLayout({
                 </div>
 
                 {/* Preview Container */}
-                <div className="border border-border rounded-xl overflow-hidden bg-muted/30">
-                  <ScrollAreaPrimitive.Root className="relative overflow-hidden">
-                    <ScrollAreaPrimitive.Viewport className="w-full min-h-[600px] max-h-[800px]">
-                      {renderOnboardingView?.(activeOnboardingVariant, onboardingKey)}
-                    </ScrollAreaPrimitive.Viewport>
-                    <ScrollAreaPrimitive.Scrollbar
-                      orientation="vertical"
-                      className="flex w-2.5 touch-none select-none border-l border-l-transparent p-[1px] transition-colors"
-                    >
-                      <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-grey-300 hover:bg-grey-400 transition-colors" />
-                    </ScrollAreaPrimitive.Scrollbar>
-                    <ScrollAreaPrimitive.Corner />
-                  </ScrollAreaPrimitive.Root>
+                <div className="border border-border rounded-xl bg-muted/30">
+                  {renderOnboardingView?.(activeOnboardingVariant, onboardingKey)}
                 </div>
               </>
             )}
@@ -828,19 +794,8 @@ export function DocsLayout({
                 )}
 
                 {/* Preview Container */}
-                <div className="border border-border rounded-xl overflow-hidden bg-muted/30">
-                  <ScrollAreaPrimitive.Root className="relative overflow-hidden">
-                    <ScrollAreaPrimitive.Viewport className="w-full min-h-[600px] max-h-[800px]">
-                      {renderWelcomeView?.(activeWelcomeVariant)}
-                    </ScrollAreaPrimitive.Viewport>
-                    <ScrollAreaPrimitive.Scrollbar
-                      orientation="vertical"
-                      className="flex w-2.5 touch-none select-none border-l border-l-transparent p-[1px] transition-colors"
-                    >
-                      <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-grey-300 hover:bg-grey-400 transition-colors" />
-                    </ScrollAreaPrimitive.Scrollbar>
-                    <ScrollAreaPrimitive.Corner />
-                  </ScrollAreaPrimitive.Root>
+                <div className="border border-border rounded-xl bg-muted/30">
+                  {renderWelcomeView?.(activeWelcomeVariant)}
                 </div>
               </>
             )}
