@@ -26,6 +26,7 @@ import {
   Archive,
   PanelLeftClose,
   PanelLeft,
+  ThumbsUp,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Sidebar, type SidebarSection } from './Sidebar';
@@ -85,6 +86,7 @@ const componentIcons: Record<string, React.ReactNode> = {
   'introducing-goodfin-ai': <Sparkles className="w-4 h-4" />,
   'welcome-accredited': <Home className="w-4 h-4" />,
   'input-bar': <MessageSquare className="w-4 h-4" />,
+  'feedback-buttons': <ThumbsUp className="w-4 h-4" />,
 };
 
 type VariantOption = {
@@ -223,9 +225,9 @@ export function DocsLayout({
     return getBoolParam(getUrlParams(), 'fullscreen', false);
   });
 
-  // Welcome02 chrome toggle (header/sidebar visibility)
+  // Welcome02 chrome toggle (header/sidebar visibility) - default to false (no chrome)
   const [showWelcome02Chrome, setShowWelcome02Chrome] = useState(() => {
-    return getBoolParam(getUrlParams(), 'chrome', true);
+    return getBoolParam(getUrlParams(), 'chrome', false);
   });
 
   // Mobile sidebar state
@@ -258,8 +260,8 @@ export function DocsLayout({
       welcome02Variant: viewMode === 'welcome02' ? activeWelcome02Variant : undefined,
       // Fullscreen state (only store if true to keep URLs cleaner)
       fullscreen: isFullscreen ? true : undefined,
-      // Chrome toggle for welcome02 (only store if false since true is default)
-      chrome: viewMode === 'welcome02' && !showWelcome02Chrome ? false : undefined,
+      // Chrome toggle for welcome02 (only store if true since false is default)
+      chrome: viewMode === 'welcome02' && showWelcome02Chrome ? true : undefined,
     };
 
     // Add block-04 specific params
@@ -303,21 +305,17 @@ export function DocsLayout({
       ],
     };
 
-    // Components section - all component groups flattened
-    const allComponentItems = groups.flatMap(group =>
-      group.components.map(comp => ({
+    // Component groups - each group as its own section
+    const componentSections: SidebarSection[] = groups.map(group => ({
+      id: group.id,
+      label: group.label,
+      items: group.components.map(comp => ({
         id: comp.id,
         label: comp.label,
         icon: componentIcons[comp.id] || comp.icon,
         children: comp.variants?.map(v => ({ id: v.id, label: v.label })),
-      }))
-    );
-
-    const componentsSection: SidebarSection = {
-      id: 'components',
-      label: 'Components',
-      items: allComponentItems,
-    };
+      })),
+    }));
 
     // Archive section with older versions
     const archiveSection: SidebarSection = {
@@ -333,7 +331,7 @@ export function DocsLayout({
       ],
     };
 
-    return [flowsSection, componentsSection, archiveSection];
+    return [flowsSection, ...componentSections, archiveSection];
   };
 
   const sidebarSections = buildSidebarSections();
@@ -358,15 +356,13 @@ export function DocsLayout({
       if (itemId === 'welcome') {
         setViewMode('welcome');
       }
-    } else if (sectionId === 'components') {
-      // Component items - find which group contains this component
+    } else {
+      // Component items - sectionId is the group id
       setViewMode('component');
-      for (const group of groups) {
-        if (group.components.some(c => c.id === itemId)) {
-          setActiveGroupId(group.id);
-          setActiveId(itemId);
-          break;
-        }
+      const group = groups.find(g => g.id === sectionId);
+      if (group) {
+        setActiveGroupId(sectionId);
+        setActiveId(itemId);
       }
     }
   };
@@ -389,16 +385,14 @@ export function DocsLayout({
         setViewMode('welcome');
         setActiveWelcomeVariant(subItemId);
       }
-    } else if (sectionId === 'components') {
-      // Component variant selection - find which group contains this component
+    } else {
+      // Component variant selection - sectionId is the group id
       setViewMode('component');
-      for (const group of groups) {
-        if (group.components.some(c => c.id === itemId)) {
-          setActiveGroupId(group.id);
-          setActiveId(itemId);
-          setVariantStates(prev => ({ ...prev, [itemId]: subItemId }));
-          break;
-        }
+      const group = groups.find(g => g.id === sectionId);
+      if (group) {
+        setActiveGroupId(sectionId);
+        setActiveId(itemId);
+        setVariantStates(prev => ({ ...prev, [itemId]: subItemId }));
       }
     }
   };
@@ -551,7 +545,7 @@ export function DocsLayout({
         {/* Sidebar */}
         <Sidebar
           sections={sidebarSections}
-          activeSection={viewMode === 'component' ? 'components' : 'flows'}
+          activeSection={viewMode === 'component' ? activeGroupId : 'flows'}
           activeItem={viewMode === 'component' ? activeId : viewMode}
           activeSubItem={getActiveSubItem()}
           expandedItems={expandedItems}

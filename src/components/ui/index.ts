@@ -6,3 +6,5 @@ export { Badge } from './Badge';
 export { SuggestionChip, SuggestionGroup } from './SuggestionChip';
 export { ScrollArea, ScrollBar } from './ScrollArea';
 export { Shimmer } from './Shimmer';
+export { FeedbackButtons, feedbackButtonsVariants } from './FeedbackButtons';
+export type { FeedbackValue, FeedbackVariant } from './FeedbackButtons';

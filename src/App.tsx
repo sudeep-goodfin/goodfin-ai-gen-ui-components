@@ -72,7 +72,9 @@ import {
   BarChart3,
   Sparkles,
   Home,
+  ThumbsUp,
 } from 'lucide-react';
+import { FeedbackButtons, feedbackButtonsVariants } from './components/ui';
 
 export function App() {
   // Replay function ref for AI greeting animation
@@ -85,7 +87,7 @@ export function App() {
   // Default greeting variant for conversation view
   const conversationGreetingVariant: AIGreetingVariant = 'accredited-first-time';
 
-  // Component groups organized by user flow
+  // Component groups organized by category
   const componentGroups = [
     {
       id: 'investment-flow',
@@ -216,12 +218,6 @@ export function App() {
           icon: <Sparkles className="w-6 h-6" />,
           variants: introducingGoodfinAIVariants,
         },
-      ],
-    },
-    {
-      id: 'welcome-screen',
-      label: 'Welcome Screen',
-      components: [
         {
           id: 'welcome-accredited',
           label: 'Accredited Welcome',
@@ -232,9 +228,21 @@ export function App() {
         {
           id: 'welcome-02',
           label: 'Welcome 0.2',
-          component: () => <Welcome02 />,
+          component: (variant: string) => (
+            <Welcome02 showChrome={variant === 'with-chrome'} />
+          ),
           icon: <Sparkles className="w-6 h-6" />,
+          variants: [
+            { id: 'app-only', label: 'App Only' },
+            { id: 'with-chrome', label: 'With Chrome' },
+          ],
         },
+      ],
+    },
+    {
+      id: 'primitives',
+      label: 'Primitives',
+      components: [
         {
           id: 'input-bar',
           label: 'Input Bar (Chatbox)',
@@ -252,6 +260,17 @@ export function App() {
             { id: 'v0.1', label: 'v0.1 - Basic' },
             { id: 'v0.2', label: 'v0.2 - Commands' },
           ],
+        },
+        {
+          id: 'feedback-buttons',
+          label: 'Feedback Buttons',
+          component: (variant: string) => (
+            <div className="p-8 bg-white min-h-[200px] flex items-center justify-center">
+              <FeedbackButtons variant={variant as 'default' | 'minimal' | 'with-labels'} />
+            </div>
+          ),
+          icon: <ThumbsUp className="w-6 h-6" />,
+          variants: feedbackButtonsVariants,
         },
       ],
     },
