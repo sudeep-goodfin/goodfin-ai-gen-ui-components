@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ProgressWidget } from './ProgressWidget';
 import { NewsContent } from './NewsContent';
 import { EventsContent } from './EventsContent';
@@ -15,7 +15,8 @@ import {
     ArrowRight,
     Building2,
     Zap,
-    Globe
+    Globe,
+    ExternalLink
 } from 'lucide-react';
 
 export interface SuggestionItemProps {
@@ -50,6 +51,198 @@ export function SuggestionCard({ icon, title, subtitle, action, onClick }: Sugge
                     {action}
                     <ArrowRight className="w-3 h-3" />
                 </div>
+            )}
+        </div>
+    );
+}
+
+// Portfolio tabs type
+type PortfolioTab = 'summary' | 'investments';
+
+// My Investments data
+const MY_INVESTMENTS_DATA = [
+    {
+        id: '1',
+        name: 'SpaceX',
+        type: 'Secondary',
+        investedAmount: 250000,
+        currentValue: 312500,
+        returnPercent: 25.0,
+        date: 'Mar 2024',
+        status: 'active' as const,
+    },
+    {
+        id: '2',
+        name: 'Anthropic',
+        type: 'Series C',
+        investedAmount: 150000,
+        currentValue: 187500,
+        returnPercent: 25.0,
+        date: 'Jan 2024',
+        status: 'active' as const,
+    },
+    {
+        id: '3',
+        name: 'Stripe',
+        type: 'Secondary',
+        investedAmount: 200000,
+        currentValue: 224000,
+        returnPercent: 12.0,
+        date: 'Nov 2023',
+        status: 'active' as const,
+    },
+    {
+        id: '4',
+        name: 'Databricks',
+        type: 'Series I',
+        investedAmount: 100000,
+        currentValue: 118000,
+        returnPercent: 18.0,
+        date: 'Aug 2023',
+        status: 'active' as const,
+    },
+    {
+        id: '5',
+        name: 'Discord',
+        type: 'Secondary',
+        investedAmount: 75000,
+        currentValue: 82500,
+        returnPercent: 10.0,
+        date: 'Jun 2023',
+        status: 'active' as const,
+    },
+];
+
+// Investment row component
+function InvestmentRow({ investment }: { investment: typeof MY_INVESTMENTS_DATA[0] }) {
+    const isPositive = investment.returnPercent >= 0;
+    return (
+        <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-[#f0eef0] hover:border-[#e0dde1] transition-colors">
+            <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#f7f5f8] to-[#ebe8ec] flex items-center justify-center">
+                    <Building2 className="w-5 h-5 text-[#7f7582]" />
+                </div>
+                <div>
+                    <div className="text-sm font-medium text-[#29272a]">{investment.name}</div>
+                    <div className="text-xs text-[#9f949f]">{investment.type} · {investment.date}</div>
+                </div>
+            </div>
+            <div className="flex items-center gap-6">
+                <div className="text-right">
+                    <div className="text-sm font-medium text-[#29272a]">
+                        ${investment.currentValue.toLocaleString()}
+                    </div>
+                    <div className="text-xs text-[#9f949f]">
+                        ${investment.investedAmount.toLocaleString()} invested
+                    </div>
+                </div>
+                <div className={`text-sm font-medium ${isPositive ? 'text-[#049142]' : 'text-[#dc2626]'}`}>
+                    {isPositive ? '+' : ''}{investment.returnPercent.toFixed(1)}%
+                </div>
+                <button className="p-2 hover:bg-[#f7f5f8] rounded-lg transition-colors">
+                    <ExternalLink className="w-4 h-4 text-[#9f949f]" />
+                </button>
+            </div>
+        </div>
+    );
+}
+
+// My Investments content
+function MyInvestmentsContent() {
+    const totalInvested = MY_INVESTMENTS_DATA.reduce((sum, inv) => sum + inv.investedAmount, 0);
+    const totalValue = MY_INVESTMENTS_DATA.reduce((sum, inv) => sum + inv.currentValue, 0);
+    const totalReturn = ((totalValue - totalInvested) / totalInvested) * 100;
+
+    return (
+        <div className="flex flex-col gap-4">
+            {/* Summary Stats */}
+            <div className="grid grid-cols-3 gap-4 p-4 bg-white rounded-xl border border-[#f0eef0]">
+                <div>
+                    <div className="text-xs text-[#7f7582] mb-1">Total Invested</div>
+                    <div className="text-lg font-medium text-[#29272a]">${totalInvested.toLocaleString()}</div>
+                </div>
+                <div>
+                    <div className="text-xs text-[#7f7582] mb-1">Current Value</div>
+                    <div className="text-lg font-medium text-[#29272a]">${totalValue.toLocaleString()}</div>
+                </div>
+                <div>
+                    <div className="text-xs text-[#7f7582] mb-1">Total Return</div>
+                    <div className="text-lg font-medium text-[#049142]">+{totalReturn.toFixed(1)}%</div>
+                </div>
+            </div>
+
+            {/* Investments List */}
+            <div className="flex flex-col gap-2">
+                {MY_INVESTMENTS_DATA.map((investment) => (
+                    <InvestmentRow key={investment.id} investment={investment} />
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// Portfolio Tabs Component
+function PortfolioTabs({ activeTab, onTabChange }: { activeTab: PortfolioTab; onTabChange: (tab: PortfolioTab) => void }) {
+    return (
+        <div className="flex gap-1 p-1 bg-[#f0eef0] rounded-lg w-fit">
+            <button
+                onClick={() => onTabChange('summary')}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                    activeTab === 'summary'
+                        ? 'bg-white text-[#29272a] shadow-sm'
+                        : 'text-[#7f7582] hover:text-[#29272a]'
+                }`}
+            >
+                Portfolio Summary
+            </button>
+            <button
+                onClick={() => onTabChange('investments')}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                    activeTab === 'investments'
+                        ? 'bg-white text-[#29272a] shadow-sm'
+                        : 'text-[#7f7582] hover:text-[#29272a]'
+                }`}
+            >
+                My Investments
+            </button>
+        </div>
+    );
+}
+
+// Portfolio Content with Tabs
+function PortfolioContent({ onSuggestionClick }: { onSuggestionClick?: (text: string) => void }) {
+    const [activeTab, setActiveTab] = useState<PortfolioTab>('summary');
+    const suggestions = SUGGESTIONS_DATA['portfolio'] || [];
+
+    return (
+        <div className="w-full max-w-3xl flex flex-col gap-6">
+            {/* Tabs */}
+            <PortfolioTabs activeTab={activeTab} onTabChange={setActiveTab} />
+
+            {/* Tab Content */}
+            {activeTab === 'summary' ? (
+                <>
+                    {/* Portfolio Summary from Figma Import */}
+                    <div className="w-full h-[350px] shrink-0">
+                        <PortfolioSummary />
+                    </div>
+
+                    {/* Suggestions */}
+                    <div className="flex flex-col gap-3">
+                        <div className="text-sm font-medium text-[#7f7582] uppercase tracking-wider mb-1 px-1">
+                            Suggested Actions
+                        </div>
+                        {suggestions.map((item, index) => (
+                            <SuggestionCard
+                                key={index}
+                                {...item}
+                                onClick={() => onSuggestionClick?.(item.title)}
+                            />
+                        ))}
+                    </div>
+                </>
+            ) : (
+                <MyInvestmentsContent />
             )}
         </div>
     );
@@ -216,31 +409,9 @@ export function DashboardContent({ mode, onSuggestionClick }: { mode: ChatMode, 
         );
     }
 
-    // Special Layout for Portfolio Mode
+    // Special Layout for Portfolio Mode with Tabs
     if (mode === 'portfolio') {
-        const suggestions = SUGGESTIONS_DATA[mode] || [];
-        return (
-            <div className="w-full max-w-3xl flex flex-col gap-6">
-                 {/* Portfolio Summary from Figma Import */}
-                 <div className="w-full h-[350px] shrink-0">
-                    <PortfolioSummary />
-                 </div>
-
-                 {/* Suggestions */}
-                 <div className="flex flex-col gap-3">
-                    <div className="text-sm font-medium text-[#7f7582] uppercase tracking-wider mb-1 px-1">
-                        Suggested Actions
-                    </div>
-                    {suggestions.map((item, index) => (
-                        <SuggestionCard
-                            key={index}
-                            {...item}
-                            onClick={() => onSuggestionClick?.(item.title)}
-                        />
-                    ))}
-                 </div>
-            </div>
-        );
+        return <PortfolioContent onSuggestionClick={onSuggestionClick} />;
     }
 
     const suggestions = SUGGESTIONS_DATA[mode] || [];

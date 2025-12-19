@@ -166,33 +166,33 @@
     --sand-900: #554F59;
     --sand-950: #373338;
 
-    /* Semantic Tokens - Light Mode */
-    --background: var(--sand-100);
-    --foreground: var(--grey-950);
+    /* Semantic Tokens - Light Mode (shadcn neutral) */
+    --background: #FFFFFF;
+    --foreground: #0a0a0a;
 
-    --muted: var(--grey-200);
-    --muted-foreground: var(--grey-600);
+    --muted: #f5f5f5;
+    --muted-foreground: #737373;
 
-    --popover: var(--sand-0);
-    --popover-foreground: var(--grey-950);
+    --popover: #FFFFFF;
+    --popover-foreground: #0a0a0a;
 
-    --border: var(--grey-200);
-    --input: var(--grey-200);
+    --border: #e5e5e5;
+    --input: #e5e5e5;
 
-    --card: var(--sand-0);
-    --card-foreground: var(--grey-950);
+    --card: #FFFFFF;
+    --card-foreground: #0a0a0a;
 
-    --primary: var(--grey-950);
-    --primary-foreground: var(--grey-50);
+    --primary: #171717;
+    --primary-foreground: #fafafa;
 
-    --secondary: var(--grey-100);
-    --secondary-foreground: var(--grey-950);
+    --secondary: #f5f5f5;
+    --secondary-foreground: #171717;
 
-    --accent: var(--grey-200);
-    --accent-foreground: var(--grey-950);
+    --accent: #f5f5f5;
+    --accent-foreground: #171717;
 
-    --destructive: var(--red-600);
-    --destructive-foreground: var(--red-50);
+    --destructive: #ef4444;
+    --destructive-foreground: #fafafa;
 
     --success: var(--green-600);
     --success-foreground: var(--green-50);
@@ -203,7 +203,7 @@
     --info: var(--blue-500);
     --info-foreground: var(--blue-50);
 
-    --ring: var(--grey-950);
+    --ring: #0a0a0a;
 
     --radius: 0.5rem;
 
@@ -324,33 +324,33 @@
   }
 
   :root[class~="dark"] {
-    /* Semantic Tokens - Dark Mode */
-    --background: var(--grey-950);
-    --foreground: var(--grey-50);
+    /* Semantic Tokens - Dark Mode (shadcn neutral) */
+    --background: #0a0a0a;
+    --foreground: #fafafa;
 
-    --muted: var(--grey-800);
-    --muted-foreground: var(--grey-400);
+    --muted: #262626;
+    --muted-foreground: #a3a3a3;
 
-    --popover: var(--grey-900);
-    --popover-foreground: var(--grey-50);
+    --popover: #0a0a0a;
+    --popover-foreground: #fafafa;
 
-    --border: var(--grey-700);
-    --input: var(--grey-700);
+    --border: #262626;
+    --input: #262626;
 
-    --card: var(--grey-900);
-    --card-foreground: var(--grey-50);
+    --card: #0a0a0a;
+    --card-foreground: #fafafa;
 
-    --primary: var(--grey-50);
-    --primary-foreground: var(--grey-950);
+    --primary: #fafafa;
+    --primary-foreground: #171717;
 
-    --secondary: var(--grey-800);
-    --secondary-foreground: var(--grey-50);
+    --secondary: #262626;
+    --secondary-foreground: #fafafa;
 
-    --accent: var(--grey-700);
-    --accent-foreground: var(--grey-50);
+    --accent: #262626;
+    --accent-foreground: #fafafa;
 
-    --destructive: var(--red-500);
-    --destructive-foreground: var(--red-50);
+    --destructive: #7f1d1d;
+    --destructive-foreground: #fafafa;
 
     --success: var(--green-500);
     --success-foreground: var(--green-50);
@@ -361,7 +361,7 @@
     --info: var(--blue-400);
     --info-foreground: var(--blue-950);
 
-    --ring: var(--grey-50);
+    --ring: #d4d4d4;
 
     /* Concierge Chat UI - Dark Mode */
     --chat-user-bg: #48424A;

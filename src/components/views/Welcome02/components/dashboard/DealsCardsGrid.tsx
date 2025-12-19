@@ -1,6 +1,5 @@
 import React from 'react';
 import svgPaths from '../../imports/svg-lycxg20new';
-import imgBadges from "../../assets/badges-deals.png";
 
 // Deal images data
 export const DEAL_IMAGES = {
@@ -232,9 +231,9 @@ function DealCard({ category, status, title, description, image, onClick }: Deal
     },
     premium: {
       text: 'PREMIUM',
-      className: '',
+      className: 'bg-gradient-to-r from-amber-500 to-orange-500',
       icon: null,
-      textColor: 'text-[#f0eef0]'
+      textColor: 'text-white'
     }
   };
 
@@ -260,9 +259,6 @@ function DealCard({ category, status, title, description, image, onClick }: Deal
                     </div>
                   </div>
                   <div className={`content-stretch flex gap-[8px] items-center justify-center overflow-clip px-[24px] py-[8px] relative rounded-bl-[145px] rounded-tl-[145px] shrink-0 ${config.className}`}>
-                    {status === 'premium' && (
-                      <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-bl-[145px] rounded-tl-[145px] size-full" src={imgBadges} />
-                    )}
                     {config.icon}
                     <div className="content-stretch flex items-center justify-center relative shrink-0">
                       <div className={`flex flex-col font-sans justify-center leading-[0] not-italic relative shrink-0 text-[14px] text-nowrap ${config.textColor}`}>

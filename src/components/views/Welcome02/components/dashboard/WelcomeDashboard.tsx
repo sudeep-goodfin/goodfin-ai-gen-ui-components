@@ -142,7 +142,7 @@ const GREETING_DATA: Record<ChatMode, { title: string; description: string }> = 
     description: "I can help you analyze market trends, review company filings, and synthesize complex financial data. What would you like to investigate today?"
   },
   deals: {
-    title: "Deal Flow",
+    title: "Deals",
     description: "Reviewing the latest secondary market opportunities and private equity allocations tailored to your investment thesis. 5 new deals match your criteria."
   },
   news: {

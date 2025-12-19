@@ -11,15 +11,11 @@ function ExploreCard({ children, onClick }: React.PropsWithChildren<{ onClick?: 
   return (
     <div
       onClick={onClick}
-      className="bg-white h-[196px] relative rounded-[6px] shrink-0 w-full cursor-pointer group transition-all duration-300 overflow-hidden"
+      className="bg-[#f7f7f8] h-[196px] relative rounded-[12px] shrink-0 w-full cursor-pointer group transition-all duration-300 overflow-hidden border border-[#e6e4e7] hover:border-[#d4d1d6] hover:shadow-md"
     >
       <div className="content-stretch flex flex-col gap-[10px] items-start p-[12px] relative rounded-[inherit] size-full z-10">
         {children}
       </div>
-      <div
-        aria-hidden="true"
-        className="absolute border-[#a46f04] border-[0.5px] border-solid inset-0 pointer-events-none rounded-[6px] group-hover:border-purple-300 transition-colors z-20"
-      />
     </div>
   );
 }
@@ -110,13 +106,18 @@ function ResumeCard({ onClick }: { onClick?: () => void }) {
 }
 
 // Explore card content
-function ExploreCardContent({ title, descriptions }: { title: string; descriptions: string[] }) {
+function ExploreCardContent({ title, descriptions, icon }: { title: string; descriptions: string[]; icon?: React.ReactNode }) {
   return (
-    <div className="absolute backdrop-blur-[10px] backdrop-filter bg-[rgba(254,254,232,0.05)] flex flex-col gap-[4px] items-start left-0 p-[20px] top-0 w-full h-full rounded-[6px]">
-      <span className="text-[#87560c] text-[16px] leading-[20px] font-medium tracking-[-0.15px] group-hover:-translate-y-1 transition-transform duration-300">
+    <div className="absolute flex flex-col gap-[8px] items-start left-0 p-[20px] top-0 w-full h-full rounded-[12px]">
+      {icon && (
+        <div className="w-10 h-10 rounded-lg bg-[#e9e6ea] flex items-center justify-center mb-2 group-hover:bg-[#d4d1d6] transition-colors">
+          {icon}
+        </div>
+      )}
+      <span className="text-[#29272a] text-[16px] leading-[20px] font-medium tracking-[-0.15px] group-hover:text-[#48424a] transition-colors">
         {title}
       </span>
-      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-500 text-[#87560c] text-[12px] leading-4 font-normal mt-2">
+      <div className="text-[#7f7582] text-[13px] leading-5 font-normal">
         {descriptions.map((desc, idx) => (
           <p key={idx}>{desc}</p>
         ))}
@@ -131,13 +132,6 @@ interface HomeContentProps {
 }
 
 export function HomeContent({ onModeChange, onStartChat }: HomeContentProps) {
-  // Gradient backgrounds for explore cards (simulating images)
-  const cardGradients = [
-    'linear-gradient(135deg, #fff8e1 0%, #ffecb3 50%, #ffe082 100%)',
-    'linear-gradient(135deg, #fce4ec 0%, #f8bbd0 50%, #f48fb1 100%)',
-    'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 50%, #90caf9 100%)',
-    'linear-gradient(135deg, #f3e5f5 0%, #e1bee7 50%, #ce93d8 100%)'
-  ];
 
   return (
     <div className="flex flex-col items-center justify-center w-full max-w-3xl pb-20">
@@ -196,46 +190,50 @@ export function HomeContent({ onModeChange, onStartChat }: HomeContentProps) {
             <div className="relative w-full">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-[18px] w-[110%] -ml-[5%]">
                 <ExploreCard onClick={() => onModeChange?.('deals')}>
-                  <div
-                    className="absolute h-[196px] left-0 top-0 w-full rounded-[6px] group-hover:blur-[3px] group-hover:scale-110 transition-all duration-500"
-                    style={{ background: cardGradients[0] }}
-                  />
                   <ExploreCardContent
                     title="New Deals"
                     descriptions={["Browse exclusive late-stage allocations.", "Access top-tier VC deals."]}
+                    icon={
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z" fill="#48424a"/>
+                      </svg>
+                    }
                   />
                 </ExploreCard>
 
                 <ExploreCard onClick={() => onModeChange?.('events')}>
-                  <div
-                    className="absolute h-[196px] left-0 top-0 w-full rounded-[6px] group-hover:blur-[3px] group-hover:scale-110 transition-all duration-500"
-                    style={{ background: cardGradients[1] }}
-                  />
                   <ExploreCardContent
                     title="Events"
                     descriptions={["Join exclusive member summits.", "Network with industry peers."]}
+                    icon={
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5v-5z" fill="#48424a"/>
+                      </svg>
+                    }
                   />
                 </ExploreCard>
 
                 <ExploreCard onClick={() => onModeChange?.('news')}>
-                  <div
-                    className="absolute h-[196px] left-0 top-0 w-full rounded-[6px] group-hover:blur-[3px] group-hover:scale-110 transition-all duration-500"
-                    style={{ background: cardGradients[2] }}
-                  />
                   <ExploreCardContent
                     title="News"
                     descriptions={["Latest market intelligence.", "Regulatory updates & trends."]}
+                    icon={
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M22 3l-1.67 1.67L18.67 3 17 4.67 15.33 3l-1.66 1.67L12 3l-1.67 1.67L8.67 3 7 4.67 5.33 3 3.67 4.67 2 3v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V3zM11 19H4v-6h7v6zm9 0h-7v-2h7v2zm0-4h-7v-2h7v2zm0-4H4V8h16v3z" fill="#48424a"/>
+                      </svg>
+                    }
                   />
                 </ExploreCard>
 
                 <ExploreCard onClick={() => onModeChange?.('insight')}>
-                  <div
-                    className="absolute h-[196px] left-0 top-0 w-full rounded-[6px] group-hover:blur-[3px] group-hover:scale-110 transition-all duration-500"
-                    style={{ background: cardGradients[3] }}
-                  />
                   <ExploreCardContent
                     title="Insights"
                     descriptions={["Expert investment memos.", "Community deal analysis."]}
+                    icon={
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6C7.8 12.16 7 10.63 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z" fill="#48424a"/>
+                      </svg>
+                    }
                   />
                 </ExploreCard>
               </div>
