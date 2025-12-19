@@ -334,10 +334,10 @@ export function App() {
 
   // Welcome02 variants (user states)
   const welcome02Variants = [
-    { id: 'accredited-first-time', label: 'Accredited First Time' },
     { id: 'accredited-returning', label: 'Accredited Returning' },
-    { id: 'non-accredited', label: 'Non-Accredited' },
-    { id: 'pending-verification', label: 'Pending Verification' },
+    { id: 'accredited-first-time', label: 'Accredited First Time', comingSoon: true },
+    { id: 'non-accredited', label: 'Non-Accredited', comingSoon: true },
+    { id: 'pending-verification', label: 'Pending Verification', comingSoon: true },
   ];
 
   return (

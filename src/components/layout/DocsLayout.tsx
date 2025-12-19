@@ -93,6 +93,7 @@ const componentIcons: Record<string, React.ReactNode> = {
 type VariantOption = {
   id: string;
   label: string;
+  comingSoon?: boolean;
 };
 
 type ComponentOptions = {
@@ -576,26 +577,29 @@ export function DocsLayout({
     return (
       <div className="fixed inset-0 z-50 bg-muted">
         {/* Prototype Mode Notification Overlay */}
-        <div
-          className={cn(
-            "fixed inset-0 z-[60] flex items-center justify-center pointer-events-none transition-opacity duration-500",
-            showPrototypeNotification ? "opacity-100" : "opacity-0"
-          )}
-        >
-          {/* Blurred backdrop */}
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+        {showPrototypeNotification && (
+          <div
+            className="fixed inset-0 z-[60] flex items-center justify-center transition-opacity duration-500"
+            onClick={() => setShowPrototypeNotification(false)}
+          >
+            {/* Blurred backdrop */}
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
 
-          {/* Notification card */}
-          <div className="relative bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl px-8 py-6 max-w-sm mx-4 text-center">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Keyboard className="w-5 h-5 text-muted-foreground" />
-              <span className="text-sm font-medium text-muted-foreground">Prototype Mode</span>
+            {/* Notification card */}
+            <div
+              className="relative bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl px-8 py-6 max-w-sm mx-4 text-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Keyboard className="w-5 h-5 text-muted-foreground" />
+                <span className="text-sm font-medium text-muted-foreground">Prototype Mode</span>
+              </div>
+              <p className="text-foreground text-lg font-medium">
+                Press <kbd className="px-2 py-1 bg-muted rounded-md text-sm font-mono border border-border">ESC</kbd> twice to exit
+              </p>
             </div>
-            <p className="text-foreground text-lg font-medium">
-              Press <kbd className="px-2 py-1 bg-muted rounded-md text-sm font-mono border border-border">ESC</kbd> twice to exit
-            </p>
           </div>
-        </div>
+        )}
 
         {/* Prototype Preview Content */}
         <div className="h-full w-full overflow-auto">
@@ -925,8 +929,12 @@ export function DocsLayout({
                       {welcome02Variants.map((variant) => (
                         <button
                           key={variant.id}
-                          onClick={() => setActiveWelcome02Variant(variant.id)}
-                          className={cn('px-2.5 py-1 text-sm font-medium rounded-md transition-all')}
+                          onClick={() => !variant.comingSoon && setActiveWelcome02Variant(variant.id)}
+                          disabled={variant.comingSoon}
+                          className={cn(
+                            'px-2.5 py-1 text-sm font-medium rounded-md transition-all flex items-center gap-1.5',
+                            variant.comingSoon && 'cursor-not-allowed opacity-60'
+                          )}
                           style={{
                             backgroundColor: activeWelcome02Variant === variant.id ? '#FFFFFF' : 'transparent',
                             color: activeWelcome02Variant === variant.id ? 'var(--grey-950)' : 'var(--grey-500)',
@@ -934,6 +942,11 @@ export function DocsLayout({
                           }}
                         >
                           {variant.label}
+                          {variant.comingSoon && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-medium">
+                              Soon
+                            </span>
+                          )}
                         </button>
                       ))}
                     </div>
