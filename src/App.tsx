@@ -47,9 +47,12 @@ import {
   WireInstructionsContent,
   SignableDocumentCard,
   Welcome02,
+  InputBarV01,
+  InputBarV02,
   type AIGreetingVariant,
   type OnboardingVariant,
   type WelcomeScreenVariant,
+  type InputBarVersion,
 } from './components/views';
 import {
   Layout,
@@ -232,6 +235,24 @@ export function App() {
           component: () => <Welcome02 />,
           icon: <Sparkles className="w-6 h-6" />,
         },
+        {
+          id: 'input-bar',
+          label: 'Input Bar (Chatbox)',
+          component: (variant: string) => (
+            <div className="p-8 bg-[#f7f7f8] min-h-[400px] flex items-end justify-center">
+              {variant === 'v0.1' ? (
+                <InputBarV01 currentMode="default" />
+              ) : (
+                <InputBarV02 currentMode="default" />
+              )}
+            </div>
+          ),
+          icon: <MessageSquare className="w-6 h-6" />,
+          variants: [
+            { id: 'v0.1', label: 'v0.1 - Basic' },
+            { id: 'v0.2', label: 'v0.2 - Commands' },
+          ],
+        },
       ],
     },
   ];
@@ -292,9 +313,12 @@ export function App() {
     { id: 'investment-flow', label: 'Investment Flow' },
   ];
 
-  // Welcome02 variants
+  // Welcome02 variants (user states)
   const welcome02Variants = [
-    { id: 'default', label: 'Default' },
+    { id: 'accredited-first-time', label: 'Accredited First Time' },
+    { id: 'accredited-returning', label: 'Accredited Returning' },
+    { id: 'non-accredited', label: 'Non-Accredited' },
+    { id: 'pending-verification', label: 'Pending Verification' },
   ];
 
   return (

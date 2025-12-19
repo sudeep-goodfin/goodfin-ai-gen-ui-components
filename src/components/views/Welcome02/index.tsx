@@ -25,7 +25,7 @@ export function Welcome02({ showChrome = true }: Welcome02Props) {
 export { Header } from './components/layout/Header';
 export { Sidebar } from './components/layout/Sidebar';
 export { WelcomeDashboard } from './components/dashboard/WelcomeDashboard';
-export { InputBar } from './components/dashboard/InputBar';
+export { InputBar, InputBarV01, InputBarV02 } from './components/dashboard/InputBar';
 export { HomeContent } from './components/dashboard/HomeContent';
 export { DashboardContent, SuggestionCard, SUGGESTIONS_DATA } from './components/dashboard/DashboardContent';
 export { Greeting } from './components/dashboard/Greeting';
@@ -33,5 +33,5 @@ export { ProgressWidget } from './components/dashboard/ProgressWidget';
 export { ProgressCircle, CommunityIcon } from './components/dashboard/icons';
 export { NewsContent } from './components/dashboard/NewsContent';
 export { EventsContent, EventCard, EVENTS_DATA } from './components/dashboard/EventsContent';
-export type { ChatMode, MoreMode } from './components/dashboard/InputBar';
+export type { ChatMode, MoreMode, InputBarVersion } from './components/dashboard/InputBar';
 export type { EventCardProps } from './components/dashboard/EventsContent';

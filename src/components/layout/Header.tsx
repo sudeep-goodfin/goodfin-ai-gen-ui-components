@@ -1,10 +1,18 @@
-import React, { useState, useCallback } from 'react';
-import { Link2, Check, Maximize2, ArrowLeft, ChevronRight, Menu } from 'lucide-react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { Link2, Check, Maximize2, ArrowLeft, ChevronRight, Menu, ChevronDown } from 'lucide-react';
 import { cn } from '../../lib/utils';
+
+type DropdownOption = {
+  id: string;
+  label: string;
+};
 
 type BreadcrumbItem = {
   label: string;
   onClick?: () => void;
+  dropdownOptions?: DropdownOption[];
+  selectedOptionId?: string;
+  onOptionSelect?: (optionId: string) => void;
 };
 
 type HeaderProps = {
@@ -15,6 +23,86 @@ type HeaderProps = {
   showMenuButton?: boolean;
   className?: string;
 };
+
+// Dropdown component for breadcrumb items with options
+function BreadcrumbDropdown({
+  options,
+  selectedId,
+  onSelect,
+  isMobile = false
+}: {
+  options: DropdownOption[];
+  selectedId?: string;
+  onSelect?: (id: string) => void;
+  isMobile?: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const selectedOption = options.find(opt => opt.id === selectedId) || options[0];
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  return (
+    <div ref={dropdownRef} className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={cn(
+          "flex items-center gap-1 font-medium transition-colors rounded-md px-1.5 py-0.5 -mx-1.5 -my-0.5",
+          "hover:bg-muted text-foreground",
+          isMobile ? "text-xs" : "text-sm"
+        )}
+      >
+        <span className="whitespace-nowrap">{selectedOption?.label}</span>
+        <ChevronDown className={cn(
+          "transition-transform",
+          isMobile ? "w-3 h-3" : "w-4 h-4",
+          isOpen && "rotate-180"
+        )} />
+      </button>
+
+      {isOpen && (
+        <div className={cn(
+          "absolute top-full left-0 mt-1 py-1 bg-background border border-border rounded-lg shadow-lg z-50 min-w-[160px]",
+          isMobile && "text-xs"
+        )}>
+          {options.map((option) => (
+            <button
+              key={option.id}
+              onClick={() => {
+                onSelect?.(option.id);
+                setIsOpen(false);
+              }}
+              className={cn(
+                "w-full text-left px-3 py-1.5 transition-colors",
+                "hover:bg-muted",
+                option.id === selectedId
+                  ? "text-foreground font-medium bg-muted/50"
+                  : "text-muted-foreground"
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function Header({
   title,
@@ -72,7 +160,13 @@ export function Header({
                 {index > 0 && (
                   <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 )}
-                {crumb.onClick ? (
+                {crumb.dropdownOptions && crumb.dropdownOptions.length > 0 ? (
+                  <BreadcrumbDropdown
+                    options={crumb.dropdownOptions}
+                    selectedId={crumb.selectedOptionId}
+                    onSelect={crumb.onOptionSelect}
+                  />
+                ) : crumb.onClick ? (
                   <button
                     onClick={crumb.onClick}
                     className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
@@ -99,7 +193,14 @@ export function Header({
                 {index > 0 && (
                   <ChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
                 )}
-                {crumb.onClick ? (
+                {crumb.dropdownOptions && crumb.dropdownOptions.length > 0 ? (
+                  <BreadcrumbDropdown
+                    options={crumb.dropdownOptions}
+                    selectedId={crumb.selectedOptionId}
+                    onSelect={crumb.onOptionSelect}
+                    isMobile
+                  />
+                ) : crumb.onClick ? (
                   <button
                     onClick={crumb.onClick}
                     className="text-muted-foreground hover:text-foreground transition-colors text-xs whitespace-nowrap"

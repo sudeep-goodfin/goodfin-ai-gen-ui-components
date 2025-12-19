@@ -84,6 +84,7 @@ const componentIcons: Record<string, React.ReactNode> = {
   'introducing-ticker': <BarChart3 className="w-4 h-4" />,
   'introducing-goodfin-ai': <Sparkles className="w-4 h-4" />,
   'welcome-accredited': <Home className="w-4 h-4" />,
+  'input-bar': <MessageSquare className="w-4 h-4" />,
 };
 
 type VariantOption = {
@@ -274,16 +275,11 @@ export function DocsLayout({
 
   // Build sidebar sections based on view mode
   const buildSidebarSections = (): SidebarSection[] => {
-    // Main view modes as top-level sections
-    const viewModes: SidebarSection = {
+    // Flows section - main user flows
+    const flowsSection: SidebarSection = {
       id: 'flows',
       label: 'Flows',
       items: [
-        {
-          id: 'component',
-          label: 'Component',
-          icon: viewModeIcons.component,
-        },
         {
           id: 'conversation',
           label: 'Conversation',
@@ -307,17 +303,21 @@ export function DocsLayout({
       ],
     };
 
-    // Component groups
-    const componentSections: SidebarSection[] = groups.map(group => ({
-      id: group.id,
-      label: group.label,
-      items: group.components.map(comp => ({
+    // Components section - all component groups flattened
+    const allComponentItems = groups.flatMap(group =>
+      group.components.map(comp => ({
         id: comp.id,
         label: comp.label,
         icon: componentIcons[comp.id] || comp.icon,
         children: comp.variants?.map(v => ({ id: v.id, label: v.label })),
-      })),
-    }));
+      }))
+    );
+
+    const componentsSection: SidebarSection = {
+      id: 'components',
+      label: 'Components',
+      items: allComponentItems,
+    };
 
     // Archive section with older versions
     const archiveSection: SidebarSection = {
@@ -333,7 +333,7 @@ export function DocsLayout({
       ],
     };
 
-    return [viewModes, ...componentSections, archiveSection];
+    return [flowsSection, componentsSection, archiveSection];
   };
 
   const sidebarSections = buildSidebarSections();
@@ -346,9 +346,7 @@ export function DocsLayout({
   const handleItemClick = (sectionId: string, itemId: string) => {
     if (sectionId === 'flows') {
       // View mode items
-      if (itemId === 'component') {
-        setViewMode('component');
-      } else if (itemId === 'conversation') {
+      if (itemId === 'conversation') {
         setViewMode('conversation');
       } else if (itemId === 'onboarding') {
         setViewMode('onboarding');
@@ -360,13 +358,15 @@ export function DocsLayout({
       if (itemId === 'welcome') {
         setViewMode('welcome');
       }
-    } else {
-      // Component items
+    } else if (sectionId === 'components') {
+      // Component items - find which group contains this component
       setViewMode('component');
-      const group = groups.find(g => g.id === sectionId);
-      if (group) {
-        setActiveGroupId(sectionId);
-        setActiveId(itemId);
+      for (const group of groups) {
+        if (group.components.some(c => c.id === itemId)) {
+          setActiveGroupId(group.id);
+          setActiveId(itemId);
+          break;
+        }
       }
     }
   };
@@ -389,14 +389,16 @@ export function DocsLayout({
         setViewMode('welcome');
         setActiveWelcomeVariant(subItemId);
       }
-    } else {
-      // Component variant selection
+    } else if (sectionId === 'components') {
+      // Component variant selection - find which group contains this component
       setViewMode('component');
-      const group = groups.find(g => g.id === sectionId);
-      if (group) {
-        setActiveGroupId(sectionId);
-        setActiveId(itemId);
-        setVariantStates(prev => ({ ...prev, [itemId]: subItemId }));
+      for (const group of groups) {
+        if (group.components.some(c => c.id === itemId)) {
+          setActiveGroupId(group.id);
+          setActiveId(itemId);
+          setVariantStates(prev => ({ ...prev, [itemId]: subItemId }));
+          break;
+        }
       }
     }
   };
@@ -440,7 +442,15 @@ export function DocsLayout({
 
   // Build breadcrumbs
   const buildBreadcrumbs = () => {
-    const crumbs = [{ label: 'Goodfin AI Primitives' }];
+    type BreadcrumbItem = {
+      label: string;
+      onClick?: () => void;
+      dropdownOptions?: { id: string; label: string }[];
+      selectedOptionId?: string;
+      onOptionSelect?: (optionId: string) => void;
+    };
+
+    const crumbs: BreadcrumbItem[] = [{ label: 'Goodfin AI Primitives' }];
 
     if (viewMode === 'component' && activeGroup && activeOption) {
       crumbs.push(
@@ -455,20 +465,48 @@ export function DocsLayout({
       }
     } else if (viewMode === 'conversation') {
       crumbs.push({ label: 'Conversation' });
-      const flowLabel = conversationFlowOptions.find(f => f.id === activeConversationFlow)?.label;
-      if (flowLabel) crumbs.push({ label: flowLabel });
+      if (conversationFlowOptions.length > 0) {
+        const currentLabel = conversationFlowOptions.find(f => f.id === activeConversationFlow)?.label || '';
+        crumbs.push({
+          label: currentLabel,
+          dropdownOptions: conversationFlowOptions.map(f => ({ id: f.id, label: f.label })),
+          selectedOptionId: activeConversationFlow,
+          onOptionSelect: (id) => setActiveConversationFlow(id),
+        });
+      }
     } else if (viewMode === 'onboarding') {
       crumbs.push({ label: 'Onboarding' });
-      const variantLabel = onboardingVariants.find(v => v.id === activeOnboardingVariant)?.label;
-      if (variantLabel) crumbs.push({ label: variantLabel });
+      if (onboardingVariants.length > 0) {
+        const currentLabel = onboardingVariants.find(v => v.id === activeOnboardingVariant)?.label || '';
+        crumbs.push({
+          label: currentLabel,
+          dropdownOptions: onboardingVariants.map(v => ({ id: v.id, label: v.label })),
+          selectedOptionId: activeOnboardingVariant,
+          onOptionSelect: (id) => setActiveOnboardingVariant(id),
+        });
+      }
     } else if (viewMode === 'welcome02') {
       crumbs.push({ label: 'Welcome Screen Flow 0.2' });
-      const variantLabel = welcome02Variants.find(v => v.id === activeWelcome02Variant)?.label;
-      if (variantLabel) crumbs.push({ label: variantLabel });
+      if (welcome02Variants.length > 0) {
+        const currentLabel = welcome02Variants.find(v => v.id === activeWelcome02Variant)?.label || '';
+        crumbs.push({
+          label: currentLabel,
+          dropdownOptions: welcome02Variants.map(v => ({ id: v.id, label: v.label })),
+          selectedOptionId: activeWelcome02Variant,
+          onOptionSelect: (id) => setActiveWelcome02Variant(id),
+        });
+      }
     } else if (viewMode === 'welcome') {
       crumbs.push({ label: 'Archive' }, { label: 'Welcome Screen Flow 0.1' });
-      const variantLabel = welcomeVariants.find(v => v.id === activeWelcomeVariant)?.label;
-      if (variantLabel) crumbs.push({ label: variantLabel });
+      if (welcomeVariants.length > 0) {
+        const currentLabel = welcomeVariants.find(v => v.id === activeWelcomeVariant)?.label || '';
+        crumbs.push({
+          label: currentLabel,
+          dropdownOptions: welcomeVariants.map(v => ({ id: v.id, label: v.label })),
+          selectedOptionId: activeWelcomeVariant,
+          onOptionSelect: (id) => setActiveWelcomeVariant(id),
+        });
+      }
     }
 
     return crumbs;
@@ -513,7 +551,7 @@ export function DocsLayout({
         {/* Sidebar */}
         <Sidebar
           sections={sidebarSections}
-          activeSection={viewMode === 'component' ? activeGroupId : 'flows'}
+          activeSection={viewMode === 'component' ? 'components' : 'flows'}
           activeItem={viewMode === 'component' ? activeId : viewMode}
           activeSubItem={getActiveSubItem()}
           expandedItems={expandedItems}

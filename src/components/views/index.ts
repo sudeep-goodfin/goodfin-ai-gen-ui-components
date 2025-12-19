@@ -94,6 +94,8 @@ export {
   Sidebar as Welcome02Sidebar,
   WelcomeDashboard as Welcome02Dashboard,
   InputBar as Welcome02InputBar,
+  InputBarV01,
+  InputBarV02,
   HomeContent as Welcome02HomeContent,
   DashboardContent as Welcome02DashboardContent,
   SuggestionCard as Welcome02SuggestionCard,
@@ -111,4 +113,5 @@ export type {
   ChatMode as Welcome02ChatMode,
   MoreMode as Welcome02MoreMode,
   EventCardProps as Welcome02EventCardProps,
+  InputBarVersion,
 } from './Welcome02';

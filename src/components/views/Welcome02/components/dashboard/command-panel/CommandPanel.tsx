@@ -209,7 +209,7 @@ export function CommandPanel({
 
                 {/* Content */}
                 <div className="min-w-0 flex-1">
-                  <h4 className="text-xs sm:text-sm font-medium text-foreground">
+                  <h4 className="text-xs sm:text-sm font-medium text-primary font-['Söhne',sans-serif]">
                     {card.title}
                   </h4>
                   <p className="truncate text-[10px] sm:text-xs text-muted-foreground">
@@ -268,7 +268,7 @@ export function CommandPanel({
 
                             {/* Content */}
                             <div className="min-w-0 flex-1">
-                              <h4 className="text-xs sm:text-sm font-medium text-foreground">
+                              <h4 className="text-xs sm:text-sm font-medium text-primary font-['Söhne',sans-serif]">
                                 {recipe.name}
                               </h4>
                               <p className="truncate text-[10px] sm:text-xs text-muted-foreground">
@@ -314,7 +314,7 @@ export function CommandPanel({
 
                   {/* Content */}
                   <div className="min-w-0 flex-1">
-                    <h4 className="text-xs sm:text-sm font-medium text-foreground">
+                    <h4 className="text-xs sm:text-sm font-medium text-primary font-['Söhne',sans-serif]">
                       {context.name}
                     </h4>
                     <p className="truncate text-[10px] sm:text-xs text-muted-foreground">
