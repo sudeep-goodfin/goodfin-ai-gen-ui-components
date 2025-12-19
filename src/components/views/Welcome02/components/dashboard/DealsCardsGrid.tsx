@@ -1,13 +1,109 @@
 import React from 'react';
 import svgPaths from '../../imports/svg-lycxg20new';
-import imgImage1 from "../../assets/avatar-spacex.png";
-import imgAvatar2 from "../../assets/avatar-anthropic.png";
-import imgAvatar3 from "../../assets/avatar-anthropic-alt.png";
 import imgBadges from "../../assets/badges-deals.png";
-import imgImage from "../../assets/deal-stripe.png";
-import imgImage3 from "../../assets/deal-anduril.png";
-import imgImage4 from "../../assets/deal-databricks.png";
-import imgImage5 from "../../assets/deal-discord.png";
+
+// Deal images data
+export const DEAL_IMAGES = {
+  spacex: '/icons/products/spaceX.png',
+  anthropic: '/icons/products/anthropic.png',
+  openai: '/icons/products/openAI.png',
+  xai: '/icons/products/xAI.png',
+  perplexity: '/icons/products/perplexity.png',
+  scaleai: '/icons/products/scaleAI.png',
+  cohere: '/icons/products/cohere.png',
+  moonfare: '/icons/products/moonfare.png',
+  anduril: '/icons/products/anduril.jpg',
+  databricks: '/icons/products/databricks.jpg',
+} as const;
+
+export type DealImageKey = keyof typeof DEAL_IMAGES;
+
+// Deals data
+export const DEALS_DATA = [
+  {
+    id: 'spacex',
+    category: 'SPACE TECH',
+    status: 'live' as const,
+    title: 'SpaceX',
+    description: 'Space travel with reusable rockets and interplanetary ambitions',
+    image: 'spacex' as DealImageKey,
+  },
+  {
+    id: 'openai',
+    category: 'AI',
+    status: 'closing' as const,
+    title: 'OpenAI',
+    description: 'Leading AI research lab building safe and beneficial artificial general intelligence',
+    image: 'openai' as DealImageKey,
+  },
+  {
+    id: 'anthropic',
+    category: 'AI',
+    status: 'premium' as const,
+    title: 'Anthropic',
+    description: 'AI safety and research company building reliable, interpretable AI systems',
+    image: 'anthropic' as DealImageKey,
+  },
+  {
+    id: 'xai',
+    category: 'AI',
+    status: 'live' as const,
+    title: 'xAI',
+    description: 'Elon Musk\'s AI company focused on understanding the universe',
+    image: 'xai' as DealImageKey,
+  },
+  {
+    id: 'perplexity',
+    category: 'AI',
+    status: 'live' as const,
+    title: 'Perplexity',
+    description: 'AI-powered answer engine that delivers accurate, cited responses',
+    image: 'perplexity' as DealImageKey,
+  },
+  {
+    id: 'scaleai',
+    category: 'AI',
+    status: 'closing' as const,
+    title: 'Scale AI',
+    description: 'Data platform accelerating AI development with high-quality training data',
+    image: 'scaleai' as DealImageKey,
+  },
+  {
+    id: 'databricks',
+    category: 'DATA',
+    status: 'premium' as const,
+    title: 'Databricks',
+    description: 'Unified analytics platform for data engineering and data science',
+    image: 'databricks' as DealImageKey,
+  },
+  {
+    id: 'anduril',
+    category: 'DEFENSE',
+    status: 'live' as const,
+    title: 'Anduril',
+    description: 'Defense technology company building autonomous systems',
+    image: 'anduril' as DealImageKey,
+  },
+  {
+    id: 'cohere',
+    category: 'AI',
+    status: 'live' as const,
+    title: 'Cohere',
+    description: 'Enterprise AI platform for natural language understanding',
+    image: 'cohere' as DealImageKey,
+  },
+  {
+    id: 'moonfare',
+    category: 'FINTECH',
+    status: 'live' as const,
+    title: 'Moonfare',
+    description: 'Digital platform democratizing access to private equity investments',
+    image: 'moonfare' as DealImageKey,
+  },
+];
+
+// Featured investors for display
+const FEATURED_INVESTORS = ['anduril', 'openai', 'databricks', 'perplexity'] as DealImageKey[];
 
 function BackgroundImage5({ children }: React.PropsWithChildren<{}>) {
   return (
@@ -40,12 +136,12 @@ function BackgroundImage6({ children }: React.PropsWithChildren<{}>) {
   );
 }
 
-function ImageBackgroundImage({ additionalClassNames = "" }: { additionalClassNames?: string }) {
+function ImageBackgroundImage({ additionalClassNames = "", src }: { additionalClassNames?: string; src: string }) {
   return (
     <div className={`relative rounded-[4px] shrink-0 ${additionalClassNames}`}>
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none rounded-[4px]">
         <div className="absolute bg-white inset-0 rounded-[4px]" />
-        <img alt="" className="absolute max-w-none object-cover rounded-[4px] size-full" src={imgImage3} />
+        <img alt="" className="absolute max-w-none object-cover rounded-[4px] size-full" src={src} />
       </div>
     </div>
   );
@@ -71,29 +167,17 @@ function InvestorsListContainerBackgroundImage() {
   return (
     <div className="content-stretch flex items-center relative shrink-0">
       <div className="content-stretch flex items-start pl-0 pr-[3px] py-0 relative shrink-0">
-        <BackgroundImage6>
-          <ImageBackgroundImage additionalClassNames="size-[14px]" />
-        </BackgroundImage6>
-        <BackgroundImage6>
-          <BackgroundImage1>
-            <img alt="" className="absolute left-[-35.71%] max-w-none size-[171.43%] top-[-36.57%]" src={imgImage} />
-          </BackgroundImage1>
-        </BackgroundImage6>
-        <BackgroundImage6>
-          <div className="relative shrink-0 size-[14px]">
-            <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
-              <div className="absolute bg-white inset-0" />
-              <div className="absolute inset-0 overflow-hidden">
-                <img alt="" className="absolute left-[-18.94%] max-w-none size-[142.86%] top-[-24.34%]" src={imgImage4} />
-              </div>
-            </div>
-          </div>
-        </BackgroundImage6>
-        <BackgroundImage6>
-          <BackgroundImage1>
-            <img alt="" className="absolute left-[-6.5%] max-w-none size-[120.95%] top-[-11.74%]" src={imgImage5} />
-          </BackgroundImage1>
-        </BackgroundImage6>
+        {FEATURED_INVESTORS.map((key, index) => (
+          <BackgroundImage6 key={key}>
+            {index === 0 ? (
+              <ImageBackgroundImage additionalClassNames="size-[14px]" src={DEAL_IMAGES[key]} />
+            ) : (
+              <BackgroundImage1>
+                <img alt="" className="absolute inset-0 max-w-none object-cover size-full" src={DEAL_IMAGES[key]} />
+              </BackgroundImage1>
+            )}
+          </BackgroundImage6>
+        ))}
       </div>
       <BackgroundImage5>
         <g id="Ellipse Container">
@@ -103,7 +187,7 @@ function InvestorsListContainerBackgroundImage() {
       <div className="content-stretch flex gap-[11px] items-start relative shrink-0">
         <div className="content-stretch flex items-center justify-center relative shrink-0">
           <div className="flex flex-col font-sans justify-center leading-[0] not-italic relative shrink-0 text-[#29272a] text-[12px] text-nowrap">
-            <p className="leading-[16px]">Erice Schmidt</p>
+            <p className="leading-[16px]">Eric Schmidt</p>
           </div>
         </div>
         <div className="content-stretch flex items-center justify-center relative shrink-0">
@@ -121,11 +205,12 @@ interface DealCardProps {
   status: 'live' | 'closing' | 'premium';
   title: string;
   description: string;
-  avatar: string;
+  image: DealImageKey;
   onClick?: () => void;
 }
 
-function DealCard({ category, status, title, description, avatar, onClick }: DealCardProps) {
+function DealCard({ category, status, title, description, image, onClick }: DealCardProps) {
+  const avatar = DEAL_IMAGES[image];
   const statusConfig = {
     live: {
       text: 'LIVE',
@@ -158,7 +243,7 @@ function DealCard({ category, status, title, description, avatar, onClick }: Dea
   return (
     <div
       onClick={onClick}
-      className="bg-[#f7f7f8] relative rounded-[12px] shrink-0 w-[374px] cursor-pointer hover:border-purple-200 hover:border-2 transition-all group"
+      className="bg-[#f7f7f8] relative rounded-[12px] shrink-0 w-[374px] cursor-pointer border-2 border-transparent hover:border-purple-200 transition-all group"
     >
       <div aria-hidden="true" className="absolute border-2 border-solid border-white inset-0 pointer-events-none rounded-[12px] shadow-[0px_1px_2px_0px_#e3e3e3]" />
       <div className="flex flex-col items-end size-full">
@@ -253,38 +338,25 @@ function DealCard({ category, status, title, description, avatar, onClick }: Dea
   );
 }
 
-export function DealsCardsGrid({ onCardClick }: { onCardClick?: (title: string) => void }) {
-  const deals = [
-    {
-      category: 'SPACE TECH',
-      status: 'live' as const,
-      title: 'SpaceX',
-      description: 'Space travel with reusable rockets and interplanetary ambitions(WiP)',
-      avatar: imgImage1
-    },
-    {
-      category: 'FINTECH',
-      status: 'closing' as const,
-      title: 'Stripe',
-      description: 'Online payment processing for internet businesses with global reach',
-      avatar: imgAvatar2
-    },
-    {
-      category: 'AI',
-      status: 'premium' as const,
-      title: 'Anthropic',
-      description: 'Anthropic is an AI safety and research company that is working to build steerable AI systems.',
-      avatar: imgAvatar3
-    }
-  ];
+interface DealsCardsGridProps {
+  onCardClick?: (title: string) => void;
+  limit?: number; // Number of deals to show, defaults to 3
+}
+
+export function DealsCardsGrid({ onCardClick, limit = 3 }: DealsCardsGridProps) {
+  const dealsToShow = DEALS_DATA.slice(0, limit);
 
   return (
     <div className="flex flex-col gap-6 w-full mb-8">
       <div className="content-start flex flex-wrap gap-[40px_16px] items-start relative shrink-0 w-full">
-        {deals.map((deal, index) => (
+        {dealsToShow.map((deal) => (
           <DealCard
-            key={index}
-            {...deal}
+            key={deal.id}
+            category={deal.category}
+            status={deal.status}
+            title={deal.title}
+            description={deal.description}
+            image={deal.image}
             onClick={() => onCardClick?.(deal.title)}
           />
         ))}
@@ -295,7 +367,7 @@ export function DealsCardsGrid({ onCardClick }: { onCardClick?: (title: string) 
         className="w-full bg-white border-2 border-[#e6e4e7] rounded-xl px-6 py-4 flex items-center justify-center gap-2 hover:border-purple-200 hover:bg-purple-50/30 transition-all group"
       >
         <span className="font-sans text-[#29272a] text-[14px] font-medium group-hover:text-purple-900">
-          Show all (16) deals
+          Show all ({DEALS_DATA.length}) deals
         </span>
         <svg
           width="16"

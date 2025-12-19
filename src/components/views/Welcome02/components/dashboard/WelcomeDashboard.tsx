@@ -1,37 +1,133 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Greeting } from './Greeting';
 import { DashboardContent } from './DashboardContent';
 import { HomeContent } from './HomeContent';
 import { ChatInterface, ChatMessage } from './ChatInterface';
 import { InputBar, ChatMode, MoreMode } from './InputBar';
+import { ChatHistoryDrawer } from './ChatHistoryDrawer';
 import { Icon, CustomIcon } from '../Icon';
 import { ArrowLeft } from 'lucide-react';
 import svgPaths from '../../imports/svg-191opiemcf';
+import { svgPaths as localSvgPaths } from '../../svgPaths';
 
-// Component for the top right history/action icons
-function TopActions() {
+// Dropdown menu component
+interface DropdownMenuProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onFeedback: () => void;
+  onResetConversation: () => void;
+}
+
+function DropdownMenu({ isOpen, onClose, onFeedback, onResetConversation }: DropdownMenuProps) {
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
   return (
-    <div className="flex items-center gap-3 self-end md:self-auto ml-auto px-6 py-4 opacity-50 hover:opacity-100 transition-opacity">
-      <button className="p-1 hover:bg-black/5 rounded">
-        <CustomIcon viewBox="0 0 18 18" width={18} height={18}>
-          <path d={svgPaths.p63f5500} fill="#69606D" />
-        </CustomIcon>
+    <div
+      ref={menuRef}
+      className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-[#e9e6ea] py-1 z-50"
+    >
+      <button
+        onClick={() => {
+          onFeedback();
+          onClose();
+        }}
+        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#29272a] hover:bg-[#f7f7f8] transition-colors"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d={localSvgPaths.feedback} fill="#69606d" />
+        </svg>
+        Got Feedback
       </button>
-      <div className="flex items-center gap-2">
-        <button className="p-1 hover:bg-black/5 rounded">
-          <CustomIcon viewBox="0 0 18 18" width={18} height={18}>
-            <path d={svgPaths.p63f5500} fill="#69606D" />
-          </CustomIcon>
-        </button>
-        <button className="bg-[#dfdce1] p-1 rounded hover:bg-[#d0cdd2]">
-          <CustomIcon viewBox="0 0 18 18" width={18} height={18}>
-            <path d={svgPaths.pe17e0a0} fill="#69606D" />
-          </CustomIcon>
-        </button>
-        <button className="p-1 hover:bg-black/5 rounded rotate-90">
-          <Icon path={svgPaths.p3f6d0000} size={18} fillColor="#373338" />
-        </button>
-      </div>
+      <button
+        onClick={() => {
+          onResetConversation();
+          onClose();
+        }}
+        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#29272a] hover:bg-[#f7f7f8] transition-colors"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d={localSvgPaths.reset} fill="#69606d" />
+        </svg>
+        Reset Conversation
+      </button>
+    </div>
+  );
+}
+
+// Component for the header with left and right actions
+interface HeaderActionsProps {
+  isInChat: boolean;
+  onToggleHistory: () => void;
+  onNewChat: () => void;
+  onFeedback: () => void;
+  onResetConversation: () => void;
+}
+
+function HeaderActions({ isInChat, onToggleHistory, onNewChat, onFeedback, onResetConversation }: HeaderActionsProps) {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  return (
+    <div className="w-full flex items-center justify-between px-4 py-3">
+      {/* Left side - Chat History Toggle */}
+      <button
+        onClick={onToggleHistory}
+        className="p-2 hover:bg-black/5 rounded-lg transition-colors"
+        title="Chat History"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d={localSvgPaths.sidebarLeft} fill="#69606d" />
+        </svg>
+      </button>
+
+      {/* Right side - Compose and More */}
+      {!isInChat && (
+        <div className="flex items-center gap-1">
+          {/* New Chat / Compose */}
+          <button
+            onClick={onNewChat}
+            className="p-2 hover:bg-black/5 rounded-lg transition-colors"
+            title="New Chat"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d={localSvgPaths.pencilCompose} fill="#69606d" />
+            </svg>
+          </button>
+
+          {/* More Options */}
+          <div className="relative">
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="p-2 hover:bg-black/5 rounded-lg transition-colors"
+              title="More Options"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 20" fill="none">
+                <path d={localSvgPaths.moreHorizontal} fill="#69606d" />
+              </svg>
+            </button>
+            <DropdownMenu
+              isOpen={isDropdownOpen}
+              onClose={() => setIsDropdownOpen(false)}
+              onFeedback={onFeedback}
+              onResetConversation={onResetConversation}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -70,6 +166,7 @@ const GREETING_DATA: Record<ChatMode, { title: string; description: string }> = 
 export function WelcomeDashboard() {
   const [currentMode, setCurrentMode] = useState<ChatMode>('default');
   const [extraSlotItem, setExtraSlotItem] = useState<MoreMode | null>(null);
+  const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
 
   // Chat State
   const [chatState, setChatState] = useState<{
@@ -179,10 +276,45 @@ export function WelcomeDashboard() {
     setChatState({ isActive: false, messages: [], isThinking: false, streamingContent: "" });
   };
 
+  const handleToggleHistory = () => {
+    setIsHistoryDrawerOpen(prev => !prev);
+  };
+
+  const handleNewChat = () => {
+    // Reset to default state for new chat
+    setChatState({ isActive: false, messages: [], isThinking: false, streamingContent: "" });
+    setCurrentMode('default');
+  };
+
+  const handleFeedback = () => {
+    // Placeholder for feedback action
+    console.log('Got Feedback clicked');
+    // Could open a modal or redirect to feedback form
+  };
+
+  const handleResetConversation = () => {
+    // Reset the current conversation
+    setChatState({ isActive: false, messages: [], isThinking: false, streamingContent: "" });
+  };
+
+  const handleSelectChat = (chatId: string) => {
+    // Placeholder for loading a specific chat
+    console.log('Selected chat:', chatId);
+    setIsHistoryDrawerOpen(false);
+    // Would load the chat messages from the selected chat ID
+  };
+
   const content = GREETING_DATA[currentMode];
 
   return (
     <div className="flex-1 flex flex-col h-full relative overflow-hidden bg-[#f7f7f8]">
+      {/* Chat History Drawer */}
+      <ChatHistoryDrawer
+        isOpen={isHistoryDrawerOpen}
+        onClose={() => setIsHistoryDrawerOpen(false)}
+        onSelectChat={handleSelectChat}
+      />
+
       {/* Gradient Background */}
       <div
         className="absolute inset-0 pointer-events-none"
@@ -195,22 +327,39 @@ export function WelcomeDashboard() {
       />
 
       {/* Top Header Row */}
-      <div className="relative z-10 w-full flex items-center">
-        {/* Back Button (Left) */}
-        {chatState.isActive && (
-          <div className="absolute left-6 top-4 z-20">
+      <div className="relative z-10 w-full">
+        {chatState.isActive ? (
+          /* When in chat: show back button on left, history toggle still on left but after back */
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 text-[#7f7582] hover:text-[#29272a] transition-colors px-2 py-1.5 rounded-lg hover:bg-black/5"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span className="text-sm font-medium">Back</span>
+              </button>
+            </div>
             <button
-              onClick={handleBack}
-              className="flex items-center gap-2 text-[#7f7582] hover:text-[#29272a] transition-colors px-2 py-1.5 rounded-lg hover:bg-black/5"
+              onClick={handleToggleHistory}
+              className="p-2 hover:bg-black/5 rounded-lg transition-colors"
+              title="Chat History"
             >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="text-sm font-medium">Back</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d={localSvgPaths.sidebarLeft} fill="#69606d" />
+              </svg>
             </button>
           </div>
+        ) : (
+          /* When not in chat: show header actions with history toggle, compose, and more */
+          <HeaderActions
+            isInChat={chatState.isActive}
+            onToggleHistory={handleToggleHistory}
+            onNewChat={handleNewChat}
+            onFeedback={handleFeedback}
+            onResetConversation={handleResetConversation}
+          />
         )}
-
-        {/* Actions (Right) */}
-        <TopActions />
       </div>
 
       {/* Main Content Scrollable Area */}
