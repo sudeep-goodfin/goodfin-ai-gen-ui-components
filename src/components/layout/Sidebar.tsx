@@ -30,7 +30,9 @@ type SidebarProps = {
   activeSubItem?: string;
   expandedItems?: string[];
   isOpen?: boolean;
+  isCollapsed?: boolean;
   onClose?: () => void;
+  onToggleCollapse?: () => void;
   onSectionClick?: (sectionId: string) => void;
   onItemClick?: (sectionId: string, itemId: string) => void;
   onSubItemClick?: (sectionId: string, itemId: string, subItemId: string) => void;
@@ -44,7 +46,9 @@ export function Sidebar({
   activeSubItem,
   expandedItems = [],
   isOpen = false,
+  isCollapsed = false,
   onClose,
+  onToggleCollapse,
   onSectionClick,
   onItemClick,
   onSubItemClick,
@@ -124,7 +128,7 @@ export function Sidebar({
                       </span>
                       <span className="flex items-center gap-1">
                         {item.badge && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-medium">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted-foreground text-background font-medium">
                             {item.badge}
                           </span>
                         )}
@@ -172,8 +176,13 @@ export function Sidebar({
 
   return (
     <>
-      {/* Desktop Sidebar - always visible on lg+ */}
-      <aside className="hidden lg:flex w-[280px] flex-shrink-0 border-r border-border h-full bg-background">
+      {/* Desktop Sidebar - collapsible on lg+ */}
+      <aside
+        className={cn(
+          "hidden lg:flex flex-shrink-0 border-r border-border h-full bg-background transition-all duration-200",
+          isCollapsed ? "w-0 overflow-hidden border-r-0" : "w-[280px]"
+        )}
+      >
         <ScrollAreaPrimitive.Root className="relative overflow-hidden w-full h-full">
           <ScrollAreaPrimitive.Viewport className="w-full h-full">
             {sidebarContent}

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { Link2, Check, Maximize2, ArrowLeft, ChevronRight, Menu, ChevronDown } from 'lucide-react';
+import { Link2, Check, Maximize2, ArrowLeft, ChevronRight, Menu, ChevronDown, PanelLeftClose, PanelLeft } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 type DropdownOption = {
@@ -20,6 +20,8 @@ type HeaderProps = {
   breadcrumbs?: BreadcrumbItem[];
   onFullscreen?: () => void;
   onMenuToggle?: () => void;
+  onSidebarToggle?: () => void;
+  isSidebarCollapsed?: boolean;
   showMenuButton?: boolean;
   className?: string;
 };
@@ -109,6 +111,8 @@ export function Header({
   breadcrumbs = [],
   onFullscreen,
   onMenuToggle,
+  onSidebarToggle,
+  isSidebarCollapsed = false,
   showMenuButton = true,
   className,
 }: HeaderProps) {
@@ -141,6 +145,22 @@ export function Header({
     >
       {/* Left: Menu button + Breadcrumbs */}
       <div className="flex items-center gap-2 text-sm min-w-0 flex-1">
+        {/* Desktop sidebar toggle button */}
+        {showMenuButton && onSidebarToggle && (
+          <button
+            onClick={onSidebarToggle}
+            className="hidden lg:flex p-2 -ml-2 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
+            aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isSidebarCollapsed ? (
+              <PanelLeft className="w-5 h-5" />
+            ) : (
+              <PanelLeftClose className="w-5 h-5" />
+            )}
+          </button>
+        )}
+
         {/* Mobile menu button */}
         {showMenuButton && onMenuToggle && (
           <button
@@ -284,7 +304,7 @@ export function PageHeader({ title, description, badge, backButton }: PageHeader
       <div className="flex items-center gap-3">
         <h1 className="text-3xl font-semibold text-foreground font-heading">{title}</h1>
         {badge && (
-          <span className="text-xs px-2 py-1 rounded-full bg-primary text-primary-foreground font-medium">
+          <span className="text-xs px-2 py-1 rounded-full bg-muted-foreground text-background font-medium">
             {badge}
           </span>
         )}

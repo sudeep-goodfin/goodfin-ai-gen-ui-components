@@ -232,6 +232,11 @@ export function DocsLayout({
   // Mobile sidebar state
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  // Desktop sidebar collapsed state (persisted to URL)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    return getBoolParam(getUrlParams(), 'collapsed', false);
+  });
+
   // Onboarding reset key
   const [onboardingKey, setOnboardingKey] = useState(0);
 
@@ -261,6 +266,8 @@ export function DocsLayout({
       fullscreen: isFullscreen ? true : undefined,
       // Chrome toggle for welcome02 (only store if true since false is default)
       chrome: viewMode === 'welcome02' && showWelcome02Chrome ? true : undefined,
+      // Sidebar collapsed state (only store if true to keep URLs cleaner)
+      collapsed: isSidebarCollapsed ? true : undefined,
     };
 
     // Add block-04 specific params
@@ -272,7 +279,7 @@ export function DocsLayout({
     }
 
     updateUrlParams(params);
-  }, [viewMode, activeId, activeGroupId, variantStates, activeConversationFlow, activeOnboardingVariant, activeWelcomeVariant, activeWelcome02Variant, isFullscreen, showWelcome02Chrome, showPresets, showStepper, showSuggestions, presetCount]);
+  }, [viewMode, activeId, activeGroupId, variantStates, activeConversationFlow, activeOnboardingVariant, activeWelcomeVariant, activeWelcome02Variant, isFullscreen, showWelcome02Chrome, isSidebarCollapsed, showPresets, showStepper, showSuggestions, presetCount]);
 
   // Build sidebar sections based on view mode
   const buildSidebarSections = (): SidebarSection[] => {
@@ -536,6 +543,8 @@ export function DocsLayout({
         breadcrumbs={buildBreadcrumbs()}
         onFullscreen={() => setIsFullscreen(true)}
         onMenuToggle={() => setIsSidebarOpen(prev => !prev)}
+        onSidebarToggle={() => setIsSidebarCollapsed(prev => !prev)}
+        isSidebarCollapsed={isSidebarCollapsed}
         showMenuButton={true}
       />
 
@@ -549,7 +558,9 @@ export function DocsLayout({
           activeSubItem={getActiveSubItem()}
           expandedItems={expandedItems}
           isOpen={isSidebarOpen}
+          isCollapsed={isSidebarCollapsed}
           onClose={() => setIsSidebarOpen(false)}
+          onToggleCollapse={() => setIsSidebarCollapsed(prev => !prev)}
           onSectionClick={handleSectionClick}
           onItemClick={handleItemClick}
           onSubItemClick={handleSubItemClick}
@@ -840,7 +851,7 @@ export function DocsLayout({
                     'flex items-center gap-2 px-2.5 py-1 text-sm font-medium rounded-md border transition-all',
                     showWelcome02Chrome
                       ? 'border-border bg-background text-muted-foreground hover:text-foreground'
-                      : 'border-primary bg-primary/10 text-primary'
+                      : 'border-foreground bg-foreground/10 text-foreground'
                   )}
                 >
                   {showWelcome02Chrome ? (
