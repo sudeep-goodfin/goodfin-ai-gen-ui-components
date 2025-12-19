@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Link2, Check, Play, ArrowLeft, ChevronRight, Menu, ChevronDown, PanelLeftClose, PanelLeft, Tag } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { RainbowButton } from '../ui/RainbowButton';
 
 type DropdownOption = {
   id: string;
@@ -393,13 +394,10 @@ export function Header({
 
         {/* Play Prototype Button */}
         {onFullscreen && (
-          <button
-            onClick={onFullscreen}
-            className="flex items-center gap-2 px-2 md:px-3 py-1.5 text-sm rounded-md border border-border hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-          >
+          <RainbowButton onClick={onFullscreen}>
             <Play className="w-4 h-4" />
             <span className="hidden sm:inline">Play Prototype</span>
-          </button>
+          </RainbowButton>
         )}
       </div>
     </header>

@@ -11,7 +11,7 @@ type Welcome02Props = {
 
 export function Welcome02({ showChrome = true }: Welcome02Props) {
   return (
-    <div className="flex flex-col h-screen w-full bg-[#f0eef0] overflow-hidden font-sans text-[#373338]">
+    <div className="flex flex-col h-full w-full bg-[#f0eef0] overflow-hidden font-sans text-[#373338]">
       {showChrome && <Header />}
       <div className="flex flex-1 overflow-hidden">
         {showChrome && <Sidebar />}

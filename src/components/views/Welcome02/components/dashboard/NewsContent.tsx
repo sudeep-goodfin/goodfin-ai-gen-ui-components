@@ -246,7 +246,7 @@ const newsData: NewsData = {
       categoryId: 'top',
       title: 'Anduril Industries Nears $14B Valuation in Defense Tech Boom',
       description: 'Defense startup sees surging demand for autonomous systems amid growing geopolitical tensions.',
-      image: 'https://images.unsplash.com/photo-1580752300992-559f8e2e1bae?w=400&q=80',
+      image: 'https://images.unsplash.com/photo-1553481187-be93c21490a9?w=400&q=80',
       sourceId: 'bloomberg',
       time: '1 hr ago',
     },
