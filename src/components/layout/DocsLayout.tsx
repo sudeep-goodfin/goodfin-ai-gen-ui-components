@@ -27,6 +27,14 @@ import {
   PanelLeft,
   ThumbsUp,
   Keyboard,
+  LayoutGrid,
+  Hand,
+  Compass,
+  CalendarDays,
+  History,
+  Wallet,
+  Lightbulb,
+  Gauge,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Sidebar, type SidebarSection } from './Sidebar';
@@ -89,6 +97,18 @@ const componentIcons: Record<string, React.ReactNode> = {
   'welcome-accredited': <Home className="w-4 h-4" />,
   'input-bar': <MessageSquare className="w-4 h-4" />,
   'feedback-buttons': <ThumbsUp className="w-4 h-4" />,
+  // New primitives
+  'header': <LayoutGrid className="w-4 h-4" />,
+  'sidebar': <PanelLeft className="w-4 h-4" />,
+  'greeting': <Hand className="w-4 h-4" />,
+  'explore-card': <Compass className="w-4 h-4" />,
+  'event-card': <CalendarDays className="w-4 h-4" />,
+  'chat-history-drawer': <History className="w-4 h-4" />,
+  'deal-card': <TrendingUp className="w-4 h-4" />,
+  'portfolio-summary': <BarChart3 className="w-4 h-4" />,
+  'my-investments': <Wallet className="w-4 h-4" />,
+  'suggestion-card': <Lightbulb className="w-4 h-4" />,
+  'progress-widget': <Gauge className="w-4 h-4" />,
 };
 
 type VariantOption = {

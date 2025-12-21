@@ -73,8 +73,35 @@ import {
   Sparkles,
   Home,
   ThumbsUp,
+  PanelLeft,
+  CalendarDays,
+  History,
+  Hand,
+  Wallet,
+  Lightbulb,
+  Gauge,
+  Compass,
+  LayoutGrid,
 } from 'lucide-react';
-import { FeedbackButtons, feedbackButtonsVariants } from './components/ui';
+import {
+  FeedbackButtons,
+  feedbackButtonsVariants,
+  DefaultHeader,
+  DefaultSidebar,
+  ExploreCard,
+  ExploreCardContent,
+  EventCard,
+  EventsList,
+  ChatHistoryDrawerDemo,
+  Greeting,
+  DealCard,
+  PortfolioSummary,
+  DEFAULT_CHART_DATA,
+  MyInvestments,
+  SAMPLE_INVESTMENTS,
+  SuggestionCard,
+  ProgressWidget,
+} from './components/ui';
 
 export function App() {
   // Replay function ref for AI greeting animation
@@ -271,6 +298,223 @@ export function App() {
           ),
           icon: <ThumbsUp className="w-6 h-6" />,
           variants: feedbackButtonsVariants,
+        },
+        {
+          id: 'header',
+          label: 'Header',
+          component: () => (
+            <div className="bg-muted min-h-[100px]">
+              <DefaultHeader
+                logoSrc="/goodfin-logo.png"
+                avatar={{ fallback: 'AL' }}
+              />
+            </div>
+          ),
+          icon: <LayoutGrid className="w-6 h-6" />,
+        },
+        {
+          id: 'sidebar',
+          label: 'Sidebar',
+          component: () => (
+            <div className="bg-muted min-h-[500px] flex">
+              <DefaultSidebar activeItem="ai" />
+              <div className="flex-1 p-8 flex items-center justify-center text-muted-foreground">
+                Main content area
+              </div>
+            </div>
+          ),
+          icon: <PanelLeft className="w-6 h-6" />,
+        },
+        {
+          id: 'greeting',
+          label: 'Greeting',
+          component: () => (
+            <div className="p-8 bg-muted min-h-[300px]">
+              <Greeting
+                title="Good afternoon, Alex"
+                description="Your portfolio increased by $154k (+12.4%) this month, primarily driven by secondary market activity in SpaceX."
+              />
+            </div>
+          ),
+          icon: <Hand className="w-6 h-6" />,
+        },
+        {
+          id: 'explore-card',
+          label: 'Explore Card',
+          component: () => (
+            <div className="p-8 bg-muted min-h-[300px]">
+              <div className="grid grid-cols-2 gap-4 max-w-2xl">
+                <ExploreCard>
+                  <ExploreCardContent
+                    title="Browse Deals"
+                    descriptions={["Explore investment opportunities"]}
+                    icon={<TrendingUp className="w-5 h-5 text-muted-foreground" />}
+                  />
+                </ExploreCard>
+                <ExploreCard>
+                  <ExploreCardContent
+                    title="My Portfolio"
+                    descriptions={["View your investments"]}
+                    icon={<Wallet className="w-5 h-5 text-muted-foreground" />}
+                  />
+                </ExploreCard>
+              </div>
+            </div>
+          ),
+          icon: <Compass className="w-6 h-6" />,
+        },
+        {
+          id: 'event-card',
+          label: 'Event Card',
+          component: () => (
+            <div className="p-8 bg-muted min-h-[400px]">
+              <div className="max-w-xl">
+                <EventsList
+                  events={[
+                    {
+                      id: '1',
+                      day: '15',
+                      month: 'JAN',
+                      year: '2025',
+                      title: 'AI Investment Summit',
+                      location: 'San Francisco, CA',
+                      weekday: 'Wednesday',
+                      time: '9:00 AM - 5:00 PM',
+                      image: '/icons/products/anthropic.png',
+                      typeId: 'summit',
+                    },
+                    {
+                      id: '2',
+                      day: '22',
+                      month: 'JAN',
+                      year: '2025',
+                      title: 'Investor Roundtable',
+                      location: 'New York, NY',
+                      weekday: 'Wednesday',
+                      time: '6:00 PM - 9:00 PM',
+                      image: '/icons/products/openAI.png',
+                      typeId: 'roundtable',
+                    },
+                  ]}
+                  remainingCount={5}
+                />
+              </div>
+            </div>
+          ),
+          icon: <CalendarDays className="w-6 h-6" />,
+        },
+        {
+          id: 'chat-history-drawer',
+          label: 'Chat History Drawer',
+          component: () => <ChatHistoryDrawerDemo />,
+          icon: <History className="w-6 h-6" />,
+        },
+        {
+          id: 'deal-card',
+          label: 'Deal Card',
+          component: (variant: string) => (
+            <div className="p-8 bg-muted min-h-[300px] flex items-center justify-center">
+              <DealCard
+                id="1"
+                category={variant === 'premium' ? 'EXCLUSIVE' : variant === 'closing' ? 'SPACE TECH' : 'AI'}
+                status={variant as 'live' | 'closing' | 'premium'}
+                title={variant === 'premium' ? 'OpenAI' : variant === 'closing' ? 'SpaceX' : 'Anthropic'}
+                description={
+                  variant === 'premium'
+                    ? 'Leading AI research lab building safe and beneficial artificial general intelligence'
+                    : variant === 'closing'
+                    ? 'Space travel with reusable rockets and interplanetary ambitions'
+                    : 'AI safety and research company building reliable, interpretable AI systems'
+                }
+                image={
+                  variant === 'premium'
+                    ? '/icons/products/openAI.png'
+                    : variant === 'closing'
+                    ? '/icons/products/spaceX.png'
+                    : '/icons/products/anthropic.png'
+                }
+                investors={[
+                  '/icons/products/openAI.png',
+                  '/icons/products/spaceX.png',
+                  '/icons/products/anthropic.png',
+                ]}
+                investorNames={['Spark Capital', 'Menlo Ventures']}
+              />
+            </div>
+          ),
+          icon: <TrendingUp className="w-6 h-6" />,
+          variants: [
+            { id: 'live', label: 'Live' },
+            { id: 'closing', label: 'Closing Soon' },
+            { id: 'premium', label: 'Premium' },
+          ],
+        },
+        {
+          id: 'portfolio-summary',
+          label: 'Portfolio Summary',
+          component: () => (
+            <div className="p-8 bg-muted min-h-[450px]">
+              <div className="max-w-md">
+                <PortfolioSummary
+                  totalValue={1946160}
+                  changePercent={8.12}
+                  amountInvested={1800000}
+                  returns={146160}
+                  chartData={DEFAULT_CHART_DATA}
+                />
+              </div>
+            </div>
+          ),
+          icon: <BarChart3 className="w-6 h-6" />,
+        },
+        {
+          id: 'my-investments',
+          label: 'My Investments',
+          component: () => (
+            <div className="p-8 bg-muted min-h-[500px]">
+              <div className="max-w-2xl">
+                <MyInvestments investments={SAMPLE_INVESTMENTS} />
+              </div>
+            </div>
+          ),
+          icon: <Wallet className="w-6 h-6" />,
+        },
+        {
+          id: 'suggestion-card',
+          label: 'Suggestion Card',
+          component: () => (
+            <div className="p-8 bg-muted min-h-[300px]">
+              <div className="max-w-md space-y-3">
+                <SuggestionCard
+                  icon={<TrendingUp className="w-5 h-5" />}
+                  title="Review new SpaceX allocation"
+                  subtitle="New shares available at $180/share"
+                  action="View"
+                />
+                <SuggestionCard
+                  icon={<FileText className="w-5 h-5" />}
+                  title="Sign pending documents"
+                  subtitle="2 documents awaiting signature"
+                  action="Sign"
+                />
+              </div>
+            </div>
+          ),
+          icon: <Lightbulb className="w-6 h-6" />,
+        },
+        {
+          id: 'progress-widget',
+          label: 'Progress Widget',
+          component: () => (
+            <div className="p-8 bg-muted min-h-[200px]">
+              <ProgressWidget
+                percentage={23}
+                title="Your profile is 23% complete — let's get you to 100% and unlock curated deal flow."
+                description="The more you share, the more tailored your Goodfin experience becomes."
+              />
+            </div>
+          ),
+          icon: <Gauge className="w-6 h-6" />,
         },
       ],
     },
