@@ -49,6 +49,8 @@ import {
   Welcome02,
   InputBarV01,
   InputBarV02,
+  DealProductPage,
+  InvestmentFlowView,
   type AIGreetingVariant,
   type OnboardingVariant,
   type WelcomeScreenVariant,
@@ -224,6 +226,20 @@ export function App() {
       id: 'deal-page',
       label: 'Deal Page',
       components: [
+        {
+          id: 'deal-product-page',
+          label: 'Deal Product Page',
+          component: () => <DealProductPage />,
+          icon: <TrendingUp className="w-6 h-6" />,
+          fullscreen: true,
+        },
+        {
+          id: 'investment-flow-2',
+          label: 'Investment Flow',
+          component: () => <InvestmentFlowView />,
+          icon: <DollarSign className="w-6 h-6" />,
+          fullscreen: true,
+        },
         {
           id: 'ai-greeting',
           label: 'AI Greeting',

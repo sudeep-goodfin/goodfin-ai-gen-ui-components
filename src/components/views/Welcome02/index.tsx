@@ -24,6 +24,7 @@ export function Welcome02({ showChrome = true }: Welcome02Props) {
 // Export subcomponents for flexibility
 export { Header } from './components/layout/Header';
 export { Sidebar } from './components/layout/Sidebar';
+export type { SidebarNavItem } from './components/layout/Sidebar';
 export { WelcomeDashboard } from './components/dashboard/WelcomeDashboard';
 export { InputBar, InputBarV01, InputBarV02 } from './components/dashboard/InputBar';
 export { HomeContent } from './components/dashboard/HomeContent';

@@ -118,3 +118,23 @@ export type {
 
 // Components Landing
 export { ComponentsLanding } from './ComponentsLanding';
+
+// Deal Product Page (Investment Entry)
+export {
+  DealProductPage,
+  DealProductPageView,
+  InvestmentEntry, // Legacy alias
+  InvestmentEntryView, // Legacy alias
+  ANTHROPIC_DATA,
+  SAMPLE_POSTS,
+} from './DealProductPage';
+export type { Company, InvestorPost, TabId } from './DealProductPage';
+
+// Investment Flow (Multi-step investment process)
+export {
+  InvestmentFlow,
+  InvestmentFlowView,
+  TRANSFER_METHODS,
+  FAQ_ITEMS,
+} from './InvestmentFlow';
+export type { InvestmentFlowStep, TransferMethod, CompanyData } from './InvestmentFlow';
