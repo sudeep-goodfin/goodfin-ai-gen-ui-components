@@ -50,8 +50,9 @@ import {
   InputBarV01,
   InputBarV02,
   DealProductPage,
-  InvestmentFlowView,
+  InvestmentFlow,
   type AIGreetingVariant,
+  type InvestmentFlowStep,
   type OnboardingVariant,
   type WelcomeScreenVariant,
   type InputBarVersion,
@@ -231,13 +232,6 @@ export function App() {
           label: 'Deal Product Page',
           component: () => <DealProductPage />,
           icon: <TrendingUp className="w-6 h-6" />,
-          fullscreen: true,
-        },
-        {
-          id: 'investment-flow-2',
-          label: 'Investment Flow',
-          component: () => <InvestmentFlowView />,
-          icon: <DollarSign className="w-6 h-6" />,
           fullscreen: true,
         },
         {
@@ -600,6 +594,12 @@ export function App() {
     { id: 'pending-verification', label: 'Pending Verification', comingSoon: true },
   ];
 
+  // Investment Flow user states
+  const investmentFlowSteps = [
+    { id: 'accredited-first-time', label: 'Accredited First Time' },
+    { id: 'already-invested', label: 'Already Invested' },
+  ];
+
   return (
     <DocsLayout
       groups={componentGroups}
@@ -618,9 +618,20 @@ export function App() {
       renderWelcome02View={(_variant, showChrome) => (
         <Welcome02 showChrome={showChrome} />
       )}
+      renderInvestmentFlowView={(step, onDismiss) => {
+        // User states for investment flow
+        return (
+          <InvestmentFlow
+            userState={step as 'accredited-first-time' | 'already-invested'}
+            onDismiss={onDismiss}
+            onComplete={() => {}}
+          />
+        );
+      }}
       onboardingVariants={onboardingVariants}
       welcomeVariants={welcomeScreenVariants}
       welcome02Variants={welcome02Variants}
+      investmentFlowSteps={investmentFlowSteps}
       conversationFlowOptions={conversationFlowOptions}
     />
   );

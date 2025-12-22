@@ -73,6 +73,7 @@ const viewModeIcons: Record<string, React.ReactNode> = {
   onboarding: <UserPlus className="w-4 h-4" />,
   welcome: <Home className="w-4 h-4" />,
   welcome02: <Home className="w-4 h-4" />,
+  'investment-flow': <DollarSign className="w-4 h-4" />,
   archive: <Archive className="w-4 h-4" />,
 };
 
@@ -138,7 +139,7 @@ type ComponentGroup = {
   components: ComponentOption[];
 };
 
-type ViewMode = 'landing' | 'component' | 'conversation' | 'onboarding' | 'welcome' | 'welcome02';
+type ViewMode = 'landing' | 'component' | 'conversation' | 'onboarding' | 'welcome' | 'welcome02' | 'investment-flow';
 
 type DocsLayoutProps = {
   groups: ComponentGroup[];
@@ -146,9 +147,11 @@ type DocsLayoutProps = {
   renderOnboardingView?: (variant: string, key: number) => React.ReactNode;
   renderWelcomeView?: (variant: string) => React.ReactNode;
   renderWelcome02View?: (variant: string, showChrome: boolean) => React.ReactNode;
+  renderInvestmentFlowView?: (step: string, onDismiss: () => void) => React.ReactNode;
   onboardingVariants?: VariantOption[];
   welcomeVariants?: VariantOption[];
   welcome02Variants?: VariantOption[];
+  investmentFlowSteps?: VariantOption[];
   conversationFlowOptions?: { id: string; label: string }[];
 };
 
@@ -158,9 +161,11 @@ export function DocsLayout({
   renderOnboardingView,
   renderWelcomeView,
   renderWelcome02View,
+  renderInvestmentFlowView,
   onboardingVariants = [],
   welcomeVariants = [],
   welcome02Variants = [],
+  investmentFlowSteps = [],
   conversationFlowOptions = [],
 }: DocsLayoutProps) {
   // Flatten all components from groups
@@ -174,6 +179,7 @@ export function DocsLayout({
     if (mode === 'onboarding') return 'onboarding';
     if (mode === 'welcome') return 'welcome';
     if (mode === 'welcome02') return 'welcome02';
+    if (mode === 'investment-flow') return 'investment-flow';
     if (mode === 'landing') return 'landing';
     // If no component is specified in URL, show landing page
     const componentId = params.get('component');
@@ -245,6 +251,10 @@ export function DocsLayout({
   const [activeConversationFlow, setActiveConversationFlow] = useState(() => {
     const params = getUrlParams();
     return params.get('flow') || conversationFlowOptions[0]?.id || 'ai-greeting';
+  });
+  const [activeInvestmentFlowStep, setActiveInvestmentFlowStep] = useState(() => {
+    const params = getUrlParams();
+    return params.get('investmentStep') || investmentFlowSteps[0]?.id || 'transfer-method';
   });
 
   // Fullscreen state (from URL)
@@ -360,6 +370,7 @@ export function DocsLayout({
       onboardingVariant: viewMode === 'onboarding' ? activeOnboardingVariant : undefined,
       welcomeVariant: viewMode === 'welcome' ? activeWelcomeVariant : undefined,
       welcome02Variant: viewMode === 'welcome02' ? activeWelcome02Variant : undefined,
+      investmentStep: viewMode === 'investment-flow' ? activeInvestmentFlowStep : undefined,
       // Fullscreen state (only store if true to keep URLs cleaner)
       fullscreen: isFullscreen ? true : undefined,
       // Chrome toggle for welcome02 (only store if true since false is default)
@@ -379,7 +390,7 @@ export function DocsLayout({
     }
 
     updateUrlParams(params);
-  }, [viewMode, activeId, activeGroupId, variantStates, activeConversationFlow, activeOnboardingVariant, activeWelcomeVariant, activeWelcome02Variant, isFullscreen, showWelcome02Chrome, isSidebarCollapsed, selectedRelease, showPresets, showStepper, showSuggestions, presetCount]);
+  }, [viewMode, activeId, activeGroupId, variantStates, activeConversationFlow, activeOnboardingVariant, activeWelcomeVariant, activeWelcome02Variant, activeInvestmentFlowStep, isFullscreen, showWelcome02Chrome, isSidebarCollapsed, selectedRelease, showPresets, showStepper, showSuggestions, presetCount]);
 
   // Build sidebar sections based on view mode
   const buildSidebarSections = (): SidebarSection[] => {
@@ -400,6 +411,14 @@ export function DocsLayout({
           icon: viewModeIcons.welcome02,
           children: welcome02Variants.length > 0
             ? welcome02Variants.map(v => ({ id: v.id, label: v.label }))
+            : undefined,
+        },
+        {
+          id: 'investment-flow',
+          label: 'Investment Flow',
+          icon: viewModeIcons['investment-flow'],
+          children: investmentFlowSteps.length > 0
+            ? investmentFlowSteps.map(s => ({ id: s.id, label: s.label }))
             : undefined,
         },
         {
@@ -456,6 +475,8 @@ export function DocsLayout({
         setViewMode('onboarding');
       } else if (itemId === 'welcome02') {
         setViewMode('welcome02');
+      } else if (itemId === 'investment-flow') {
+        setViewMode('investment-flow');
       }
     } else if (sectionId === 'archive') {
       // Archive items
@@ -484,6 +505,9 @@ export function DocsLayout({
       } else if (itemId === 'welcome02') {
         setViewMode('welcome02');
         setActiveWelcome02Variant(subItemId);
+      } else if (itemId === 'investment-flow') {
+        setViewMode('investment-flow');
+        setActiveInvestmentFlowStep(subItemId);
       }
     } else if (sectionId === 'archive') {
       // Archive sub-items
@@ -536,6 +560,7 @@ export function DocsLayout({
     if (viewMode === 'onboarding') return activeOnboardingVariant;
     if (viewMode === 'welcome') return activeWelcomeVariant;
     if (viewMode === 'welcome02') return activeWelcome02Variant;
+    if (viewMode === 'investment-flow') return activeInvestmentFlowStep;
     if (viewMode === 'component') return variantStates[activeId];
     return undefined;
   };
@@ -614,6 +639,17 @@ export function DocsLayout({
           onOptionSelect: (id) => setActiveWelcomeVariant(id),
         });
       }
+    } else if (viewMode === 'investment-flow') {
+      crumbs.push({ label: 'Investment Flow' });
+      if (investmentFlowSteps.length > 0) {
+        const currentLabel = investmentFlowSteps.find(s => s.id === activeInvestmentFlowStep)?.label || '';
+        crumbs.push({
+          label: currentLabel,
+          dropdownOptions: investmentFlowSteps.map(s => ({ id: s.id, label: s.label })),
+          selectedOptionId: activeInvestmentFlowStep,
+          onOptionSelect: (id) => setActiveInvestmentFlowStep(id),
+        });
+      }
     }
 
     return crumbs;
@@ -661,6 +697,10 @@ export function DocsLayout({
           {viewMode === 'onboarding' && renderOnboardingView?.(activeOnboardingVariant, onboardingKey)}
           {viewMode === 'welcome' && renderWelcomeView?.(activeWelcomeVariant)}
           {viewMode === 'welcome02' && renderWelcome02View?.(activeWelcome02Variant, false)}
+          {viewMode === 'investment-flow' && renderInvestmentFlowView?.(activeInvestmentFlowStep, () => {
+            setViewMode('welcome02');
+            setActiveWelcome02Variant('accredited-returning');
+          })}
         </div>
       </div>
     );
@@ -707,9 +747,9 @@ export function DocsLayout({
         />
 
         {/* Main Content Area */}
-        <main className={cn("flex-1 overflow-hidden", viewMode === 'welcome02' && "flex flex-col")}>
-          {/* Standard content wrapper with Radix ScrollArea - only shown for non-welcome02 views */}
-          {viewMode !== 'welcome02' && (
+        <main className={cn("flex-1 overflow-hidden", (viewMode === 'welcome02' || viewMode === 'investment-flow') && "flex flex-col")}>
+          {/* Standard content wrapper with Radix ScrollArea - only shown for non-fullscreen views */}
+          {viewMode !== 'welcome02' && viewMode !== 'investment-flow' && (
           <ScrollAreaPrimitive.Root className="h-full w-full">
             <ScrollAreaPrimitive.Viewport className="h-full w-full">
               <div className="p-4 md:p-8 max-w-5xl mx-auto">
@@ -1041,6 +1081,48 @@ export function DocsLayout({
               {/* Direct render - no container */}
               <div className="flex-1 min-h-0 overflow-hidden">
                 {renderWelcome02View?.(activeWelcome02Variant, showWelcome02Chrome)}
+              </div>
+            </div>
+          )}
+
+          {/* Investment Flow View - renders outside the constrained container */}
+          {viewMode === 'investment-flow' && (
+            <div className="flex flex-col flex-1 min-h-0">
+              {/* Options Bar */}
+              <div className="flex flex-wrap items-center gap-4 px-4 md:px-8 py-3 border-b border-border bg-background/50">
+                {/* Step Selector Pills */}
+                {investmentFlowSteps.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Step:</span>
+                    <div
+                      className="inline-flex gap-1 p-1 rounded-lg"
+                      style={{ backgroundColor: 'var(--grey-100)' }}
+                    >
+                      {investmentFlowSteps.map((step) => (
+                        <button
+                          key={step.id}
+                          onClick={() => setActiveInvestmentFlowStep(step.id)}
+                          className={cn('px-2.5 py-1 text-sm font-medium rounded-md transition-all')}
+                          style={{
+                            backgroundColor: activeInvestmentFlowStep === step.id ? '#FFFFFF' : 'transparent',
+                            color: activeInvestmentFlowStep === step.id ? 'var(--grey-950)' : 'var(--grey-500)',
+                            boxShadow: activeInvestmentFlowStep === step.id ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                          }}
+                        >
+                          {step.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Direct render - no container */}
+              <div className="flex-1 min-h-0 overflow-hidden">
+                {renderInvestmentFlowView?.(activeInvestmentFlowStep, () => {
+                  setViewMode('welcome02');
+                  setActiveWelcome02Variant('accredited-returning');
+                })}
               </div>
             </div>
           )}

@@ -1,6 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FlowHeader } from './components/FlowHeader';
 import { TransferMethodStep } from './steps/TransferMethodStep';
+import { VerificationStep } from './steps/VerificationStep';
+import { DocumentReviewIntroStep } from './steps/DocumentReviewIntroStep';
+import { DocumentReviewStep } from './steps/DocumentReviewStep';
+import { DocumentSigningStep } from './steps/DocumentSigningStep';
+import { ConfirmRequestStep } from './steps/ConfirmRequestStep';
+import { cn } from '@/lib/utils';
 import {
   TRANSFER_METHODS,
   FAQ_ITEMS,
@@ -9,9 +15,65 @@ import {
   type CompanyData,
 } from './types';
 
+// Animated step wrapper for gentle, smooth transitions
+interface AnimatedStepProps {
+  children: React.ReactNode;
+  stepKey: string;
+}
+
+function AnimatedStep({ children, stepKey }: AnimatedStepProps) {
+  const [isVisible, setIsVisible] = useState(false);
+  const [shouldRender, setShouldRender] = useState(true);
+  const prevKeyRef = useRef(stepKey);
+
+  useEffect(() => {
+    // When step changes, fade out first then fade in
+    if (prevKeyRef.current !== stepKey) {
+      setIsVisible(false);
+
+      // Wait for fade out, then update content and fade in
+      const fadeOutTimer = setTimeout(() => {
+        prevKeyRef.current = stepKey;
+        setShouldRender(false);
+
+        // Brief pause before rendering new content
+        requestAnimationFrame(() => {
+          setShouldRender(true);
+          // Trigger fade in after content renders
+          requestAnimationFrame(() => {
+            setIsVisible(true);
+          });
+        });
+      }, 300);
+
+      return () => clearTimeout(fadeOutTimer);
+    } else {
+      // Initial mount - gentle fade in
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [stepKey]);
+
+  return (
+    <div
+      className={cn(
+        'transition-opacity duration-700 ease-[cubic-bezier(0.4,0,0.2,1)]',
+        isVisible ? 'opacity-100' : 'opacity-0'
+      )}
+    >
+      {shouldRender && children}
+    </div>
+  );
+}
+
 // Re-export types
 export type { InvestmentFlowStep, TransferMethod, CompanyData } from './types';
 export { TRANSFER_METHODS, FAQ_ITEMS } from './types';
+
+// User state type for investment flow
+export type InvestmentUserState = 'accredited-first-time' | 'already-invested';
 
 // Import Anthropic logo
 import anthropicLogo from '../Welcome02/assets/avatar-anthropic.png';
@@ -28,6 +90,7 @@ const DEFAULT_COMPANY: CompanyData = {
 interface InvestmentFlowProps {
   investmentAmount?: number;
   company?: CompanyData;
+  userState?: InvestmentUserState;
   onDismiss: () => void;
   onComplete?: () => void;
 }
@@ -35,9 +98,11 @@ interface InvestmentFlowProps {
 export function InvestmentFlow({
   investmentAmount = 10000,
   company = DEFAULT_COMPANY,
+  userState = 'accredited-first-time',
   onDismiss,
   onComplete,
 }: InvestmentFlowProps) {
+  // Internal flow step starts at transfer-method for all user states
   const [currentStep, setCurrentStep] = useState<InvestmentFlowStep>('transfer-method');
   const [selectedMethod, setSelectedMethod] = useState<TransferMethod | null>(null);
 
@@ -45,11 +110,23 @@ export function InvestmentFlow({
   const getProgress = () => {
     switch (currentStep) {
       case 'transfer-method':
-        return 12;
+        return 8;
       case 'verification':
-        return 40;
-      case 'signing':
-        return 70;
+        return 16;
+      case 'document-intro':
+        return 24;
+      case 'ppm-review':
+        return 36;
+      case 'llc-review':
+        return 48;
+      case 'llc-signing':
+        return 60;
+      case 'subscription-review':
+        return 72;
+      case 'subscription-signing':
+        return 84;
+      case 'confirm-request':
+        return 92;
       case 'complete':
         return 100;
       default:
@@ -59,9 +136,41 @@ export function InvestmentFlow({
 
   const handleNext = () => {
     if (currentStep === 'transfer-method' && selectedMethod) {
-      // For now, just show a placeholder for next steps
       setCurrentStep('verification');
     }
+  };
+
+  const handleVerificationComplete = () => {
+    setCurrentStep('document-intro');
+  };
+
+  const handleDocumentIntroComplete = () => {
+    setCurrentStep('ppm-review');
+  };
+
+  const handlePPMReviewComplete = () => {
+    setCurrentStep('llc-review');
+  };
+
+  const handleLLCReviewComplete = () => {
+    setCurrentStep('llc-signing');
+  };
+
+  const handleLLCSigningComplete = () => {
+    setCurrentStep('subscription-review');
+  };
+
+  const handleSubscriptionReviewComplete = () => {
+    setCurrentStep('subscription-signing');
+  };
+
+  const handleSubscriptionSigningComplete = () => {
+    setCurrentStep('confirm-request');
+  };
+
+  const handleConfirmComplete = () => {
+    setCurrentStep('complete');
+    onComplete?.();
   };
 
   return (
@@ -74,54 +183,154 @@ export function InvestmentFlow({
 
       {/* Main content */}
       <main className="flex-1 overflow-y-auto">
-        {currentStep === 'transfer-method' && (
-          <TransferMethodStep
-            amount={investmentAmount}
-            company={company}
-            transferMethods={TRANSFER_METHODS}
-            faqItems={FAQ_ITEMS}
-            selectedMethod={selectedMethod}
-            onSelectMethod={setSelectedMethod}
-            onNext={handleNext}
-          />
-        )}
+        <AnimatedStep stepKey={currentStep}>
+          {currentStep === 'transfer-method' && (
+            <TransferMethodStep
+              amount={investmentAmount}
+              company={company}
+              transferMethods={TRANSFER_METHODS}
+              faqItems={FAQ_ITEMS}
+              selectedMethod={selectedMethod}
+              onSelectMethod={setSelectedMethod}
+              onNext={handleNext}
+            />
+          )}
 
-        {currentStep === 'verification' && (
-          <div className="w-full max-w-[1032px] mx-auto p-10 flex flex-col items-center justify-center min-h-[400px]">
-            <h2 className="text-2xl font-medium text-[#373338] mb-4">
-              Verification Step
-            </h2>
-            <p className="text-[#7f7582] mb-6 text-center">
-              This step would contain identity verification (KYC) flow.
-              <br />
-              For this prototype, we'll skip to completion.
-            </p>
-            <div className="flex gap-4">
-              <button
-                onClick={() => setCurrentStep('transfer-method')}
-                className="px-6 py-2 border border-[#373338] text-[#373338] rounded-lg hover:bg-black/5"
+          {currentStep === 'verification' && (
+            <VerificationStep
+              amount={investmentAmount}
+              company={company}
+              onVerify={handleVerificationComplete}
+              onBack={() => setCurrentStep('transfer-method')}
+            />
+          )}
+
+          {currentStep === 'document-intro' && (
+            <DocumentReviewIntroStep
+              amount={investmentAmount}
+              company={company}
+              onContinue={handleDocumentIntroComplete}
+              onBack={() => setCurrentStep('verification')}
+            />
+          )}
+
+          {currentStep === 'ppm-review' && (
+            <DocumentReviewStep
+              documentType="ppm"
+              amount={investmentAmount}
+              company={company}
+              onContinue={handlePPMReviewComplete}
+              onBack={() => setCurrentStep('document-intro')}
+            />
+          )}
+
+          {currentStep === 'llc-review' && (
+            <DocumentReviewStep
+              documentType="llc-agreement"
+              amount={investmentAmount}
+              company={company}
+              onContinue={handleLLCReviewComplete}
+              onBack={() => setCurrentStep('ppm-review')}
+            />
+          )}
+
+          {currentStep === 'llc-signing' && (
+            <DocumentSigningStep
+              documentType="llc-agreement"
+              amount={investmentAmount}
+              company={company}
+              onConfirm={handleLLCSigningComplete}
+              onBack={() => setCurrentStep('llc-review')}
+            />
+          )}
+
+          {currentStep === 'subscription-review' && (
+            <DocumentReviewStep
+              documentType="subscription-agreement"
+              amount={investmentAmount}
+              company={company}
+              onContinue={handleSubscriptionReviewComplete}
+              onBack={() => setCurrentStep('llc-signing')}
+            />
+          )}
+
+          {currentStep === 'subscription-signing' && (
+            <DocumentSigningStep
+              documentType="subscription-agreement"
+              amount={investmentAmount}
+              company={company}
+              onConfirm={handleSubscriptionSigningComplete}
+              onBack={() => setCurrentStep('subscription-review')}
+            />
+          )}
+
+          {currentStep === 'confirm-request' && (
+            <ConfirmRequestStep
+              amount={investmentAmount}
+              company={company}
+              onConfirm={handleConfirmComplete}
+              onBack={() => setCurrentStep('subscription-signing')}
+            />
+          )}
+
+          {currentStep === 'complete' && (
+            <div className="w-full max-w-[1032px] mx-auto px-2.5 py-16 flex flex-col items-center justify-center gap-8">
+              <div className="w-20 h-20 rounded-full bg-[#5a8a5a] flex items-center justify-center">
+                <svg
+                  width="40"
+                  height="40"
+                  viewBox="0 0 40 40"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M10 20L17 27L30 13"
+                    stroke="white"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+              <h1
+                className="text-[42px] leading-[40px] text-[#373338] text-center"
+                style={{ fontFamily: 'Test Signifier, serif' }}
               >
-                Back
-              </button>
-              <button
-                onClick={() => {
-                  onComplete?.();
-                  onDismiss();
-                }}
-                className="px-6 py-2 bg-[#373338] text-white rounded-lg hover:bg-[#48424a]"
+                Investment request submitted
+              </h1>
+              <p
+                className="text-[18px] leading-[24px] text-[#685f6a] text-center max-w-md"
+                style={{ fontFamily: 'Soehne, sans-serif' }}
               >
-                Complete Investment
+                You'll receive transfer instructions via email. Complete the funding to finalize your investment.
+              </p>
+              <button
+                onClick={onDismiss}
+                className="px-8 py-3 bg-[#373338] text-white rounded-lg text-[16px]"
+                style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+              >
+                Return to dashboard
               </button>
             </div>
-          </div>
-        )}
+          )}
+        </AnimatedStep>
       </main>
     </div>
   );
 }
 
+// User state variants for showcase
+export const investmentFlowVariants = [
+  { id: 'accredited-first-time', label: 'Accredited First Time' },
+  { id: 'already-invested', label: 'Already Invested' },
+];
+
 // For standalone demo/showcase
-export function InvestmentFlowView() {
+interface InvestmentFlowViewProps {
+  userState?: InvestmentUserState;
+}
+
+export function InvestmentFlowView({ userState = 'accredited-first-time' }: InvestmentFlowViewProps) {
   const [isOpen, setIsOpen] = useState(true);
 
   if (!isOpen) {
@@ -139,6 +348,7 @@ export function InvestmentFlowView() {
 
   return (
     <InvestmentFlow
+      userState={userState}
       onDismiss={() => setIsOpen(false)}
       onComplete={() => console.log('Investment completed!')}
     />

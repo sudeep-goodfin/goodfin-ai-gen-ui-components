@@ -134,6 +134,7 @@ export type { Company, InvestorPost, TabId } from './DealProductPage';
 export {
   InvestmentFlow,
   InvestmentFlowView,
+  investmentFlowVariants,
   TRANSFER_METHODS,
   FAQ_ITEMS,
 } from './InvestmentFlow';

@@ -1,6 +1,16 @@
 // Types for Investment Flow
 
-export type InvestmentFlowStep = 'transfer-method' | 'verification' | 'signing' | 'complete';
+export type InvestmentFlowStep =
+  | 'transfer-method'
+  | 'verification'
+  | 'document-intro'
+  | 'ppm-review'
+  | 'llc-review'
+  | 'llc-signing'
+  | 'subscription-review'
+  | 'subscription-signing'
+  | 'confirm-request'
+  | 'complete';
 
 export type TransferMethod = 'bank-us' | 'wire-international';
 
