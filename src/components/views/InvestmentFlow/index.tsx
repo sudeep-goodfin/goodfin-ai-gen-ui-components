@@ -110,23 +110,19 @@ export function InvestmentFlow({
   const getProgress = () => {
     switch (currentStep) {
       case 'transfer-method':
-        return 8;
+        return 10;
       case 'verification':
-        return 16;
+        return 20;
       case 'document-intro':
-        return 24;
+        return 30;
       case 'ppm-review':
-        return 36;
-      case 'llc-review':
-        return 48;
+        return 45;
       case 'llc-signing':
         return 60;
-      case 'subscription-review':
-        return 72;
       case 'subscription-signing':
-        return 84;
+        return 75;
       case 'confirm-request':
-        return 92;
+        return 90;
       case 'complete':
         return 100;
       default:
@@ -149,18 +145,12 @@ export function InvestmentFlow({
   };
 
   const handlePPMReviewComplete = () => {
-    setCurrentStep('llc-review');
-  };
-
-  const handleLLCReviewComplete = () => {
+    // Skip llc-review, go directly to llc-signing (which has both CTAs)
     setCurrentStep('llc-signing');
   };
 
   const handleLLCSigningComplete = () => {
-    setCurrentStep('subscription-review');
-  };
-
-  const handleSubscriptionReviewComplete = () => {
+    // Skip subscription-review, go directly to subscription-signing
     setCurrentStep('subscription-signing');
   };
 
@@ -173,12 +163,41 @@ export function InvestmentFlow({
     onComplete?.();
   };
 
+  // Handle back navigation
+  const handleBack = () => {
+    switch (currentStep) {
+      case 'verification':
+        setCurrentStep('transfer-method');
+        break;
+      case 'document-intro':
+        setCurrentStep('verification');
+        break;
+      case 'ppm-review':
+        setCurrentStep('document-intro');
+        break;
+      case 'llc-signing':
+        setCurrentStep('ppm-review');
+        break;
+      case 'subscription-signing':
+        setCurrentStep('llc-signing');
+        break;
+      case 'confirm-request':
+        setCurrentStep('subscription-signing');
+        break;
+    }
+  };
+
+  // Can go back from any step except the first one and complete
+  const canGoBack = currentStep !== 'transfer-method' && currentStep !== 'complete';
+
   return (
     <div className="h-screen w-full bg-[#f0eef0] flex flex-col overflow-hidden">
       {/* Header with progress */}
       <FlowHeader
         progress={getProgress()}
         onDismiss={onDismiss}
+        onBack={handleBack}
+        canGoBack={canGoBack}
       />
 
       {/* Main content */}
@@ -224,33 +243,13 @@ export function InvestmentFlow({
             />
           )}
 
-          {currentStep === 'llc-review' && (
-            <DocumentReviewStep
-              documentType="llc-agreement"
-              amount={investmentAmount}
-              company={company}
-              onContinue={handleLLCReviewComplete}
-              onBack={() => setCurrentStep('ppm-review')}
-            />
-          )}
-
           {currentStep === 'llc-signing' && (
             <DocumentSigningStep
               documentType="llc-agreement"
               amount={investmentAmount}
               company={company}
               onConfirm={handleLLCSigningComplete}
-              onBack={() => setCurrentStep('llc-review')}
-            />
-          )}
-
-          {currentStep === 'subscription-review' && (
-            <DocumentReviewStep
-              documentType="subscription-agreement"
-              amount={investmentAmount}
-              company={company}
-              onContinue={handleSubscriptionReviewComplete}
-              onBack={() => setCurrentStep('llc-signing')}
+              onBack={() => setCurrentStep('ppm-review')}
             />
           )}
 
@@ -260,7 +259,7 @@ export function InvestmentFlow({
               amount={investmentAmount}
               company={company}
               onConfirm={handleSubscriptionSigningComplete}
-              onBack={() => setCurrentStep('subscription-review')}
+              onBack={() => setCurrentStep('llc-signing')}
             />
           )}
 

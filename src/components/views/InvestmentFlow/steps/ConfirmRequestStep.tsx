@@ -43,14 +43,26 @@ interface ConfirmRequestStepProps {
   company: CompanyData;
   onConfirm: () => void;
   onBack?: () => void;
+  /** When true, all checkboxes are pre-checked (user has completed document signing) */
+  documentsSigned?: boolean;
 }
 
 export function ConfirmRequestStep({
   amount,
   company,
   onConfirm,
+  documentsSigned = true,
 }: ConfirmRequestStepProps) {
-  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
+  // Pre-check all items if documents have been signed
+  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>(() => {
+    if (documentsSigned) {
+      return CONFIRMATION_ITEMS.reduce(
+        (acc, item) => ({ ...acc, [item.id]: true }),
+        {}
+      );
+    }
+    return {};
+  });
 
   const allChecked = CONFIRMATION_ITEMS.every((item) => checkedItems[item.id]);
 

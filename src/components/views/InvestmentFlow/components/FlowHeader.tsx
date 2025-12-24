@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { X } from 'lucide-react';
+import { X, ChevronLeft } from 'lucide-react';
 import goodfinLogo from '../../Welcome02/assets/goodfin-logo.png';
 
 interface FlowHeaderProps {
   progress: number; // 0-100
   onDismiss: () => void;
+  onBack?: () => void;
+  canGoBack?: boolean;
   className?: string;
 }
 
-export function FlowHeader({ progress, onDismiss, className }: FlowHeaderProps) {
+export function FlowHeader({ progress, onDismiss, onBack, canGoBack = false, className }: FlowHeaderProps) {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -47,8 +49,23 @@ export function FlowHeader({ progress, onDismiss, className }: FlowHeaderProps) 
             boxShadow: '0px 4px 16px 0px rgba(154, 144, 161, 0.1)',
           }}
         >
-          {/* Left placeholder for hamburger/back */}
-          <div className="w-24" />
+          {/* Back button */}
+          <div className="w-24">
+            {canGoBack && onBack && (
+              <button
+                onClick={onBack}
+                className="flex items-center gap-1 text-[#373338] hover:text-[#29272a] transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5" />
+                <span
+                  className="text-sm font-medium"
+                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                >
+                  Back
+                </span>
+              </button>
+            )}
+          </div>
 
           {/* Center logo */}
           <img src={goodfinLogo} alt="Goodfin" className="h-6" />

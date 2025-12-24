@@ -75,16 +75,25 @@ export function DocumentSigningStep({
   onConfirm,
 }: DocumentSigningStepProps) {
   const [signature, setSignature] = useState('');
-  const [overlayVisible, setOverlayVisible] = useState(false);
+  const [showSignatureOverlay, setShowSignatureOverlay] = useState(false);
+  const [overlayAnimated, setOverlayAnimated] = useState(false);
   const config = SIGNABLE_DOCUMENT_CONFIG[documentType];
 
-  // Animate overlay on mount
+  // Animate overlay when shown
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setOverlayVisible(true);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, []);
+    if (showSignatureOverlay) {
+      const timer = setTimeout(() => {
+        setOverlayAnimated(true);
+      }, 50);
+      return () => clearTimeout(timer);
+    } else {
+      setOverlayAnimated(false);
+    }
+  }, [showSignatureOverlay]);
+
+  const handleReviewedClick = () => {
+    setShowSignatureOverlay(true);
+  };
 
   // Format current date as DD-MM-YYYY
   const currentDate = new Date()
@@ -172,7 +181,7 @@ export function DocumentSigningStep({
               </div>
             </div>
 
-            {/* Action Buttons (visible behind overlay) */}
+            {/* Action Buttons */}
             <div className="flex flex-col gap-3 w-full">
               <button
                 className="w-full py-3 px-8 rounded-lg text-[16px] leading-[20px] text-[#373338] border border-[#373338] shadow-[0px_2px_4px_0px_rgba(190,185,192,0.64)] relative overflow-hidden"
@@ -182,6 +191,7 @@ export function DocumentSigningStep({
                 <div className="absolute inset-0 shadow-[inset_2px_2px_2px_0px_rgba(255,255,255,0.14)] pointer-events-none" />
               </button>
               <button
+                onClick={handleReviewedClick}
                 className={cn(
                   'w-full py-3 px-8 rounded-lg text-[16px] leading-[20px] text-[#f4f3f5]',
                   'shadow-[0px_2px_4px_0px_rgba(190,185,192,0.64)]',
@@ -198,79 +208,81 @@ export function DocumentSigningStep({
               </button>
             </div>
 
-            {/* Signature Overlay - positioned at the bottom with slide-up animation */}
-            <div
-              className={cn(
-                'absolute bottom-0 left-0 right-0 bg-white border border-[#e6e4e7] rounded-t-[30px] overflow-hidden',
-                'transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]',
-                overlayVisible
-                  ? 'translate-y-0 opacity-100'
-                  : 'translate-y-full opacity-0'
-              )}
-            >
-              <div className="flex flex-col gap-2 px-[37px] pt-[21px] pb-6">
-                {/* Title */}
-                <p
-                  className="text-[20px] leading-[32px] text-[#373338] tracking-[-0.4px]"
-                  style={{ fontFamily: 'Test Signifier, serif' }}
-                >
-                  Enter your full legal name
-                </p>
+            {/* Signature Overlay - slides up when user clicks "I've reviewed this" */}
+            {showSignatureOverlay && (
+              <div
+                className={cn(
+                  'absolute bottom-0 left-0 right-0 bg-white border border-[#e6e4e7] rounded-t-[30px] overflow-hidden',
+                  'transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]',
+                  overlayAnimated
+                    ? 'translate-y-0 opacity-100'
+                    : 'translate-y-full opacity-0'
+                )}
+              >
+                <div className="flex flex-col gap-2 px-[37px] pt-[21px] pb-6">
+                  {/* Title */}
+                  <p
+                    className="text-[20px] leading-[32px] text-[#373338] tracking-[-0.4px]"
+                    style={{ fontFamily: 'Test Signifier, serif' }}
+                  >
+                    Enter your full legal name
+                  </p>
 
-                {/* Signature Input */}
-                <div className="bg-white border border-[#d9dde9] rounded-lg px-4 pt-4 pb-2 flex flex-col justify-between h-[101px]">
-                  <div className="flex-1" />
-                  <input
-                    type="text"
-                    value={signature}
-                    onChange={(e) => setSignature(e.target.value)}
-                    placeholder=""
+                  {/* Signature Input */}
+                  <div className="bg-white border border-[#d9dde9] rounded-lg px-4 pt-4 pb-2 flex flex-col justify-between h-[101px]">
+                    <div className="flex-1" />
+                    <input
+                      type="text"
+                      value={signature}
+                      onChange={(e) => setSignature(e.target.value)}
+                      placeholder=""
+                      className={cn(
+                        'w-full bg-transparent border-none outline-none',
+                        'text-[46px] leading-[24px] text-[#6e7791] tracking-[-0.1px]'
+                      )}
+                      style={{
+                        fontFamily: 'Sacramento, cursive',
+                      }}
+                    />
+                    {/* Date stamp */}
+                    <p
+                      className="text-[12px] leading-[16px] text-[#7986b2] text-right mt-2"
+                      style={{ fontFamily: 'Fira Mono, monospace' }}
+                    >
+                      {currentDate}
+                    </p>
+                  </div>
+
+                  {/* CTA Button */}
+                  <button
+                    onClick={() => onConfirm(signature)}
+                    disabled={!isValid}
                     className={cn(
-                      'w-full bg-transparent border-none outline-none',
-                      'text-[46px] leading-[24px] text-[#6e7791] tracking-[-0.1px]'
+                      'w-full py-3 px-8 rounded-lg text-[16px] leading-[20px] text-[#f4f3f5]',
+                      'shadow-[0px_2px_4px_0px_rgba(190,185,192,0.64)]',
+                      'relative overflow-hidden mt-2',
+                      'disabled:opacity-50 disabled:cursor-not-allowed'
                     )}
                     style={{
-                      fontFamily: 'Sacramento, cursive',
+                      fontFamily: 'Soehne Kraftig, sans-serif',
+                      background:
+                        'linear-gradient(94.99deg, rgba(127, 117, 130, 0.63) 0%, rgba(56, 52, 57, 0.63) 99.63%), linear-gradient(90deg, #373338 0%, #373338 100%)',
                     }}
-                  />
-                  {/* Date stamp */}
-                  <p
-                    className="text-[12px] leading-[16px] text-[#7986b2] text-right mt-2"
-                    style={{ fontFamily: 'Fira Mono, monospace' }}
                   >
-                    {currentDate}
+                    Confirm and continue
+                    <div className="absolute inset-0 shadow-[inset_2px_2px_2px_0px_rgba(255,255,255,0.14)] pointer-events-none" />
+                  </button>
+
+                  {/* Disclaimer */}
+                  <p
+                    className="text-[14px] leading-[16px] text-black text-center mt-2"
+                    style={{ fontFamily: 'Soehne, sans-serif' }}
+                  >
+                    This acts as your electronic acknowledgment for this document.
                   </p>
                 </div>
-
-                {/* CTA Button */}
-                <button
-                  onClick={() => onConfirm(signature)}
-                  disabled={!isValid}
-                  className={cn(
-                    'w-full py-3 px-8 rounded-lg text-[16px] leading-[20px] text-[#f4f3f5]',
-                    'shadow-[0px_2px_4px_0px_rgba(190,185,192,0.64)]',
-                    'relative overflow-hidden mt-2',
-                    'disabled:opacity-50 disabled:cursor-not-allowed'
-                  )}
-                  style={{
-                    fontFamily: 'Soehne Kraftig, sans-serif',
-                    background:
-                      'linear-gradient(94.99deg, rgba(127, 117, 130, 0.63) 0%, rgba(56, 52, 57, 0.63) 99.63%), linear-gradient(90deg, #373338 0%, #373338 100%)',
-                  }}
-                >
-                  Confirm and continue
-                  <div className="absolute inset-0 shadow-[inset_2px_2px_2px_0px_rgba(255,255,255,0.14)] pointer-events-none" />
-                </button>
-
-                {/* Disclaimer */}
-                <p
-                  className="text-[14px] leading-[16px] text-black text-center mt-2"
-                  style={{ fontFamily: 'Soehne, sans-serif' }}
-                >
-                  This acts as your electronic acknowledgment for this document.
-                </p>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
