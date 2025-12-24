@@ -2,29 +2,41 @@ import React from 'react';
 
 interface GreetingProps {
   title?: string;
-  description?: string;
+  portfolioGain?: string;
+  portfolioPercentage?: string;
+  priorityAllocations?: string;
 }
 
 export function Greeting({
   title = "Good afternoon, Alex",
-  description = "Your portfolio increased by $154k (+12.4%) this month, primarily driven by secondary market activity in SpaceX. You have 3 priority allocations expiring soon."
+  portfolioGain = "$154k",
+  portfolioPercentage = "+12.4%",
+  priorityAllocations = "3 priority allocations expiring soon"
 }: GreetingProps) {
   return (
-    <div className="flex flex-col gap-6 w-full max-w-3xl">
-       {/* Greeting Header with Avatar */}
-       <div className="relative w-12 h-12 rounded-full overflow-hidden shadow-[0px_5px_5px_0px_rgba(190,185,192,0.33)] border border-[#F8F8F8]">
-           <img src="/conciergeIcon.png" alt="Goodfin AI" className="w-full h-full object-cover" />
-       </div>
+    <div className="flex flex-col gap-3 w-full">
+      {/* Greeting Header with Avatar inline */}
+      <div className="flex items-center gap-4">
+        <div className="relative w-10 h-10 rounded-full overflow-hidden shadow-[0px_0.833px_2.5px_0px_rgba(0,0,0,0.1),0px_0.833px_1.667px_-0.833px_rgba(0,0,0,0.1)] border border-[#F8F8F8]">
+          <img src="/conciergeIcon.png" alt="Goodfin AI" className="w-full h-full object-cover opacity-90" />
+        </div>
+        <h1 className="text-[20px] text-[#48424a] leading-[30.4px] tracking-[-0.7px] font-serif">
+          {title}
+        </h1>
+      </div>
 
-       {/* Text */}
-       <div className="flex flex-col gap-2">
-           <h1 className="text-[28px] text-[#48424a] leading-[33.6px] tracking-[-0.7px] font-serif transition-all duration-300">
-               {title}
-           </h1>
-           <p className="text-[20px] text-[#48424a] leading-normal font-light transition-all duration-300">
-               {description}
-           </p>
-       </div>
+      {/* Description with highlighted text */}
+      <p className="text-[16px] text-[#7f7582] leading-[24px] font-['Soehne',sans-serif]">
+        Your portfolio increased by{' '}
+        <span className="font-['Soehne_Kraftig',sans-serif] text-[#29272a] font-medium">
+          {portfolioGain} ({portfolioPercentage})
+        </span>{' '}
+        this month, primarily driven by secondary market activity in SpaceX. You have{' '}
+        <span className="font-['Soehne_Kraftig',sans-serif] text-[#29272a] font-medium">
+          {priorityAllocations}
+        </span>
+        .
+      </p>
     </div>
   );
 }

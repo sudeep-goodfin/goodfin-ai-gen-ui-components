@@ -30,6 +30,8 @@ export { InputBar, InputBarV01, InputBarV02 } from './components/dashboard/Input
 export { HomeContent } from './components/dashboard/HomeContent';
 export { DashboardContent, SuggestionCard, SUGGESTIONS_DATA } from './components/dashboard/DashboardContent';
 export { Greeting } from './components/dashboard/Greeting';
+export { ResumeInvestmentCard } from './components/dashboard/ResumeInvestmentCard';
+export { ExploreGoodfin } from './components/dashboard/ExploreGoodfin';
 export { ProgressWidget } from './components/dashboard/ProgressWidget';
 export { ProgressCircle, CommunityIcon } from './components/dashboard/icons';
 export { NewsContent } from './components/dashboard/NewsContent';
