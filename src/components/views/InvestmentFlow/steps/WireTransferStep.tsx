@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { InvestmentSummary } from "../components/InvestmentSummary";
 import { FAQSection } from "../components/FAQSection";
 import { type CompanyData, type FAQItem } from "../types";
-import { ChevronDown, Copy, Check } from "lucide-react";
+import { ChevronDown, Copy, Check, Minus } from "lucide-react";
 
 // Wire transfer FAQ items
 const WIRE_TRANSFER_FAQ_ITEMS: FAQItem[] = [
@@ -445,9 +445,17 @@ export function WireTransferStep({
                     : "translate-y-full opacity-0"
                 )}
               >
+                {/* Minimize Button */}
+                <button
+                  onClick={() => setShowFundingOverlay(false)}
+                  className="absolute top-4 right-4 p-2 hover:bg-[#f4f3f5] rounded-lg transition-colors"
+                >
+                  <Minus className="w-5 h-5 text-[#685f6a]" />
+                </button>
+
                 <div className="flex flex-col gap-4 px-[37px] pt-[21px] pb-6">
                   {/* Title */}
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-1 pr-8">
                     <p
                       className="text-[20px] leading-[32px] text-[#373338] tracking-[-0.4px]"
                       style={{ fontFamily: "Test Signifier, serif" }}

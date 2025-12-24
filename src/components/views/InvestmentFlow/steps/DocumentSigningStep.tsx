@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { Sparkles } from 'lucide-react';
 import { InvestmentSummary } from '../components/InvestmentSummary';
 import { FAQSection } from '../components/FAQSection';
+import { AIChatSidebar } from '../components/AIChatSidebar';
 import { type CompanyData, type FAQItem } from '../types';
 
 // Import PDF documents
@@ -39,12 +40,18 @@ const SIGNABLE_DOCUMENT_CONFIG: Record<
       },
       {
         question: 'Why am I asked to enter my full legal name here?',
+        answer:
+          'Your full legal name is required for legal identification and to ensure the signature is valid and enforceable under applicable laws.',
       },
       {
         question: 'Is this a legally binding signature?',
+        answer:
+          'Yes, your electronic signature has the same legal effect as a handwritten signature under the E-SIGN Act and UETA.',
       },
       {
         question: 'Can I review this document again later?',
+        answer:
+          'Yes, you can access all your signed documents anytime from your Goodfin dashboard under "My Documents".',
       },
     ],
   },
@@ -60,12 +67,18 @@ const SIGNABLE_DOCUMENT_CONFIG: Record<
       },
       {
         question: 'What happens after I sign this?',
+        answer:
+          'After signing, you will proceed to the wire transfer step to fund your investment. Your allocation is reserved once we receive your funds.',
       },
       {
         question: 'Can I change my investment amount?',
+        answer:
+          'You can adjust your investment amount before signing. After signing, changes require contacting our support team.',
       },
       {
         question: 'Is my investment finalized after signing?',
+        answer:
+          'Signing reserves your allocation. Your investment is finalized once we receive and confirm your wire transfer.',
       },
     ],
   },
@@ -88,6 +101,7 @@ export function DocumentSigningStep({
   const [signature, setSignature] = useState('');
   const [showSignatureOverlay, setShowSignatureOverlay] = useState(false);
   const [overlayAnimated, setOverlayAnimated] = useState(false);
+  const [showAIChat, setShowAIChat] = useState(false);
   const config = SIGNABLE_DOCUMENT_CONFIG[documentType];
 
   // Animate overlay when shown
@@ -118,6 +132,12 @@ export function DocumentSigningStep({
   const isValid = signature.trim().length > 0;
 
   return (
+    <>
+      <AIChatSidebar
+        isOpen={showAIChat}
+        onClose={() => setShowAIChat(false)}
+        documentTitle={config.title}
+      />
     <div className="w-full max-w-[1032px] mx-auto px-2.5 py-2.5">
       {/* Header */}
       <div className="flex flex-col gap-2.5 items-center justify-center px-2.5 py-8 w-full">
@@ -149,6 +169,7 @@ export function DocumentSigningStep({
                 {config.description}
               </p>
               <button
+                onClick={() => setShowAIChat(true)}
                 className="self-start mt-1 px-3 py-1.5 text-[12px] leading-[16px] text-[#685f6a] bg-white border border-[#d9d5db] rounded-full hover:bg-[#f7f7f8] hover:border-[#beb9c0] transition-colors flex items-center gap-1.5"
                 style={{ fontFamily: 'Soehne, sans-serif' }}
               >
@@ -272,5 +293,6 @@ export function DocumentSigningStep({
         </div>
       </div>
     </div>
+    </>
   );
 }
