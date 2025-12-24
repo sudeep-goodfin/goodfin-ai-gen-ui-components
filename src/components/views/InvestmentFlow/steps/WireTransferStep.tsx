@@ -8,29 +8,44 @@ import { ChevronDown, Copy, Check } from 'lucide-react';
 // Wire transfer FAQ items
 const WIRE_TRANSFER_FAQ_ITEMS: FAQItem[] = [
   {
-    question: 'How do I send a wire transfer?',
+    question: 'Will I need to enter my bank details here?',
     answer:
-      'Log into your bank account or visit your bank in person. Use the details provided to initiate a domestic wire transfer. Make sure to include the reference ID in the memo field.',
+      "No. You'll use these details to initiate the wire directly from your bank.",
   },
   {
-    question: 'How long does a wire transfer take?',
+    question: 'When will I receive the transfer instructions?',
   },
   {
-    question: 'What if I send from the wrong account?',
+    question: 'Can I complete the transfer later?',
   },
   {
-    question: 'Can I use an international wire?',
+    question: 'Are there any fees?',
   },
 ];
 
-// Bank details for display
-const BANK_DETAILS = {
+// Domestic bank details
+const DOMESTIC_BANK_DETAILS = {
   accountNumber: '9800000000',
   routingNumber: '084009519',
   referenceId: 'GF-2024-INV-78432',
   recipientName: 'Goodfin Capital LLC',
   recipientAddress: '123 Financial District, Suite 400, San Francisco, CA 94111',
   memoContent: 'Investment - GF-2024-INV-78432',
+};
+
+// International bank details
+const INTERNATIONAL_BANK_DETAILS = {
+  // Step 1: Beneficiary bank information
+  swiftBicCode: 'CLNOUS66MER',
+  routingNumber: '121145433',
+  bankName: 'Column National Association',
+  bankAddress: '1 Letterman Drive, Building A, Suite A4-700 San Francisco, CA 94129 USA',
+  // Step 2: Beneficiary information
+  beneficiaryName: 'GoodFin, Inc.',
+  beneficiaryAccountNumber: '187418829466566',
+  beneficiaryAddress: '16192 Coastal Highway, Lewes, DE 19958',
+  // Step 3: Memo content
+  uniqueReferenceId: 'TF4GN',
 };
 
 interface WireTransferStepProps {
@@ -95,16 +110,52 @@ export function WireTransferStep({
     maximumFractionDigits: 0,
   }).format(amount);
 
+  // Copy field component
+  const CopyField = ({ label, value, fieldKey }: { label: string; value: string; fieldKey: string }) => (
+    <div className="flex items-start justify-between py-1">
+      <div className="flex flex-col gap-0.5">
+        <span
+          className="text-[11px] leading-[16px] text-[#8a7f91] uppercase tracking-[0.6px] font-semibold"
+          style={{ fontFamily: 'Inter, sans-serif' }}
+        >
+          {label}
+        </span>
+        <span
+          className="text-[15px] leading-[22px] text-[#373338]"
+          style={{ fontFamily: 'Soehne, sans-serif' }}
+        >
+          {value}
+        </span>
+      </div>
+      <button
+        onClick={() => handleCopy(fieldKey, value)}
+        className="p-2 hover:bg-[#e6e4e7] rounded-lg transition-colors opacity-0 hover:opacity-100 group-hover:opacity-100"
+      >
+        {copiedField === fieldKey ? (
+          <Check className="w-4 h-4 text-[#5a8a5a]" />
+        ) : (
+          <Copy className="w-4 h-4 text-[#685f6a]" />
+        )}
+      </button>
+    </div>
+  );
+
   return (
     <div className="w-full max-w-[1032px] mx-auto px-2.5 py-2.5">
       {/* Header */}
-      <div className="flex flex-col gap-2.5 items-center justify-center px-2.5 py-8 w-full">
+      <div className="flex flex-col gap-2.5 items-start px-2.5 py-8 w-full">
         <h1
           className="text-[42px] leading-[40px] text-[#373338] w-full"
           style={{ fontFamily: 'Test Signifier, serif' }}
         >
           Send the wire from your bank
         </h1>
+        <p
+          className="text-[24px] leading-[32px] text-[#685f6a]"
+          style={{ fontFamily: 'Soehne, sans-serif' }}
+        >
+          We'll reserve your allocation once your wire is received and confirmed.
+        </p>
       </div>
 
       {/* Two-column layout */}
@@ -112,253 +163,162 @@ export function WireTransferStep({
         {/* Left Panel - Wire Details Card */}
         <div className="flex flex-col gap-2.5 p-2.5 w-[597px]">
           <div className="bg-[#f7f7f8] flex flex-col gap-6 p-8 w-full rounded-lg relative overflow-hidden">
-            {/* Section Header with Amount */}
-            <div className="flex items-start justify-between w-full">
-              <div className="flex flex-col gap-2">
-                <h2
-                  className="text-[28px] leading-[32px] text-[#554d57]"
-                  style={{ fontFamily: 'Test Signifier, serif' }}
-                >
-                  Receiving Bank Details
-                </h2>
-                <p
-                  className="text-[14px] leading-[18px] text-[#685f6a]"
-                  style={{ fontFamily: 'Soehne, sans-serif' }}
-                >
-                  Use these details to send your wire transfer.
-                </p>
-              </div>
+            {/* Section Header */}
+            <div className="flex flex-col gap-4">
+              <h2
+                className="text-[28px] leading-[24px] text-[#554d57]"
+                style={{ fontFamily: 'Test Signifier, serif' }}
+              >
+                Receiving Bank Details
+              </h2>
 
-              {/* Amount Badge */}
-              <div className="bg-[#373338] text-white px-4 py-2 rounded-lg">
-                <span
-                  className="text-[18px] leading-[24px]"
-                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+              {/* Transfer Type Question & Dropdown */}
+              <div className="flex flex-col gap-2">
+                <label
+                  className="text-[14px] leading-[20px] text-[#373338] font-medium tracking-[-0.15px]"
+                  style={{ fontFamily: 'Inter, sans-serif' }}
                 >
-                  {formattedAmount}
-                </span>
+                  Are you sending funds from the U.S.?
+                </label>
+                <div className="relative w-[283px]">
+                  <button
+                    onClick={() => setShowDropdown(!showDropdown)}
+                    className="w-full flex items-center justify-between px-[13px] py-2 bg-white border border-[#e5e7eb] rounded-lg h-[36px]"
+                  >
+                    <span
+                      className="text-[14px] leading-[20px] text-[#0a0a0a] font-medium tracking-[-0.15px]"
+                      style={{ fontFamily: 'Inter, sans-serif' }}
+                    >
+                      {transferType === 'domestic' ? 'Yes, Domestic' : 'No, International'}
+                    </span>
+                    <ChevronDown className={cn(
+                      "w-4 h-4 text-[#685f6a] transition-transform",
+                      showDropdown && "rotate-180"
+                    )} />
+                  </button>
+
+                  {showDropdown && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#e5e7eb] rounded-lg shadow-lg z-10">
+                      <button
+                        onClick={() => {
+                          setTransferType('domestic');
+                          setShowDropdown(false);
+                        }}
+                        className={cn(
+                          "w-full px-[13px] py-2 text-left text-[14px] leading-[20px] font-medium hover:bg-[#f7f7f8] rounded-t-lg",
+                          transferType === 'domestic' && "bg-[#f7f7f8]"
+                        )}
+                        style={{ fontFamily: 'Inter, sans-serif' }}
+                      >
+                        Yes, Domestic
+                      </button>
+                      <button
+                        onClick={() => {
+                          setTransferType('international');
+                          setShowDropdown(false);
+                        }}
+                        className={cn(
+                          "w-full px-[13px] py-2 text-left text-[14px] leading-[20px] font-medium hover:bg-[#f7f7f8] rounded-b-lg",
+                          transferType === 'international' && "bg-[#f7f7f8]"
+                        )}
+                        style={{ fontFamily: 'Inter, sans-serif' }}
+                      >
+                        No, International
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Transfer Type Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setShowDropdown(!showDropdown)}
-                className="w-full flex items-center justify-between px-4 py-3 bg-white border border-[#d9dde9] rounded-lg"
-              >
+            {/* Bank Details Card */}
+            <div className="bg-[#f4f3f5] border border-[#48424a] p-[18px] flex flex-col gap-4 group">
+              {/* Processing Badge */}
+              <div className="bg-[#9b929e] px-1.5 py-0.5 rounded-sm self-start">
                 <span
-                  className="text-[16px] leading-[20px] text-[#373338]"
-                  style={{ fontFamily: 'Soehne, sans-serif' }}
+                  className="text-[12px] leading-[16px] text-[#f0eef0] uppercase tracking-[0.36px] font-semibold"
+                  style={{ fontFamily: 'Open Sans, sans-serif' }}
                 >
-                  {transferType === 'domestic' ? 'Domestic Wire Transfer' : 'International Wire Transfer'}
+                  Same-day processing if received before 3:00 PM PT
                 </span>
-                <ChevronDown className={cn(
-                  "w-5 h-5 text-[#685f6a] transition-transform",
-                  showDropdown && "rotate-180"
-                )} />
-              </button>
+              </div>
 
-              {showDropdown && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#d9dde9] rounded-lg shadow-lg z-10">
-                  <button
-                    onClick={() => {
-                      setTransferType('domestic');
-                      setShowDropdown(false);
-                    }}
-                    className={cn(
-                      "w-full px-4 py-3 text-left text-[16px] leading-[20px] hover:bg-[#f7f7f8]",
-                      transferType === 'domestic' && "bg-[#f7f7f8]"
-                    )}
-                    style={{ fontFamily: 'Soehne, sans-serif' }}
-                  >
-                    Domestic Wire Transfer
-                  </button>
-                  <button
-                    onClick={() => {
-                      setTransferType('international');
-                      setShowDropdown(false);
-                    }}
-                    className={cn(
-                      "w-full px-4 py-3 text-left text-[16px] leading-[20px] hover:bg-[#f7f7f8]",
-                      transferType === 'international' && "bg-[#f7f7f8]"
-                    )}
-                    style={{ fontFamily: 'Soehne, sans-serif' }}
-                  >
-                    International Wire Transfer
-                  </button>
+              {transferType === 'domestic' ? (
+                /* Domestic Bank Details */
+                <div className="flex flex-col gap-1">
+                  <CopyField label="Account Number" value={DOMESTIC_BANK_DETAILS.accountNumber} fieldKey="accountNumber" />
+                  <CopyField label="Routing Number" value={DOMESTIC_BANK_DETAILS.routingNumber} fieldKey="routingNumber" />
+                  <CopyField label="Reference ID" value={DOMESTIC_BANK_DETAILS.referenceId} fieldKey="referenceId" />
+                  <CopyField label="Recipient Name" value={DOMESTIC_BANK_DETAILS.recipientName} fieldKey="recipientName" />
+                  <CopyField label="Recipient Address" value={DOMESTIC_BANK_DETAILS.recipientAddress} fieldKey="recipientAddress" />
+                  <CopyField label="Memo / Reference" value={DOMESTIC_BANK_DETAILS.memoContent} fieldKey="memoContent" />
+                </div>
+              ) : (
+                /* International Bank Details - Step by Step */
+                <div className="flex flex-col gap-6">
+                  {/* Step 1: Beneficiary Bank Information */}
+                  <div className="flex flex-col gap-1">
+                    <div className="py-1.5">
+                      <p
+                        className="text-[16px] leading-[24px] text-[#373338] uppercase"
+                        style={{ fontFamily: 'Test Signifier, serif' }}
+                      >
+                        Step 1
+                      </p>
+                      <p
+                        className="text-[12px] leading-[16px] text-[#685f6a]"
+                        style={{ fontFamily: 'Inter, sans-serif' }}
+                      >
+                        Enter beneficiary bank information
+                      </p>
+                    </div>
+                    <CopyField label="SWIFT/BIC Code" value={INTERNATIONAL_BANK_DETAILS.swiftBicCode} fieldKey="swiftBicCode" />
+                    <CopyField label="SWIFT ABA/Routing/Transit Number (if asked)" value={INTERNATIONAL_BANK_DETAILS.routingNumber} fieldKey="intlRoutingNumber" />
+                    <CopyField label="Bank Name" value={INTERNATIONAL_BANK_DETAILS.bankName} fieldKey="intlBankName" />
+                    <CopyField label="Bank Address" value={INTERNATIONAL_BANK_DETAILS.bankAddress} fieldKey="bankAddress" />
+                  </div>
+
+                  {/* Step 2: Beneficiary Information */}
+                  <div className="flex flex-col gap-1">
+                    <div className="py-1.5">
+                      <p
+                        className="text-[16px] leading-[24px] text-[#373338] uppercase"
+                        style={{ fontFamily: 'Test Signifier, serif' }}
+                      >
+                        Step 2
+                      </p>
+                      <p
+                        className="text-[12px] leading-[16px] text-[#685f6a]"
+                        style={{ fontFamily: 'Inter, sans-serif' }}
+                      >
+                        Enter beneficiary information
+                      </p>
+                    </div>
+                    <CopyField label="Beneficiary Name" value={INTERNATIONAL_BANK_DETAILS.beneficiaryName} fieldKey="beneficiaryName" />
+                    <CopyField label="Beneficiary Account Number" value={INTERNATIONAL_BANK_DETAILS.beneficiaryAccountNumber} fieldKey="beneficiaryAccountNumber" />
+                    <CopyField label="Beneficiary Address" value={INTERNATIONAL_BANK_DETAILS.beneficiaryAddress} fieldKey="beneficiaryAddress" />
+                  </div>
+
+                  {/* Step 3: Memo Content */}
+                  <div className="flex flex-col gap-1">
+                    <div className="py-1.5">
+                      <p
+                        className="text-[16px] leading-[24px] text-[#373338] uppercase"
+                        style={{ fontFamily: 'Test Signifier, serif' }}
+                      >
+                        Step 3
+                      </p>
+                      <p
+                        className="text-[12px] leading-[16px] text-[#685f6a]"
+                        style={{ fontFamily: 'Inter, sans-serif' }}
+                      >
+                        Enter memo content
+                      </p>
+                    </div>
+                    <CopyField label="Unique Reference ID" value={INTERNATIONAL_BANK_DETAILS.uniqueReferenceId} fieldKey="uniqueReferenceId" />
+                  </div>
                 </div>
               )}
-            </div>
-
-            {/* Bank Details List */}
-            <div className="flex flex-col gap-3">
-              {/* Account Number */}
-              <div className="flex items-center justify-between py-3 border-b border-[#e6e4e7]">
-                <div className="flex flex-col gap-1">
-                  <span
-                    className="text-[12px] leading-[16px] text-[#685f6a] uppercase tracking-wide"
-                    style={{ fontFamily: 'Soehne, sans-serif' }}
-                  >
-                    Account Number
-                  </span>
-                  <span
-                    className="text-[16px] leading-[20px] text-[#373338]"
-                    style={{ fontFamily: 'Fira Mono, monospace' }}
-                  >
-                    {BANK_DETAILS.accountNumber}
-                  </span>
-                </div>
-                <button
-                  onClick={() => handleCopy('accountNumber', BANK_DETAILS.accountNumber)}
-                  className="p-2 hover:bg-[#e6e4e7] rounded-lg transition-colors"
-                >
-                  {copiedField === 'accountNumber' ? (
-                    <Check className="w-4 h-4 text-[#5a8a5a]" />
-                  ) : (
-                    <Copy className="w-4 h-4 text-[#685f6a]" />
-                  )}
-                </button>
-              </div>
-
-              {/* Routing Number */}
-              <div className="flex items-center justify-between py-3 border-b border-[#e6e4e7]">
-                <div className="flex flex-col gap-1">
-                  <span
-                    className="text-[12px] leading-[16px] text-[#685f6a] uppercase tracking-wide"
-                    style={{ fontFamily: 'Soehne, sans-serif' }}
-                  >
-                    Routing Number
-                  </span>
-                  <span
-                    className="text-[16px] leading-[20px] text-[#373338]"
-                    style={{ fontFamily: 'Fira Mono, monospace' }}
-                  >
-                    {BANK_DETAILS.routingNumber}
-                  </span>
-                </div>
-                <button
-                  onClick={() => handleCopy('routingNumber', BANK_DETAILS.routingNumber)}
-                  className="p-2 hover:bg-[#e6e4e7] rounded-lg transition-colors"
-                >
-                  {copiedField === 'routingNumber' ? (
-                    <Check className="w-4 h-4 text-[#5a8a5a]" />
-                  ) : (
-                    <Copy className="w-4 h-4 text-[#685f6a]" />
-                  )}
-                </button>
-              </div>
-
-              {/* Reference ID */}
-              <div className="flex items-center justify-between py-3 border-b border-[#e6e4e7]">
-                <div className="flex flex-col gap-1">
-                  <span
-                    className="text-[12px] leading-[16px] text-[#685f6a] uppercase tracking-wide"
-                    style={{ fontFamily: 'Soehne, sans-serif' }}
-                  >
-                    Reference ID
-                  </span>
-                  <span
-                    className="text-[16px] leading-[20px] text-[#373338]"
-                    style={{ fontFamily: 'Fira Mono, monospace' }}
-                  >
-                    {BANK_DETAILS.referenceId}
-                  </span>
-                </div>
-                <button
-                  onClick={() => handleCopy('referenceId', BANK_DETAILS.referenceId)}
-                  className="p-2 hover:bg-[#e6e4e7] rounded-lg transition-colors"
-                >
-                  {copiedField === 'referenceId' ? (
-                    <Check className="w-4 h-4 text-[#5a8a5a]" />
-                  ) : (
-                    <Copy className="w-4 h-4 text-[#685f6a]" />
-                  )}
-                </button>
-              </div>
-
-              {/* Recipient Name */}
-              <div className="flex items-center justify-between py-3 border-b border-[#e6e4e7]">
-                <div className="flex flex-col gap-1">
-                  <span
-                    className="text-[12px] leading-[16px] text-[#685f6a] uppercase tracking-wide"
-                    style={{ fontFamily: 'Soehne, sans-serif' }}
-                  >
-                    Recipient Name
-                  </span>
-                  <span
-                    className="text-[16px] leading-[20px] text-[#373338]"
-                    style={{ fontFamily: 'Soehne, sans-serif' }}
-                  >
-                    {BANK_DETAILS.recipientName}
-                  </span>
-                </div>
-                <button
-                  onClick={() => handleCopy('recipientName', BANK_DETAILS.recipientName)}
-                  className="p-2 hover:bg-[#e6e4e7] rounded-lg transition-colors"
-                >
-                  {copiedField === 'recipientName' ? (
-                    <Check className="w-4 h-4 text-[#5a8a5a]" />
-                  ) : (
-                    <Copy className="w-4 h-4 text-[#685f6a]" />
-                  )}
-                </button>
-              </div>
-
-              {/* Recipient Address */}
-              <div className="flex items-center justify-between py-3 border-b border-[#e6e4e7]">
-                <div className="flex flex-col gap-1">
-                  <span
-                    className="text-[12px] leading-[16px] text-[#685f6a] uppercase tracking-wide"
-                    style={{ fontFamily: 'Soehne, sans-serif' }}
-                  >
-                    Recipient Address
-                  </span>
-                  <span
-                    className="text-[16px] leading-[20px] text-[#373338]"
-                    style={{ fontFamily: 'Soehne, sans-serif' }}
-                  >
-                    {BANK_DETAILS.recipientAddress}
-                  </span>
-                </div>
-                <button
-                  onClick={() => handleCopy('recipientAddress', BANK_DETAILS.recipientAddress)}
-                  className="p-2 hover:bg-[#e6e4e7] rounded-lg transition-colors"
-                >
-                  {copiedField === 'recipientAddress' ? (
-                    <Check className="w-4 h-4 text-[#5a8a5a]" />
-                  ) : (
-                    <Copy className="w-4 h-4 text-[#685f6a]" />
-                  )}
-                </button>
-              </div>
-
-              {/* Memo Content */}
-              <div className="flex items-center justify-between py-3">
-                <div className="flex flex-col gap-1">
-                  <span
-                    className="text-[12px] leading-[16px] text-[#685f6a] uppercase tracking-wide"
-                    style={{ fontFamily: 'Soehne, sans-serif' }}
-                  >
-                    Memo / Reference
-                  </span>
-                  <span
-                    className="text-[16px] leading-[20px] text-[#373338]"
-                    style={{ fontFamily: 'Soehne, sans-serif' }}
-                  >
-                    {BANK_DETAILS.memoContent}
-                  </span>
-                </div>
-                <button
-                  onClick={() => handleCopy('memoContent', BANK_DETAILS.memoContent)}
-                  className="p-2 hover:bg-[#e6e4e7] rounded-lg transition-colors"
-                >
-                  {copiedField === 'memoContent' ? (
-                    <Check className="w-4 h-4 text-[#5a8a5a]" />
-                  ) : (
-                    <Copy className="w-4 h-4 text-[#685f6a]" />
-                  )}
-                </button>
-              </div>
             </div>
 
             {/* CTA Button */}
@@ -572,8 +532,8 @@ export function WireTransferStep({
           </div>
         </div>
 
-        {/* Right Panel - Summary & FAQ */}
-        <div className="flex-1 flex flex-col gap-6 p-2.5 min-w-0">
+        {/* Right Panel - Summary & FAQ (Sticky) */}
+        <div className="flex-1 flex flex-col gap-6 p-2.5 min-w-0 sticky top-4 self-start">
           {/* Investment Summary */}
           <InvestmentSummary amount={amount} company={company} />
 
