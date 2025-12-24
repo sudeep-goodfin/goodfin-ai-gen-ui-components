@@ -76,8 +76,8 @@ export { TRANSFER_METHODS, FAQ_ITEMS } from './types';
 // User state type for investment flow
 export type InvestmentUserState = 'accredited-first-time' | 'already-invested';
 
-// Import Anthropic logo
-import anthropicLogo from '../Welcome02/assets/avatar-anthropic-alt.png';
+// Anthropic logo from public folder
+const anthropicLogo = '/icons/products/anthropic.png';
 
 // Default company data
 const DEFAULT_COMPANY: CompanyData = {

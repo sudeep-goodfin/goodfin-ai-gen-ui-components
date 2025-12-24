@@ -195,7 +195,7 @@ export function WireTransferStep({
       <div className="flex items-start justify-between w-full gap-4">
         {/* Left Panel - Wire Details Card */}
         <div className="flex flex-col gap-2.5 p-2.5 w-[597px]">
-          <div className="bg-[#f7f7f8] flex flex-col gap-6 p-8 w-full rounded-lg relative overflow-hidden">
+          <div className="bg-[#f7f7f8] flex flex-col gap-8 p-8 w-full rounded-lg relative overflow-hidden">
             {/* Section Header */}
             <div className="flex flex-col gap-4">
               <h2

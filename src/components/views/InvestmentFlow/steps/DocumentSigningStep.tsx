@@ -140,9 +140,9 @@ export function DocumentSigningStep({
       />
     <div className="w-full max-w-[1032px] mx-auto px-2.5 py-2.5">
       {/* Header */}
-      <div className="flex flex-col gap-2.5 items-center justify-center px-2.5 py-8 w-full">
+      <div className="flex flex-col gap-1.5 items-start px-2.5 py-6 w-full">
         <h1
-          className="text-[42px] leading-[40px] text-[#373338] w-full"
+          className="text-[28px] leading-[32px] text-[#373338] w-full"
           style={{ fontFamily: 'Test Signifier, serif' }}
         >
           2.1 Document review
@@ -153,7 +153,7 @@ export function DocumentSigningStep({
       <div className="flex items-start justify-between w-full gap-4">
         {/* Left Panel - Document Card with Signature Overlay */}
         <div className="flex flex-col gap-2.5 p-2.5 w-[597px]">
-          <div className="bg-[#f7f7f8] flex flex-col gap-4 p-8 w-full overflow-hidden relative">
+          <div className="bg-[#f7f7f8] flex flex-col gap-8 p-8 w-full rounded-lg overflow-hidden relative">
             {/* Document Title */}
             <div className="flex flex-col gap-2 w-full">
               <h2

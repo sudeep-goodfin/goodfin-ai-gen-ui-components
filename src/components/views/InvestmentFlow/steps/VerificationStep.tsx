@@ -91,15 +91,15 @@ export function VerificationStep({
     <>
     <div className="w-full max-w-[1032px] mx-auto px-2.5 py-2.5">
       {/* Header */}
-      <div className="flex flex-col gap-2.5 items-center justify-center px-2.5 py-8 w-full">
+      <div className="flex flex-col gap-1.5 items-start px-2.5 py-6 w-full">
         <h1
-          className="text-[42px] leading-[40px] text-[#373338] w-full"
+          className="text-[28px] leading-[32px] text-[#373338] w-full"
           style={{ fontFamily: 'Test Signifier, serif' }}
         >
           A few quick steps to get you started
         </h1>
         <p
-          className="text-[24px] leading-[32px] text-[#685f6a] w-full"
+          className="text-[16px] leading-[24px] text-[#685f6a] w-full"
           style={{ fontFamily: 'Soehne, sans-serif' }}
         >
           You'll only need to do this once.

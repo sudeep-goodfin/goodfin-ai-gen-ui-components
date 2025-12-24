@@ -26,13 +26,19 @@ export function TransferMethodStep({
   className,
 }: TransferMethodStepProps) {
   return (
-    <div className={cn('w-full max-w-[1032px] mx-auto p-2.5', className)}>
+    <div className={cn('w-full max-w-[1032px] mx-auto px-2.5 py-2.5', className)}>
       {/* Title section */}
-      <div className="flex flex-col gap-2.5 items-center justify-center px-2.5 py-8">
-        <h1 className="text-[42px] leading-10 text-[#373338] w-full font-['Test_Signifier',serif]">
+      <div className="flex flex-col gap-1.5 items-center justify-center px-2.5 py-6">
+        <h1
+          className="text-[28px] leading-[32px] text-[#373338] w-full"
+          style={{ fontFamily: 'Test Signifier, serif' }}
+        >
           Choose how you'd like to transfer funds
         </h1>
-        <p className="text-2xl leading-8 text-[#685f6a] w-full">
+        <p
+          className="text-[16px] leading-[24px] text-[#685f6a] w-full"
+          style={{ fontFamily: 'Soehne, sans-serif' }}
+        >
           We'll provide transfer instructions after verification and signing.
         </p>
       </div>
@@ -40,12 +46,12 @@ export function TransferMethodStep({
       {/* Two column layout */}
       <div className="flex items-start justify-between gap-5">
         {/* Left column - Transfer methods */}
-        <div className="w-[597px] p-2.5">
-          <div className="bg-[#f7f7f8] p-8 overflow-hidden">
+        <div className="flex flex-col gap-2.5 p-2.5 w-[597px]">
+          <div className="bg-[#f7f7f8] flex flex-col gap-8 p-8 w-full rounded-lg overflow-hidden">
             <div className="flex flex-col gap-8">
               {/* Section header */}
               <div className="flex flex-col gap-4">
-                <h2 className="text-[28px] leading-6 text-[#554d57] font-['Test_Signifier',serif]">
+                <h2 className="text-[24px] leading-6 text-[#554d57] font-['Test_Signifier',serif]">
                   Available transfer methods
                 </h2>
                 <p className="text-base font-medium text-[#685f6a] leading-5">

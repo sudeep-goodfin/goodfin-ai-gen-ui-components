@@ -49,20 +49,20 @@ export interface FAQItem {
 export const TRANSFER_METHODS: TransferMethodOption[] = [
   {
     id: 'bank-us',
-    title: 'Bank transfer (U.S.)',
+    title: 'Domestic',
     icon: 'bank',
     badges: [
-      { label: 'Up To 5 Business Day', variant: 'default' },
+      { label: 'Same Day', variant: 'default' },
       { label: 'No Fee', variant: 'success' },
     ],
-    details: ['Available for investments up to $2,000,000'],
+    details: [],
   },
   {
     id: 'wire-international',
-    title: 'International Wire Transfer',
+    title: 'International',
     icon: 'globe',
-    badges: [{ label: 'Up To 5 Business Day', variant: 'default' }],
-    details: ['Available for investments up to $2,000,000', '$5 min deposit'],
+    badges: [{ label: 'Up to 3 Business Day', variant: 'default' }],
+    details: [],
   },
 ];
 
@@ -73,11 +73,17 @@ export const FAQ_ITEMS: FAQItem[] = [
   },
   {
     question: 'When will I receive the transfer instructions?',
+    answer:
+      "You'll receive detailed transfer instructions after completing identity verification and signing the investment documents.",
   },
   {
     question: 'Can I complete the transfer later?',
+    answer:
+      'Yes, you can save your progress and return to complete the transfer at any time before the investment deadline.',
   },
   {
     question: 'Are there any fees?',
+    answer:
+      'Domestic transfers have no fees. International wire transfers may have fees charged by your bank.',
   },
 ];
