@@ -124,47 +124,66 @@ export function WireTransferStep({
     label: string;
     value: string;
     fieldKey: string;
-  }) => (
-    <div className="flex items-start justify-between py-1">
-      <div className="flex flex-col gap-0.5">
-        <span
-          className="text-[11px] leading-[16px] text-[#8a7f91] uppercase tracking-[0.6px] font-semibold"
-          style={{ fontFamily: "Inter, sans-serif" }}
-        >
-          {label}
-        </span>
-        <span
-          className="text-[15px] leading-[22px] text-[#373338]"
-          style={{ fontFamily: "Soehne, sans-serif" }}
-        >
-          {value}
-        </span>
-      </div>
-      <button
-        onClick={() => handleCopy(fieldKey, value)}
-        className="p-2 hover:bg-[#e6e4e7] rounded-lg transition-colors opacity-0 hover:opacity-100 group-hover:opacity-100"
-      >
-        {copiedField === fieldKey ? (
-          <Check className="w-4 h-4 text-[#5a8a5a]" />
-        ) : (
-          <Copy className="w-4 h-4 text-[#685f6a]" />
+  }) => {
+    const isCopied = copiedField === fieldKey;
+
+    return (
+      <div
+        className={cn(
+          "group/row flex items-start justify-between py-1.5 px-2 -mx-2 rounded-md cursor-pointer",
+          "transition-all duration-500 ease-out",
+          isCopied ? "bg-[#dcf5dc]" : "bg-transparent hover:bg-[#eae8eb]"
         )}
-      </button>
-    </div>
-  );
+        onClick={() => handleCopy(fieldKey, value)}
+      >
+        <div className="flex flex-col gap-0.5">
+          <span
+            className="text-[11px] leading-[16px] text-[#8a7f91] uppercase tracking-[0.6px] font-semibold"
+            style={{ fontFamily: "Inter, sans-serif" }}
+          >
+            {label}
+          </span>
+          <span
+            className="text-[15px] leading-[22px] text-[#373338]"
+            style={{ fontFamily: "Soehne, sans-serif" }}
+          >
+            {value}
+          </span>
+        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleCopy(fieldKey, value);
+          }}
+          className={cn(
+            "p-2 rounded-lg transition-all",
+            isCopied
+              ? "bg-[#c5ecc5] opacity-100"
+              : "opacity-0 group-hover/row:opacity-100 hover:bg-[#d9d5db]"
+          )}
+        >
+          {isCopied ? (
+            <Check className="w-4 h-4 text-[#3a7a3a]" />
+          ) : (
+            <Copy className="w-4 h-4 text-[#685f6a]" />
+          )}
+        </button>
+      </div>
+    );
+  };
 
   return (
     <div className="w-full max-w-[1032px] mx-auto px-2.5 py-2.5">
       {/* Header */}
-      <div className="flex flex-col gap-2.5 items-start px-2.5 py-8 w-full">
+      <div className="flex flex-col gap-1.5 items-start px-2.5 py-6 w-full">
         <h1
-          className="text-[42px] leading-[40px] text-[#373338] w-full"
+          className="text-[28px] leading-[32px] text-[#373338] w-full"
           style={{ fontFamily: "Test Signifier, serif" }}
         >
           Send the wire from your bank
         </h1>
         <p
-          className="text-[24px] leading-[32px] text-[#685f6a]"
+          className="text-[16px] leading-[24px] text-[#685f6a]"
           style={{ fontFamily: "Soehne, sans-serif" }}
         >
           We'll reserve your allocation once your wire is received and
