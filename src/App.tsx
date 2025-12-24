@@ -594,6 +594,14 @@ export function App() {
     { id: 'pending-verification', label: 'Pending Verification', comingSoon: true },
   ];
 
+  // Welcome02 home layout variants
+  const welcome02HomeVariants = [
+    { id: 'v1', label: 'V1 - Simple' },
+    { id: 'v2-full', label: 'V2 - Full' },
+    { id: 'v2-compact', label: 'V2 - Compact' },
+    { id: 'v2-action-focused', label: 'V2 - Action' },
+  ];
+
   // Investment Flow user states
   const investmentFlowSteps = [
     { id: 'accredited-first-time', label: 'Accredited First Time' },
@@ -615,8 +623,8 @@ export function App() {
       renderWelcomeView={(variant) => (
         <WelcomeScreenView variant={variant as WelcomeScreenVariant} />
       )}
-      renderWelcome02View={(_variant, showChrome) => (
-        <Welcome02 showChrome={showChrome} />
+      renderWelcome02View={(_variant, showChrome, homeVariant) => (
+        <Welcome02 showChrome={showChrome} homeVariant={homeVariant as 'v1' | 'v2-full' | 'v2-compact' | 'v2-action-focused'} />
       )}
       renderInvestmentFlowView={(step, onDismiss) => {
         // User states for investment flow
@@ -631,6 +639,7 @@ export function App() {
       onboardingVariants={onboardingVariants}
       welcomeVariants={welcomeScreenVariants}
       welcome02Variants={welcome02Variants}
+      welcome02HomeVariants={welcome02HomeVariants}
       investmentFlowSteps={investmentFlowSteps}
       conversationFlowOptions={conversationFlowOptions}
     />
