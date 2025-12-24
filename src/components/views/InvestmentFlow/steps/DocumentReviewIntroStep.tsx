@@ -53,7 +53,7 @@ export function DocumentReviewIntroStep({
             {/* Section 1: Introduction */}
             <div className="flex flex-col gap-4 w-full">
               <h2
-                className="text-[28px] leading-[32px] text-[#554d57]"
+                className="text-[28px] leading-[24px] text-[#554d57]"
                 style={{ fontFamily: 'Test Signifier, serif' }}
               >
                 Before your sign, we want you to feel fully informed

@@ -93,7 +93,7 @@ export function ConfirmRequestStep({
             {/* Section Title */}
             <div className="flex flex-col gap-2 w-full">
               <h2
-                className="text-[28px] leading-[32px] text-[#554d57]"
+                className="text-[28px] leading-[24px] text-[#554d57]"
                 style={{ fontFamily: 'Test Signifier, serif' }}
               >
                 Confirm your investment request
