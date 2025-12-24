@@ -3,6 +3,7 @@ import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
 import { Greeting } from './Greeting';
 import { DashboardContent } from './DashboardContent';
 import { HomeContent } from './HomeContent';
+import { HomeContentV2 } from './HomeContentV2';
 import { ChatInterface, ChatMessage } from './ChatInterface';
 import { InputBar, ChatMode, MoreMode } from './InputBar';
 import { ChatHistoryDrawer } from './ChatHistoryDrawer';
@@ -10,6 +11,9 @@ import { Icon, CustomIcon } from '../Icon';
 import { ArrowLeft } from 'lucide-react';
 import svgPaths from '../../imports/svg-191opiemcf';
 import { svgPaths as localSvgPaths } from '../../svgPaths';
+
+// Home Content Variant Types
+export type HomeVariant = 'v1' | 'v2-full' | 'v2-compact' | 'v2-action-focused';
 
 // Dropdown menu component
 interface DropdownMenuProps {
@@ -164,7 +168,11 @@ const GREETING_DATA: Record<ChatMode, { title: string; description: string }> = 
   }
 };
 
-export function WelcomeDashboard() {
+interface WelcomeDashboardProps {
+  homeVariant?: HomeVariant;
+}
+
+export function WelcomeDashboard({ homeVariant = 'v1' }: WelcomeDashboardProps) {
   const [currentMode, setCurrentMode] = useState<ChatMode>('default');
   const [extraSlotItem, setExtraSlotItem] = useState<MoreMode | null>(null);
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
@@ -383,10 +391,21 @@ export function WelcomeDashboard() {
               <>
                 {currentMode === 'default' ? (
                   <div className="w-full max-w-3xl mt-6">
-                    <HomeContent
-                      onModeChange={handleModeChange}
-                      onStartChat={handleStartChat}
-                    />
+                    {homeVariant === 'v1' ? (
+                      <HomeContent
+                        onModeChange={handleModeChange}
+                        onStartChat={handleStartChat}
+                      />
+                    ) : (
+                      <HomeContentV2
+                        variant={
+                          homeVariant === 'v2-full' ? 'full' :
+                          homeVariant === 'v2-compact' ? 'compact' : 'action-focused'
+                        }
+                        onModeChange={handleModeChange}
+                        onStartChat={handleStartChat}
+                      />
+                    )}
                   </div>
                 ) : (
                   <div className={`flex flex-col gap-10 w-full mt-10 ${currentMode === 'news' ? 'max-w-6xl' : 'max-w-3xl'}`}>

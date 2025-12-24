@@ -146,11 +146,12 @@ type DocsLayoutProps = {
   renderConversationView?: (flow: string) => React.ReactNode;
   renderOnboardingView?: (variant: string, key: number) => React.ReactNode;
   renderWelcomeView?: (variant: string) => React.ReactNode;
-  renderWelcome02View?: (variant: string, showChrome: boolean) => React.ReactNode;
+  renderWelcome02View?: (variant: string, showChrome: boolean, homeVariant: string) => React.ReactNode;
   renderInvestmentFlowView?: (step: string, onDismiss: () => void) => React.ReactNode;
   onboardingVariants?: VariantOption[];
   welcomeVariants?: VariantOption[];
   welcome02Variants?: VariantOption[];
+  welcome02HomeVariants?: VariantOption[];
   investmentFlowSteps?: VariantOption[];
   conversationFlowOptions?: { id: string; label: string }[];
 };
@@ -165,6 +166,7 @@ export function DocsLayout({
   onboardingVariants = [],
   welcomeVariants = [],
   welcome02Variants = [],
+  welcome02HomeVariants = [],
   investmentFlowSteps = [],
   conversationFlowOptions = [],
 }: DocsLayoutProps) {
@@ -247,6 +249,10 @@ export function DocsLayout({
   const [activeWelcome02Variant, setActiveWelcome02Variant] = useState(() => {
     const params = getUrlParams();
     return params.get('welcome02Variant') || welcome02Variants[0]?.id || 'default';
+  });
+  const [activeWelcome02HomeVariant, setActiveWelcome02HomeVariant] = useState(() => {
+    const params = getUrlParams();
+    return params.get('homeVariant') || welcome02HomeVariants[0]?.id || 'v1';
   });
   const [activeConversationFlow, setActiveConversationFlow] = useState(() => {
     const params = getUrlParams();
@@ -370,6 +376,7 @@ export function DocsLayout({
       onboardingVariant: viewMode === 'onboarding' ? activeOnboardingVariant : undefined,
       welcomeVariant: viewMode === 'welcome' ? activeWelcomeVariant : undefined,
       welcome02Variant: viewMode === 'welcome02' ? activeWelcome02Variant : undefined,
+      homeVariant: viewMode === 'welcome02' ? activeWelcome02HomeVariant : undefined,
       investmentStep: viewMode === 'investment-flow' ? activeInvestmentFlowStep : undefined,
       // Fullscreen state (only store if true to keep URLs cleaner)
       fullscreen: isFullscreen ? true : undefined,
@@ -390,7 +397,7 @@ export function DocsLayout({
     }
 
     updateUrlParams(params);
-  }, [viewMode, activeId, activeGroupId, variantStates, activeConversationFlow, activeOnboardingVariant, activeWelcomeVariant, activeWelcome02Variant, activeInvestmentFlowStep, isFullscreen, showWelcome02Chrome, isSidebarCollapsed, selectedRelease, showPresets, showStepper, showSuggestions, presetCount]);
+  }, [viewMode, activeId, activeGroupId, variantStates, activeConversationFlow, activeOnboardingVariant, activeWelcomeVariant, activeWelcome02Variant, activeWelcome02HomeVariant, activeInvestmentFlowStep, isFullscreen, showWelcome02Chrome, isSidebarCollapsed, selectedRelease, showPresets, showStepper, showSuggestions, presetCount]);
 
   // Build sidebar sections based on view mode
   const buildSidebarSections = (): SidebarSection[] => {
@@ -696,7 +703,7 @@ export function DocsLayout({
           {viewMode === 'conversation' && renderConversationView?.(activeConversationFlow)}
           {viewMode === 'onboarding' && renderOnboardingView?.(activeOnboardingVariant, onboardingKey)}
           {viewMode === 'welcome' && renderWelcomeView?.(activeWelcomeVariant)}
-          {viewMode === 'welcome02' && renderWelcome02View?.(activeWelcome02Variant, false)}
+          {viewMode === 'welcome02' && renderWelcome02View?.(activeWelcome02Variant, false, activeWelcome02HomeVariant)}
           {viewMode === 'investment-flow' && renderInvestmentFlowView?.(activeInvestmentFlowStep, () => {
             setViewMode('welcome02');
             setActiveWelcome02Variant('accredited-returning');
@@ -1054,6 +1061,32 @@ export function DocsLayout({
                   </div>
                 )}
 
+                {/* Home Layout Selector Pills */}
+                {welcome02HomeVariants.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Home Layout:</span>
+                    <div
+                      className="inline-flex gap-1 p-1 rounded-lg"
+                      style={{ backgroundColor: 'var(--grey-100)' }}
+                    >
+                      {welcome02HomeVariants.map((variant) => (
+                        <button
+                          key={variant.id}
+                          onClick={() => setActiveWelcome02HomeVariant(variant.id)}
+                          className={cn('px-2.5 py-1 text-sm font-medium rounded-md transition-all')}
+                          style={{
+                            backgroundColor: activeWelcome02HomeVariant === variant.id ? '#FFFFFF' : 'transparent',
+                            color: activeWelcome02HomeVariant === variant.id ? 'var(--grey-950)' : 'var(--grey-500)',
+                            boxShadow: activeWelcome02HomeVariant === variant.id ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                          }}
+                        >
+                          {variant.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Chrome Toggle */}
                 <button
                   onClick={() => setShowWelcome02Chrome(prev => !prev)}
@@ -1080,7 +1113,7 @@ export function DocsLayout({
 
               {/* Direct render - no container */}
               <div className="flex-1 min-h-0 overflow-hidden">
-                {renderWelcome02View?.(activeWelcome02Variant, showWelcome02Chrome)}
+                {renderWelcome02View?.(activeWelcome02Variant, showWelcome02Chrome, activeWelcome02HomeVariant)}
               </div>
             </div>
           )}

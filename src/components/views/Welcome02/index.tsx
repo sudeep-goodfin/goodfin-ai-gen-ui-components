@@ -1,21 +1,22 @@
 import React from 'react';
 import { Header } from './components/layout/Header';
 import { Sidebar } from './components/layout/Sidebar';
-import { WelcomeDashboard } from './components/dashboard/WelcomeDashboard';
+import { WelcomeDashboard, type HomeVariant } from './components/dashboard/WelcomeDashboard';
 
 export type Welcome02Variant = 'default';
 
 type Welcome02Props = {
   showChrome?: boolean;
+  homeVariant?: HomeVariant;
 };
 
-export function Welcome02({ showChrome = true }: Welcome02Props) {
+export function Welcome02({ showChrome = true, homeVariant = 'v1' }: Welcome02Props) {
   return (
     <div className="flex flex-col h-full w-full bg-[#f0eef0] overflow-hidden font-sans text-[#373338]">
       {showChrome && <Header />}
       <div className="flex flex-1 overflow-hidden">
         {showChrome && <Sidebar />}
-        <WelcomeDashboard />
+        <WelcomeDashboard homeVariant={homeVariant} />
       </div>
     </div>
   );
@@ -26,8 +27,10 @@ export { Header } from './components/layout/Header';
 export { Sidebar } from './components/layout/Sidebar';
 export type { SidebarNavItem } from './components/layout/Sidebar';
 export { WelcomeDashboard } from './components/dashboard/WelcomeDashboard';
+export type { HomeVariant } from './components/dashboard/WelcomeDashboard';
 export { InputBar, InputBarV01, InputBarV02 } from './components/dashboard/InputBar';
 export { HomeContent } from './components/dashboard/HomeContent';
+export { HomeContentV2 } from './components/dashboard/HomeContentV2';
 export { DashboardContent, SuggestionCard, SUGGESTIONS_DATA } from './components/dashboard/DashboardContent';
 export { Greeting } from './components/dashboard/Greeting';
 export { ResumeInvestmentCard } from './components/dashboard/ResumeInvestmentCard';
