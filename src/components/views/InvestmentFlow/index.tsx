@@ -6,6 +6,7 @@ import { DocumentReviewIntroStep } from './steps/DocumentReviewIntroStep';
 import { DocumentReviewStep } from './steps/DocumentReviewStep';
 import { DocumentSigningStep } from './steps/DocumentSigningStep';
 import { ConfirmRequestStep } from './steps/ConfirmRequestStep';
+import { WireTransferStep } from './steps/WireTransferStep';
 import { cn } from '@/lib/utils';
 import {
   TRANSFER_METHODS,
@@ -116,13 +117,15 @@ export function InvestmentFlow({
       case 'document-intro':
         return 30;
       case 'ppm-review':
-        return 45;
+        return 40;
       case 'llc-signing':
-        return 60;
+        return 55;
       case 'subscription-signing':
-        return 75;
+        return 70;
       case 'confirm-request':
-        return 90;
+        return 80;
+      case 'wire-transfer':
+        return 95;
       case 'complete':
         return 100;
       default:
@@ -159,6 +162,10 @@ export function InvestmentFlow({
   };
 
   const handleConfirmComplete = () => {
+    setCurrentStep('wire-transfer');
+  };
+
+  const handleWireTransferComplete = () => {
     setCurrentStep('complete');
     onComplete?.();
   };
@@ -183,6 +190,9 @@ export function InvestmentFlow({
         break;
       case 'confirm-request':
         setCurrentStep('subscription-signing');
+        break;
+      case 'wire-transfer':
+        setCurrentStep('confirm-request');
         break;
     }
   };
@@ -269,6 +279,15 @@ export function InvestmentFlow({
               company={company}
               onConfirm={handleConfirmComplete}
               onBack={() => setCurrentStep('subscription-signing')}
+            />
+          )}
+
+          {currentStep === 'wire-transfer' && (
+            <WireTransferStep
+              amount={investmentAmount}
+              company={company}
+              onConfirm={handleWireTransferComplete}
+              onBack={() => setCurrentStep('confirm-request')}
             />
           )}
 

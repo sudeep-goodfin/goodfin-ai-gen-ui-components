@@ -10,6 +10,7 @@ export type InvestmentFlowStep =
   | 'subscription-review'
   | 'subscription-signing'
   | 'confirm-request'
+  | 'wire-transfer'
   | 'complete';
 
 export type TransferMethod = 'bank-us' | 'wire-international';

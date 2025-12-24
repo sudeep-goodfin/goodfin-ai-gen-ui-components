@@ -1,10 +1,23 @@
 import { cn } from '@/lib/utils';
+import { Sparkles } from 'lucide-react';
 import { InvestmentSummary } from '../components/InvestmentSummary';
 import { FAQSection } from '../components/FAQSection';
 import { type CompanyData, type FAQItem } from '../types';
 
+// Import PDF documents
+import ppmPdf from '../assets/Goodfin Venture PPM Dec 11 2025.pdf';
+import llcPdf from '../assets/Goodfin Venture LLOA Dec 11 2025.pdf';
+import subscriptionPdf from '../assets/Goodfin Venture LXXIV Dec 11 2025.pdf';
+
 // Document types for the investment flow
 export type DocumentType = 'ppm' | 'llc-agreement' | 'subscription-agreement';
+
+// PDF file mapping
+const DOCUMENT_PDFS: Record<DocumentType, string> = {
+  ppm: ppmPdf,
+  'llc-agreement': llcPdf,
+  'subscription-agreement': subscriptionPdf,
+};
 
 // Document metadata configuration
 const DOCUMENT_CONFIG: Record<
@@ -127,48 +140,22 @@ export function DocumentReviewStep({
               >
                 {config.description}
               </p>
+              <button
+                className="self-start mt-1 px-3 py-1.5 text-[12px] leading-[16px] text-[#685f6a] bg-white border border-[#d9d5db] rounded-full hover:bg-[#f7f7f8] hover:border-[#beb9c0] transition-colors flex items-center gap-1.5"
+                style={{ fontFamily: 'Soehne, sans-serif' }}
+              >
+                <Sparkles className="w-3 h-3" />
+                Ask AI to explain this document
+              </button>
             </div>
 
-            {/* Document Preview */}
-            <div className="w-full bg-white rounded-lg border border-[#e0ddd8] p-6 shadow-sm">
-              <div className="flex flex-col gap-6">
-                {/* Section 1 */}
-                <div className="flex flex-col gap-3">
-                  <h3
-                    className="text-[14px] leading-[18px] text-[#373338] uppercase tracking-wide font-semibold"
-                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                  >
-                    1. Investment Commitment
-                  </h3>
-                  <div className="flex flex-col gap-1.5">
-                    <div className="w-full h-2 bg-[#f0eeeb] rounded" />
-                    <div className="w-[95%] h-2 bg-[#f0eeeb] rounded" />
-                    <div className="w-[90%] h-2 bg-[#f0eeeb] rounded" />
-                    <div className="w-[85%] h-2 bg-[#f0eeeb] rounded" />
-                  </div>
-                  <div className="flex flex-col gap-1.5 mt-2">
-                    <div className="w-full h-2 bg-[#f0eeeb] rounded" />
-                    <div className="w-[92%] h-2 bg-[#f0eeeb] rounded" />
-                    <div className="w-[88%] h-2 bg-[#f0eeeb] rounded" />
-                  </div>
-                </div>
-
-                {/* Section 2 */}
-                <div className="flex flex-col gap-3">
-                  <h3
-                    className="text-[14px] leading-[18px] text-[#373338] uppercase tracking-wide font-semibold"
-                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                  >
-                    2. Investor Representations and Warranties
-                  </h3>
-                  <div className="flex flex-col gap-1.5">
-                    <div className="w-full h-2 bg-[#f0eeeb] rounded" />
-                    <div className="w-[96%] h-2 bg-[#f0eeeb] rounded" />
-                    <div className="w-[93%] h-2 bg-[#f0eeeb] rounded" />
-                    <div className="w-[78%] h-2 bg-[#f0eeeb] rounded" />
-                  </div>
-                </div>
-              </div>
+            {/* Document Preview - Embedded PDF */}
+            <div className="w-full bg-white rounded-lg border border-[#e0ddd8] overflow-hidden shadow-sm">
+              <iframe
+                src={`${DOCUMENT_PDFS[documentType]}#toolbar=0&navpanes=0&view=FitH`}
+                className="w-full h-[400px] border-none"
+                title={config.title}
+              />
             </div>
 
             {/* CTA Button */}
