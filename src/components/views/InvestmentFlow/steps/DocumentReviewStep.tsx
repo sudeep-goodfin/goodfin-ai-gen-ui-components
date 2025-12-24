@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Maximize2, X } from 'lucide-react';
 import { InvestmentSummary } from '../components/InvestmentSummary';
 import { FAQSection } from '../components/FAQSection';
 import { AIChatSidebar } from '../components/AIChatSidebar';
@@ -128,6 +128,7 @@ export function DocumentReviewStep({
   onContinue,
 }: DocumentReviewStepProps) {
   const [showAIChat, setShowAIChat] = useState(false);
+  const [showFullscreen, setShowFullscreen] = useState(false);
   const config = DOCUMENT_CONFIG[documentType];
 
   return (
@@ -137,6 +138,36 @@ export function DocumentReviewStep({
         onClose={() => setShowAIChat(false)}
         documentTitle={config.title}
       />
+
+      {/* Fullscreen PDF Modal */}
+      {showFullscreen && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-8">
+          <div className="relative w-full h-full max-w-6xl bg-white rounded-xl overflow-hidden shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#e6e4e7] bg-[#f7f7f8]">
+              <h3
+                className="text-[18px] leading-[24px] text-[#373338]"
+                style={{ fontFamily: 'Test Signifier, serif' }}
+              >
+                {config.title}
+              </h3>
+              <button
+                onClick={() => setShowFullscreen(false)}
+                className="p-2 hover:bg-[#eae8eb] rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-[#685f6a]" />
+              </button>
+            </div>
+            {/* PDF Content */}
+            <iframe
+              src={`${DOCUMENT_PDFS[documentType]}#toolbar=1&navpanes=1&view=FitH`}
+              className="w-full h-[calc(100%-64px)] border-none"
+              title={config.title}
+            />
+          </div>
+        </div>
+      )}
+
     <div className="w-full max-w-[1032px] mx-auto px-2.5 py-2.5">
       {/* Header */}
       <div className="flex flex-col gap-1.5 items-start px-2.5 py-6 w-full">
@@ -178,12 +209,20 @@ export function DocumentReviewStep({
             </div>
 
             {/* Document Preview - Embedded PDF */}
-            <div className="w-full bg-white rounded-lg border border-[#e0ddd8] overflow-hidden shadow-sm">
+            <div className="w-full bg-white rounded-lg border border-[#e0ddd8] overflow-hidden shadow-sm relative group">
               <iframe
                 src={`${DOCUMENT_PDFS[documentType]}#toolbar=0&navpanes=0&view=FitH`}
                 className="w-full h-[400px] border-none"
                 title={config.title}
               />
+              {/* Fullscreen button */}
+              <button
+                onClick={() => setShowFullscreen(true)}
+                className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-white border border-[#d9d5db] rounded-lg shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                title="View fullscreen"
+              >
+                <Maximize2 className="w-4 h-4 text-[#685f6a]" />
+              </button>
             </div>
 
             {/* CTA Button */}
