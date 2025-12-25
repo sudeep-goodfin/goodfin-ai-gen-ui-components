@@ -74,6 +74,7 @@ const viewModeIcons: Record<string, React.ReactNode> = {
   welcome: <Home className="w-4 h-4" />,
   welcome02: <Home className="w-4 h-4" />,
   'investment-flow': <DollarSign className="w-4 h-4" />,
+  'z-ai-investment-flow': <Sparkles className="w-4 h-4" />,
   archive: <Archive className="w-4 h-4" />,
 };
 
@@ -139,7 +140,7 @@ type ComponentGroup = {
   components: ComponentOption[];
 };
 
-type ViewMode = 'landing' | 'component' | 'conversation' | 'onboarding' | 'welcome' | 'welcome02' | 'investment-flow';
+type ViewMode = 'landing' | 'component' | 'conversation' | 'onboarding' | 'welcome' | 'welcome02' | 'investment-flow' | 'z-ai-investment-flow';
 
 type DocsLayoutProps = {
   groups: ComponentGroup[];
@@ -148,6 +149,7 @@ type DocsLayoutProps = {
   renderWelcomeView?: (variant: string) => React.ReactNode;
   renderWelcome02View?: (variant: string, showChrome: boolean, homeVariant: string) => React.ReactNode;
   renderInvestmentFlowView?: (step: string, onDismiss: () => void) => React.ReactNode;
+  renderZAIInvestmentFlowView?: (onDismiss: () => void) => React.ReactNode;
   onboardingVariants?: VariantOption[];
   welcomeVariants?: VariantOption[];
   welcome02Variants?: VariantOption[];
@@ -163,6 +165,7 @@ export function DocsLayout({
   renderWelcomeView,
   renderWelcome02View,
   renderInvestmentFlowView,
+  renderZAIInvestmentFlowView,
   onboardingVariants = [],
   welcomeVariants = [],
   welcome02Variants = [],
@@ -182,6 +185,7 @@ export function DocsLayout({
     if (mode === 'welcome') return 'welcome';
     if (mode === 'welcome02') return 'welcome02';
     if (mode === 'investment-flow') return 'investment-flow';
+    if (mode === 'z-ai-investment-flow') return 'z-ai-investment-flow';
     if (mode === 'landing') return 'landing';
     // If no component is specified in URL, show landing page
     const componentId = params.get('component');
@@ -429,6 +433,11 @@ export function DocsLayout({
             : undefined,
         },
         {
+          id: 'z-ai-investment-flow',
+          label: 'Z AI Investment Flow',
+          icon: viewModeIcons['z-ai-investment-flow'],
+        },
+        {
           id: 'conversation',
           label: 'Conversation',
           icon: viewModeIcons.conversation,
@@ -484,6 +493,8 @@ export function DocsLayout({
         setViewMode('welcome02');
       } else if (itemId === 'investment-flow') {
         setViewMode('investment-flow');
+      } else if (itemId === 'z-ai-investment-flow') {
+        setViewMode('z-ai-investment-flow');
       }
     } else if (sectionId === 'archive') {
       // Archive items
@@ -708,6 +719,10 @@ export function DocsLayout({
             setViewMode('welcome02');
             setActiveWelcome02Variant('accredited-returning');
           })}
+          {viewMode === 'z-ai-investment-flow' && renderZAIInvestmentFlowView?.(() => {
+            setViewMode('welcome02');
+            setActiveWelcome02Variant('accredited-returning');
+          })}
         </div>
       </div>
     );
@@ -754,9 +769,9 @@ export function DocsLayout({
         />
 
         {/* Main Content Area */}
-        <main className={cn("flex-1 overflow-hidden", (viewMode === 'welcome02' || viewMode === 'investment-flow') && "flex flex-col")}>
+        <main className={cn("flex-1 overflow-hidden", (viewMode === 'welcome02' || viewMode === 'investment-flow' || viewMode === 'z-ai-investment-flow') && "flex flex-col")}>
           {/* Standard content wrapper with Radix ScrollArea - only shown for non-fullscreen views */}
-          {viewMode !== 'welcome02' && viewMode !== 'investment-flow' && (
+          {viewMode !== 'welcome02' && viewMode !== 'investment-flow' && viewMode !== 'z-ai-investment-flow' && (
           <ScrollAreaPrimitive.Root className="h-full w-full">
             <ScrollAreaPrimitive.Viewport className="h-full w-full">
               <div className="p-4 md:p-8 max-w-5xl mx-auto">
@@ -1153,6 +1168,19 @@ export function DocsLayout({
               {/* Direct render - no container */}
               <div className="flex-1 min-h-0 overflow-hidden">
                 {renderInvestmentFlowView?.(activeInvestmentFlowStep, () => {
+                  setViewMode('welcome02');
+                  setActiveWelcome02Variant('accredited-returning');
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Z AI Investment Flow View - renders outside the constrained container */}
+          {viewMode === 'z-ai-investment-flow' && (
+            <div className="flex flex-col flex-1 min-h-0">
+              {/* Direct render - no container */}
+              <div className="flex-1 min-h-0 overflow-hidden">
+                {renderZAIInvestmentFlowView?.(() => {
                   setViewMode('welcome02');
                   setActiveWelcome02Variant('accredited-returning');
                 })}

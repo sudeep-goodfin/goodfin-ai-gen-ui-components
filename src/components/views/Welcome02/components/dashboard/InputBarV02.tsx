@@ -119,15 +119,42 @@ function SimpleDropdown({
 }
 
 export type MoreMode = 'insight' | 'events' | 'portfolio';
-export type ChatMode = 'default' | 'research' | 'deals' | 'news' | MoreMode;
+export type ChatMode = 'default' | 'research' | 'deals' | 'news' | 'investment' | MoreMode;
+
+interface InvestmentAction {
+  label: string;
+  onClose: () => void;
+}
+
+// Callout states
+export type CalloutState = 'default' | 'awaiting_input' | 'confirmed' | 'error';
+
+interface CalloutResponse {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+interface FormCallout {
+  state: CalloutState;
+  dealLogo?: string;
+  headerText: string; // Main text - deal name, question, or error message
+  displayValue?: string; // e.g., "$50,000" shown on the right
+  responses?: CalloutResponse[]; // Collected responses from user
+  onClose?: () => void;
+}
 
 interface InputBarProps {
     currentMode?: ChatMode;
     extraSlotItem?: MoreMode | null;
     onModeChange?: (mode: ChatMode) => void;
+    onSubmit?: (value: string) => void;
+    investmentAction?: InvestmentAction;
+    formNudge?: string; // Shows a label above the input (e.g., "enter the investment amount")
+    formCallout?: FormCallout; // Shows a callout header with deal info
 }
 
-export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChange }: InputBarProps) {
+export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChange, onSubmit, investmentAction, formNudge, formCallout }: InputBarProps) {
   const [inputValue, setInputValue] = useState('');
   const [showCommandPanel, setShowCommandPanel] = useState(false);
   const [panelMode, setPanelMode] = useState<PanelMode>('recipes');
@@ -272,6 +299,13 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
       setShowCommandPanel(false);
     }
 
+    // Handle Enter to submit
+    if (e.key === 'Enter' && inputValue.trim() && !showCommandPanel) {
+      e.preventDefault();
+      onSubmit?.(inputValue.trim());
+      setInputValue('');
+    }
+
     // Handle backspace to remove pills when input is empty
     if (e.key === 'Backspace' && inputValue === '' && selectedPills.length > 0) {
       e.preventDefault();
@@ -331,12 +365,101 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
     { label: 'Events', value: 'events', icon: <Calendar className="h-4 w-4 text-gray-500" /> },
   ];
 
+  const isInvestmentMode = currentMode === 'investment' && investmentAction;
+  const hasNudge = !!formNudge;
+  const hasCallout = !!formCallout;
+
   return (
     <div className="w-full max-w-3xl flex flex-col items-center gap-2">
-      {/* Input Box Container */}
-      <div className="bg-white relative rounded-[16px] shrink-0 w-full h-[108px]">
-        {/* Border & Shadow Layer */}
-        <div aria-hidden="true" className="absolute border border-[#f0eef0] border-solid inset-0 pointer-events-none rounded-[16px] shadow-[-1px_1px_8px_0px_rgba(164,140,160,0.2)]" />
+      {/* Wrapper for callout + input */}
+      <div className="w-full relative">
+        {/* Form Callout Header */}
+        {hasCallout && (
+          <div
+            className={cn(
+              "rounded-t-[16px] px-4 py-3 flex flex-col gap-3 transition-colors duration-300",
+              formCallout.state === 'default' && "bg-[#a8d4f0]",
+              formCallout.state === 'awaiting_input' && "bg-[#c4a882] animate-pulse",
+              formCallout.state === 'confirmed' && "bg-[#e8e5e8]",
+              formCallout.state === 'error' && "bg-[#e8a8a8]"
+            )}
+            style={formCallout.state === 'awaiting_input' ? { animationDuration: '3s' } : undefined}
+          >
+            {/* Collected responses */}
+            {formCallout.responses && formCallout.responses.length > 0 && (
+              <div className="flex flex-col gap-2 pb-2 border-b border-black/10">
+                {formCallout.responses.map((response) => (
+                  <div key={response.id} className="flex items-center justify-between">
+                    <span
+                      className="text-[13px] text-[#29272a]/70"
+                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                    >
+                      {response.question}
+                    </span>
+                    <span
+                      className="text-[14px] font-medium text-[#29272a]"
+                      style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                    >
+                      {response.answer}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Main row with deal info and header text */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {formCallout.dealLogo && (
+                  <img
+                    src={formCallout.dealLogo}
+                    alt="Deal"
+                    className="w-10 h-10 rounded-lg object-cover"
+                  />
+                )}
+                <span
+                  className={cn(
+                    "text-[15px] font-medium text-[#29272a]",
+                    formCallout.state === 'error' && "text-[#8a2929]"
+                  )}
+                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                >
+                  {formCallout.headerText}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                {formCallout.displayValue && (
+                  <span
+                    className="text-[18px] font-medium text-[#29272a]"
+                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                  >
+                    {formCallout.displayValue}
+                  </span>
+                )}
+                {formCallout.onClose && (
+                  <button
+                    onClick={formCallout.onClose}
+                    className="flex items-center justify-center w-5 h-5 rounded-full hover:bg-black/10 transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5 text-[#29272a]" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Input Box Container */}
+        <div className={cn(
+          "bg-white relative shrink-0 w-full",
+          hasCallout ? "rounded-b-[16px]" : "rounded-[16px]",
+          hasNudge ? "min-h-[140px]" : isInvestmentMode ? "min-h-[140px]" : "h-[108px]"
+        )}>
+          {/* Border & Shadow Layer */}
+          <div aria-hidden="true" className={cn(
+            "absolute border border-[#f0eef0] border-solid inset-0 pointer-events-none shadow-[-1px_1px_8px_0px_rgba(164,140,160,0.2)]",
+            hasCallout ? "rounded-b-[16px] border-t-0" : "rounded-[16px]"
+          )} />
 
         {/* Command Panel */}
         <CommandPanel
@@ -350,10 +473,31 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
         />
 
         <div className="relative z-10 flex flex-col justify-between w-full h-full p-[16px]">
+            {/* Investment Action Header */}
+            {isInvestmentMode && !hasCallout && (
+              <div className="flex items-center justify-between bg-[#a8d4f0] rounded-lg px-4 py-2.5 mb-3">
+                <span
+                  className="text-[15px] font-medium text-[#29272a]"
+                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                >
+                  {investmentAction.label}
+                </span>
+                <button
+                  onClick={investmentAction.onClose}
+                  className="flex items-center justify-center w-5 h-5 rounded-full hover:bg-black/10 transition-colors"
+                >
+                  <X className="w-3.5 h-3.5 text-[#29272a]" />
+                </button>
+              </div>
+            )}
+
             {/* Input Area */}
-            <div className="flex items-center gap-2 flex-wrap h-[24px] overflow-hidden">
-              {/* Selected Pills */}
-              {selectedPills.map((pill) => (
+            <div className={cn(
+              "flex items-center gap-2 flex-wrap",
+              (isInvestmentMode || hasCallout) ? "flex-1 min-h-[24px]" : "h-[24px] overflow-hidden"
+            )}>
+              {/* Selected Pills - hidden in investment mode or callout */}
+              {!isInvestmentMode && !hasCallout && selectedPills.map((pill) => (
                 <PillTag
                   key={pill.id}
                   pill={pill}
@@ -369,7 +513,15 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 disabled={showRecordingOverlay}
-                placeholder={selectedPills.length > 0 ? "Add more context..." : "Ask anything... (type / or @ for commands)"}
+                placeholder={
+                  hasCallout
+                    ? "Enter your response..."
+                    : isInvestmentMode
+                      ? `Ask followup about ${investmentAction?.label?.replace('Invest in ', '').toLowerCase() || 'this deal'}`
+                      : selectedPills.length > 0
+                        ? "Add more context..."
+                        : "Ask anything... (type / or @ for commands)"
+                }
                 className={cn(
                   "flex-1 min-w-[200px] text-[16px] leading-normal text-[#29272a] placeholder:text-[#7f7582] bg-transparent outline-none font-light tracking-[-0.3125px]",
                   showRecordingOverlay && "opacity-50 cursor-not-allowed"
@@ -400,7 +552,8 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 "flex items-end justify-between pl-0 pr-[12px]",
                 showRecordingOverlay && "opacity-30 pointer-events-none"
               )}>
-                {/* Left Actions (Chips) */}
+                {/* Left Actions (Chips) - Hidden in investment mode or when callout is shown */}
+                {!isInvestmentMode && !hasCallout ? (
                 <div className="flex gap-[4px] items-center flex-wrap">
                     {/* Home */}
                     <Chip
@@ -493,6 +646,9 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                       />
                     </SimpleDropdown>
                 </div>
+                ) : (
+                  <div className="flex-1" /> /* Empty spacer in investment mode */
+                )}
 
                 {/* Right Actions (Mic & Waveform) */}
                 <div className="flex items-center gap-[8px] h-[36px] w-[72px]">
@@ -526,6 +682,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 </div>
               </div>
             </div>
+        </div>
         </div>
       </div>
 
