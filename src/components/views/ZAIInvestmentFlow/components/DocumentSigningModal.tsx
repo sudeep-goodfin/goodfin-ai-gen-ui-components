@@ -1,9 +1,26 @@
-import { useState, useRef, useEffect } from 'react';
-import { X, Check, FileText, Pen, Type, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Maximize2, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { InvestmentDocument } from '../types';
 
-type SignatureMode = 'draw' | 'type';
+// Import PDF documents from InvestmentFlow
+import ppmPdf from '../../InvestmentFlow/assets/Goodfin Venture PPM Dec 11 2025.pdf';
+import llcPdf from '../../InvestmentFlow/assets/Goodfin Venture LLOA Dec 11 2025.pdf';
+import subscriptionPdf from '../../InvestmentFlow/assets/Goodfin Venture LXXIV Dec 11 2025.pdf';
+
+// PDF file mapping by document ID
+const DOCUMENT_PDFS: Record<string, string> = {
+  'ppm': ppmPdf,
+  'subscription': subscriptionPdf,
+  'suitability': llcPdf, // Using LLC as suitability doc
+};
+
+// Documents that require signature (PPM is review-only)
+const REQUIRES_SIGNATURE: Record<string, boolean> = {
+  'ppm': false,
+  'subscription': true,
+  'suitability': true,
+};
 
 interface DocumentSigningModalProps {
   isOpen: boolean;
@@ -12,299 +29,278 @@ interface DocumentSigningModalProps {
   onSign: (documentId: string) => void;
 }
 
-// Simple mock PDF pages
-const MOCK_PDF_PAGES = [
-  { pageNumber: 1, content: 'Page 1 - Terms and Conditions' },
-  { pageNumber: 2, content: 'Page 2 - Investment Terms' },
-  { pageNumber: 3, content: 'Page 3 - Risk Disclosures' },
-  { pageNumber: 4, content: 'Page 4 - Signatures' },
-];
-
 export function DocumentSigningModal({
   isOpen,
   document,
   onClose,
   onSign,
 }: DocumentSigningModalProps) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [showSignature, setShowSignature] = useState(false);
-  const [signatureMode, setSignatureMode] = useState<SignatureMode>('draw');
-  const [typedSignature, setTypedSignature] = useState('');
-  const [hasDrawnSignature, setHasDrawnSignature] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isDrawing, setIsDrawing] = useState(false);
+  const [signature, setSignature] = useState('');
+  const [showSignatureOverlay, setShowSignatureOverlay] = useState(false);
+  const [overlayAnimated, setOverlayAnimated] = useState(false);
+  const [showFullscreen, setShowFullscreen] = useState(false);
 
-  const totalPages = MOCK_PDF_PAGES.length;
-
-  // Clear canvas when mode changes
+  // Animate overlay when shown
   useEffect(() => {
-    if (signatureMode === 'draw' && canvasRef.current) {
-      const ctx = canvasRef.current.getContext('2d');
-      if (ctx) {
-        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-      }
-      setHasDrawnSignature(false);
+    if (showSignatureOverlay) {
+      const timer = setTimeout(() => {
+        setOverlayAnimated(true);
+      }, 50);
+      return () => clearTimeout(timer);
+    } else {
+      setOverlayAnimated(false);
     }
-  }, [signatureMode]);
+  }, [showSignatureOverlay]);
 
-  // Drawing handlers
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setSignature('');
+      setShowSignatureOverlay(false);
+      setOverlayAnimated(false);
+      setShowFullscreen(false);
+    }
+  }, [isOpen]);
 
-    setIsDrawing(true);
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+  const requiresSignature = document ? REQUIRES_SIGNATURE[document.id] !== false : true;
 
-    const rect = canvas.getBoundingClientRect();
-    ctx.beginPath();
-    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-    ctx.strokeStyle = '#373338';
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-  };
-
-  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return;
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const rect = canvas.getBoundingClientRect();
-    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-    ctx.stroke();
-    setHasDrawnSignature(true);
-  };
-
-  const stopDrawing = () => {
-    setIsDrawing(false);
-  };
-
-  const clearCanvas = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    setHasDrawnSignature(false);
+  const handleReviewedClick = () => {
+    if (requiresSignature) {
+      setShowSignatureOverlay(true);
+    } else {
+      // For review-only documents (like PPM), acknowledge directly
+      if (document) {
+        onSign(document.id);
+        onClose();
+      }
+    }
   };
 
   const handleSign = () => {
-    if (!document) return;
+    if (!document || !signature.trim()) return;
     onSign(document.id);
+    onClose();
   };
 
-  const canSign =
-    (signatureMode === 'draw' && hasDrawnSignature) ||
-    (signatureMode === 'type' && typedSignature.trim().length > 0);
+  // Format current date as DD-MM-YYYY
+  const currentDate = new Date()
+    .toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    })
+    .replace(/\//g, '-');
+
+  const isValid = signature.trim().length > 0;
+  const pdfUrl = document ? DOCUMENT_PDFS[document.id] : null;
 
   if (!isOpen || !document) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Modal */}
-      <div className="relative w-full max-w-3xl mx-4 bg-white rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#e0dce0] flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#f7f7f8] flex items-center justify-center">
-              <FileText className="w-5 h-5 text-[#7f7582]" />
-            </div>
-            <div>
-              <h2
-                className="text-[16px] font-medium text-[#373338]"
-                style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+    <>
+      {/* Fullscreen PDF Modal */}
+      {showFullscreen && pdfUrl && (
+        <div className="fixed inset-0 z-[110] bg-black/80 flex items-center justify-center p-8">
+          <div className="relative w-full h-full max-w-6xl bg-white rounded-xl overflow-hidden shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#e6e4e7] bg-[#f7f7f8]">
+              <h3
+                className="text-[18px] leading-[24px] text-[#373338]"
+                style={{ fontFamily: 'Test Signifier, serif' }}
               >
                 {document.title}
-              </h2>
-              <p className="text-[12px] text-[#7f7582]">Review and sign</p>
+              </h3>
+              <button
+                onClick={() => setShowFullscreen(false)}
+                className="p-2 hover:bg-[#eae8eb] rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-[#685f6a]" />
+              </button>
             </div>
+            {/* PDF Content */}
+            <iframe
+              src={`${pdfUrl}#toolbar=1&navpanes=1&view=FitH`}
+              className="w-full h-[calc(100%-64px)] border-none"
+              title={document.title}
+            />
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-[#f7f7f8] transition-colors"
-          >
-            <X className="w-5 h-5 text-[#7f7582]" />
-          </button>
         </div>
+      )}
 
-        {/* Content */}
-        <div className="flex-1 overflow-hidden flex flex-col">
-          {!showSignature ? (
-            <>
-              {/* PDF Viewer Mock */}
-              <div className="flex-1 bg-[#f0eef0] p-6 overflow-auto">
-                <div className="bg-white rounded-lg shadow-sm max-w-xl mx-auto p-8 min-h-[400px]">
-                  <div className="text-center text-[#7f7582]">
-                    <p className="text-lg font-medium mb-2">{document.title}</p>
-                    <p className="text-sm">{MOCK_PDF_PAGES[currentPage - 1]?.content}</p>
-                    <p className="text-xs text-[#a09a9f] mt-8">
-                      [Document preview - Page {currentPage}]
+      {/* Main Modal */}
+      <div className="fixed inset-0 z-[100] flex items-center justify-center">
+        {/* Backdrop */}
+        <div
+          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          onClick={onClose}
+        />
+
+        {/* Modal */}
+        <div className="relative w-full max-w-2xl mx-4 bg-[#f7f7f8] rounded-2xl overflow-hidden shadow-2xl">
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#e0dce0] bg-white">
+            <h2
+              className="text-[20px] leading-[24px] text-[#373338]"
+              style={{ fontFamily: 'Test Signifier, serif' }}
+            >
+              Document Review
+            </h2>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-full hover:bg-[#f7f7f8] transition-colors"
+            >
+              <X className="w-5 h-5 text-[#7f7582]" />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-6">
+            <div className="bg-[#f7f7f8] flex flex-col gap-6 p-6 w-full rounded-xl overflow-hidden relative border border-[#e0dce0]">
+              {/* Document Title & Description */}
+              <div className="flex flex-col gap-2 w-full">
+                <h3
+                  className="text-[24px] leading-[28px] text-[#373338]"
+                  style={{ fontFamily: 'Test Signifier, serif' }}
+                >
+                  {document.title}
+                </h3>
+                <p
+                  className="text-[14px] leading-[20px] text-[#69606d]"
+                  style={{ fontFamily: 'Soehne, sans-serif' }}
+                >
+                  {document.fullSummary}
+                </p>
+                <button
+                  className="self-start mt-1 px-3 py-1.5 text-[12px] leading-[16px] text-[#685f6a] bg-white border border-[#d9d5db] rounded-full hover:bg-[#f7f7f8] hover:border-[#beb9c0] transition-colors flex items-center gap-1.5"
+                  style={{ fontFamily: 'Soehne, sans-serif' }}
+                >
+                  <Sparkles className="w-3 h-3" />
+                  Ask AI to explain this document
+                </button>
+              </div>
+
+              {/* PDF Preview */}
+              {pdfUrl && (
+                <div className="w-full bg-white rounded-lg border border-[#e0ddd8] overflow-hidden shadow-sm relative group">
+                  <iframe
+                    src={`${pdfUrl}#toolbar=0&navpanes=0&view=FitH`}
+                    className="w-full h-[300px] border-none"
+                    title={document.title}
+                  />
+                  {/* Fullscreen button */}
+                  <button
+                    onClick={() => setShowFullscreen(true)}
+                    className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-white border border-[#d9d5db] rounded-lg shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="View fullscreen"
+                  >
+                    <Maximize2 className="w-4 h-4 text-[#685f6a]" />
+                  </button>
+                </div>
+              )}
+
+              {/* Action Button */}
+              <button
+                onClick={handleReviewedClick}
+                className={cn(
+                  'w-full py-3.5 px-8 rounded-xl text-[16px] leading-[20px] text-[#f4f3f5]',
+                  'shadow-[0px_2px_4px_0px_rgba(190,185,192,0.64)]',
+                  'relative overflow-hidden hover:opacity-95 transition-opacity'
+                )}
+                style={{
+                  fontFamily: 'Soehne Kraftig, sans-serif',
+                  background:
+                    'linear-gradient(94.99deg, rgba(127, 117, 130, 0.63) 0%, rgba(56, 52, 57, 0.63) 99.63%), linear-gradient(90deg, #373338 0%, #373338 100%)',
+                }}
+              >
+                {requiresSignature ? "I've reviewed this — Let's Sign" : "I've reviewed this document"}
+                <div className="absolute inset-0 shadow-[inset_2px_2px_2px_0px_rgba(255,255,255,0.14)] pointer-events-none" />
+              </button>
+
+              {/* Signature Overlay - slides up when user clicks "I've reviewed this" */}
+              {showSignatureOverlay && (
+                <div
+                  className={cn(
+                    'absolute bottom-0 left-0 right-0 bg-white border-t border-[#e6e4e7] rounded-t-[24px] overflow-hidden',
+                    'transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]',
+                    overlayAnimated
+                      ? 'translate-y-0 opacity-100'
+                      : 'translate-y-full opacity-0'
+                  )}
+                >
+                  <div className="flex flex-col gap-3 px-6 pt-5 pb-6">
+                    {/* Title */}
+                    <p
+                      className="text-[18px] leading-[24px] text-[#373338] tracking-[-0.3px]"
+                      style={{ fontFamily: 'Test Signifier, serif' }}
+                    >
+                      Enter your full legal name
+                    </p>
+
+                    {/* Signature Input */}
+                    <div className="bg-white border border-[#d9dde9] rounded-xl px-4 pt-4 pb-2 flex flex-col justify-between h-[100px]">
+                      <div className="flex-1" />
+                      <input
+                        type="text"
+                        value={signature}
+                        onChange={(e) => setSignature(e.target.value)}
+                        placeholder="Your signature"
+                        className={cn(
+                          'w-full bg-transparent border-none outline-none',
+                          'text-[36px] leading-[40px] text-[#6e7791] tracking-[-0.1px] placeholder:text-[#c0bcc0] placeholder:text-[20px]'
+                        )}
+                        style={{
+                          fontFamily: 'Sacramento, cursive',
+                        }}
+                        autoFocus
+                      />
+                      {/* Date stamp */}
+                      <p
+                        className="text-[12px] leading-[16px] text-[#7986b2] text-right mt-2"
+                        style={{ fontFamily: 'Fira Mono, monospace' }}
+                      >
+                        {currentDate}
+                      </p>
+                    </div>
+
+                    {/* CTA Button */}
+                    <button
+                      onClick={handleSign}
+                      disabled={!isValid}
+                      className={cn(
+                        'w-full py-3.5 px-8 rounded-xl text-[16px] leading-[20px]',
+                        'shadow-[0px_2px_4px_0px_rgba(190,185,192,0.64)]',
+                        'relative overflow-hidden mt-1 transition-all',
+                        isValid
+                          ? 'text-[#f4f3f5] hover:opacity-95'
+                          : 'text-[#9a909a] cursor-not-allowed'
+                      )}
+                      style={{
+                        fontFamily: 'Soehne Kraftig, sans-serif',
+                        background: isValid
+                          ? 'linear-gradient(94.99deg, rgba(127, 117, 130, 0.63) 0%, rgba(56, 52, 57, 0.63) 99.63%), linear-gradient(90deg, #373338 0%, #373338 100%)'
+                          : '#e8e5e8',
+                      }}
+                    >
+                      Confirm and continue
+                      {isValid && (
+                        <div className="absolute inset-0 shadow-[inset_2px_2px_2px_0px_rgba(255,255,255,0.14)] pointer-events-none" />
+                      )}
+                    </button>
+
+                    {/* Disclaimer */}
+                    <p
+                      className="text-[13px] leading-[16px] text-[#7f7582] text-center mt-1"
+                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                    >
+                      This acts as your electronic acknowledgment for this document.
                     </p>
                   </div>
                 </div>
-              </div>
-
-              {/* Page navigation */}
-              <div className="flex items-center justify-between px-5 py-3 border-t border-[#e0dce0] bg-white flex-shrink-0">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    className="p-2 rounded-lg hover:bg-[#f7f7f8] disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    <ChevronLeft className="w-5 h-5 text-[#7f7582]" />
-                  </button>
-                  <span className="text-[13px] text-[#7f7582]">
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <button
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                    className="p-2 rounded-lg hover:bg-[#f7f7f8] disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    <ChevronRight className="w-5 h-5 text-[#7f7582]" />
-                  </button>
-                </div>
-
-                <button
-                  onClick={() => setShowSignature(true)}
-                  className="px-4 py-2 bg-[#373338] text-white text-[13px] font-medium rounded-lg hover:bg-[#29272a] transition-colors flex items-center gap-2"
-                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                >
-                  <Pen className="w-4 h-4" />
-                  Sign Document
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Signature panel */}
-              <div className="flex-1 p-5 overflow-auto">
-                {/* Mode toggle */}
-                <div className="flex gap-2 mb-4">
-                  <button
-                    onClick={() => setSignatureMode('draw')}
-                    className={cn(
-                      'flex-1 py-2 px-4 rounded-lg text-[13px] font-medium flex items-center justify-center gap-2 transition-colors',
-                      signatureMode === 'draw'
-                        ? 'bg-[#373338] text-white'
-                        : 'bg-[#f7f7f8] text-[#7f7582] hover:bg-[#edebee]'
-                    )}
-                  >
-                    <Pen className="w-4 h-4" />
-                    Draw
-                  </button>
-                  <button
-                    onClick={() => setSignatureMode('type')}
-                    className={cn(
-                      'flex-1 py-2 px-4 rounded-lg text-[13px] font-medium flex items-center justify-center gap-2 transition-colors',
-                      signatureMode === 'type'
-                        ? 'bg-[#373338] text-white'
-                        : 'bg-[#f7f7f8] text-[#7f7582] hover:bg-[#edebee]'
-                    )}
-                  >
-                    <Type className="w-4 h-4" />
-                    Type
-                  </button>
-                </div>
-
-                {signatureMode === 'draw' ? (
-                  <div>
-                    <div className="relative bg-[#fafafa] border-2 border-dashed border-[#e0dce0] rounded-xl">
-                      <canvas
-                        ref={canvasRef}
-                        width={500}
-                        height={150}
-                        className="w-full touch-none cursor-crosshair"
-                        onMouseDown={startDrawing}
-                        onMouseMove={draw}
-                        onMouseUp={stopDrawing}
-                        onMouseLeave={stopDrawing}
-                      />
-                      {!hasDrawnSignature && (
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <p className="text-[14px] text-[#a09a9f]">Draw your signature here</p>
-                        </div>
-                      )}
-                    </div>
-                    {hasDrawnSignature && (
-                      <button
-                        onClick={clearCanvas}
-                        className="mt-2 text-[13px] text-[#7f7582] hover:text-[#373338] flex items-center gap-1"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        Clear
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <div>
-                    <input
-                      type="text"
-                      value={typedSignature}
-                      onChange={(e) => setTypedSignature(e.target.value)}
-                      placeholder="Type your full name"
-                      className="w-full px-4 py-4 text-[20px] bg-[#fafafa] border-2 border-[#e0dce0] rounded-xl focus:border-[#7a5af5] outline-none transition-colors"
-                      style={{ fontFamily: 'cursive' }}
-                    />
-                    {typedSignature && (
-                      <div className="mt-4 p-4 bg-[#fafafa] rounded-xl border border-[#e0dce0]">
-                        <p className="text-[12px] text-[#7f7582] mb-2">Preview:</p>
-                        <p
-                          className="text-[24px] text-[#373338]"
-                          style={{ fontFamily: 'cursive' }}
-                        >
-                          {typedSignature}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <p className="text-[12px] text-[#7f7582] mt-4">
-                  By signing, you agree to the terms outlined in this document.
-                </p>
-              </div>
-
-              {/* Footer */}
-              <div className="flex items-center justify-between px-5 py-3 border-t border-[#e0dce0] bg-white flex-shrink-0">
-                <button
-                  onClick={() => setShowSignature(false)}
-                  className="px-4 py-2 text-[13px] font-medium text-[#7f7582] hover:text-[#373338] transition-colors"
-                >
-                  Back to document
-                </button>
-                <button
-                  onClick={handleSign}
-                  disabled={!canSign}
-                  className={cn(
-                    'px-6 py-2 text-[13px] font-medium rounded-lg flex items-center gap-2 transition-colors',
-                    canSign
-                      ? 'bg-[#5a8a5a] text-white hover:bg-[#4a7a4a]'
-                      : 'bg-[#e0dce0] text-[#a09a9f] cursor-not-allowed'
-                  )}
-                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                >
-                  <Check className="w-4 h-4" />
-                  Confirm Signature
-                </button>
-              </div>
-            </>
-          )}
+              )}
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
