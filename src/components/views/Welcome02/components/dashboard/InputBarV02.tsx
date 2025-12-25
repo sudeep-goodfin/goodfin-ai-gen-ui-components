@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { chatSvgPaths } from './chat-icons';
 import { cn } from '@/lib/utils';
-import { FileText, Calendar, Briefcase, Home, X } from "lucide-react";
+import { FileText, Calendar, Briefcase, Home, X, Pencil } from "lucide-react";
 import { CommandPanel, Recipe, Context, Pill, PanelMode } from './command-panel';
 import { useRecording } from './hooks/useRecording';
 import { VoiceRecordingInterface } from './VoiceRecordingInterface';
@@ -156,6 +156,8 @@ interface FormCallout {
   displayValue?: string; // e.g., "$50,000" shown on the right
   responses?: CalloutResponse[]; // Collected responses from user
   onClose?: () => void;
+  onProgressClick?: () => void; // Click handler for "Investment progress" button
+  onEditAmount?: () => void; // Click handler for editing the investment amount
   // Commit confirmation specific props
   checkboxes?: CommitCheckbox[];
   onCheckboxChange?: (id: string, checked: boolean) => void;
@@ -452,22 +454,37 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                   {formCallout.headerText}
                 </span>
               </div>
-              <div className="flex items-center gap-3">
-                {formCallout.displayValue && (
-                  <span
-                    className="text-[18px] font-medium text-[#29272a]"
-                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                  >
-                    {formCallout.displayValue}
-                  </span>
-                )}
+              <div className="flex items-center gap-2">
                 {formCallout.onClose && (
-                  <button
-                    onClick={formCallout.onClose}
-                    className="flex items-center justify-center w-5 h-5 rounded-full hover:bg-black/10 transition-colors"
-                  >
-                    <X className="w-3.5 h-3.5 text-[#29272a]" />
-                  </button>
+                  <>
+                    <button
+                      onClick={formCallout.onProgressClick}
+                      className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-[#685f6a] bg-white/60 hover:bg-white/80 border border-[#d0cdd2] rounded-md transition-colors"
+                      style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                    >
+                      Investment progress
+                    </button>
+                    {formCallout.displayValue && (
+                      <button
+                        onClick={formCallout.onEditAmount}
+                        className="group flex items-center gap-1.5 hover:bg-black/5 rounded-md px-2 py-1 transition-colors"
+                      >
+                        <span
+                          className="text-[14px] font-medium text-[#29272a]"
+                          style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                        >
+                          {formCallout.displayValue}
+                        </span>
+                        <Pencil className="w-3 h-3 text-[#a09a9f] opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </button>
+                    )}
+                    <button
+                      onClick={formCallout.onClose}
+                      className="flex items-center justify-center w-5 h-5 rounded-full hover:bg-black/10 transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5 text-[#29272a]" />
+                    </button>
+                  </>
                 )}
               </div>
             </div>
@@ -647,7 +664,9 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                     disabled={showRecordingOverlay}
                     placeholder={
                       hasCallout
-                        ? "Enter your response..."
+                        ? formCallout?.state === 'awaiting_input'
+                          ? "Enter investment amount..."
+                          : "Enter your response..."
                         : isInvestmentMode
                           ? `Ask followup about ${investmentAction?.label?.replace('Invest in ', '').toLowerCase() || 'this deal'}`
                           : selectedPills.length > 0

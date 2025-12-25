@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, ArrowLeft, ChevronDown, Check, Maximize2 } from 'lucide-react';
+import { X, ArrowLeft, ChevronDown, Check, Maximize2, Sparkles, Pencil } from 'lucide-react';
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
 
 // Import PDF documents
@@ -39,6 +39,107 @@ export { INVESTMENT_DOCUMENTS, DEFAULT_DEAL } from './types';
 
 // Flow state type
 type FlowState = 'home' | 'loading' | 'askAmount' | 'processingAmount' | 'investing';
+
+// Suggestion chips data for each step
+const STEP_SUGGESTIONS: Record<string, string[]> = {
+  commit: [
+    'What are the investment risks?',
+    'Tell me more about the valuation',
+    'What happens after I commit?',
+  ],
+  ppm: [
+    'Summarize the key terms',
+    'What are the fees involved?',
+    'Explain the risk factors',
+  ],
+  subscription: [
+    'What am I agreeing to?',
+    'Can I cancel my investment?',
+    'Explain the ownership structure',
+  ],
+  suitability: [
+    'Why is this suitable for me?',
+    'What are the liquidity terms?',
+    'How long is the lock-up period?',
+  ],
+  kyc: [
+    'How is my data protected?',
+    'What if verification fails?',
+    'Why do you need this information?',
+  ],
+  wire: [
+    'When will I receive confirmation?',
+    'What are the next steps?',
+    'How long until the investment closes?',
+  ],
+};
+
+// Suggestion Chips Component
+interface SuggestionChipsProps {
+  suggestions: string[];
+  onSelect?: (suggestion: string) => void;
+}
+
+function SuggestionChips({ suggestions, onSelect }: SuggestionChipsProps) {
+  return (
+    <div className="mt-4">
+      {/* Title with sparkle icon */}
+      <div className="flex items-center gap-1.5 mb-3">
+        <Sparkles className="w-4 h-4 text-[#c4a882]" />
+        <span
+          className="text-[13px] font-medium text-[#685f6a]"
+          style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+        >
+          Suggestions
+        </span>
+      </div>
+      {/* Chips */}
+      <div className="flex flex-wrap gap-2">
+        {suggestions.map((suggestion, index) => (
+          <button
+            key={index}
+            onClick={() => onSelect?.(suggestion)}
+            className="px-3 py-1.5 text-[13px] text-[#685f6a] bg-white border border-[#e0dce0] rounded-full hover:bg-[#f7f7f8] hover:border-[#c0bcc0] transition-colors"
+            style={{ fontFamily: 'Soehne, sans-serif' }}
+          >
+            {suggestion}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Editable Amount Component
+interface EditableAmountProps {
+  amount: number | null;
+  onEdit: () => void;
+  className?: string;
+  size?: 'sm' | 'md';
+}
+
+function EditableAmount({ amount, onEdit, className, size = 'md' }: EditableAmountProps) {
+  return (
+    <button
+      onClick={onEdit}
+      className={cn(
+        "group flex items-center gap-1.5 hover:bg-black/5 rounded-md px-1.5 py-0.5 -mx-1.5 transition-colors",
+        className
+      )}
+    >
+      <span
+        className={cn(
+          "text-[#7f7582]",
+          size === 'sm' ? "text-sm" : "text-sm"
+        )}
+        style={{ fontFamily: 'Soehne, sans-serif' }}
+      >
+        ${amount?.toLocaleString()} investment
+      </span>
+      <Pencil className="w-3 h-3 text-[#a09a9f] opacity-0 group-hover:opacity-100 transition-opacity" />
+    </button>
+  );
+}
 
 // Loading texts for the shimmer animation
 const INVESTMENT_LOADING_TEXTS = [
@@ -85,10 +186,15 @@ export function ZAIInvestmentFlow({
   const [userMessage, setUserMessage] = useState<string>('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const investmentCardRef = useRef<HTMLDivElement>(null);
 
   // Document accordion state
   const [expandedDocId, setExpandedDocId] = useState<string | null>(null);
   const [fullscreenDocId, setFullscreenDocId] = useState<string | null>(null);
+
+  // Progress response state - shows new AI response with mini card
+  const [showProgressResponse, setShowProgressResponse] = useState(false);
+  const progressResponseRef = useRef<HTMLDivElement>(null);
 
   // Auto-expand first unsigned document when on signing step
   useEffect(() => {
@@ -392,6 +498,21 @@ export function ZAIInvestmentFlow({
   // Handle cancel exit - close modal and continue
   const handleCancelExit = () => {
     setShowExitModal(false);
+  };
+
+  // Handle investment progress click - show new AI response with mini card
+  const handleProgressClick = () => {
+    setShowProgressResponse(true);
+    // Scroll to the new response after it renders
+    setTimeout(() => {
+      progressResponseRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  };
+
+  // Handle edit amount - go back to askAmount state
+  const handleEditAmount = () => {
+    setFlowState('askAmount');
+    setShowProgressResponse(false);
   };
 
   const progress = getProgress();
@@ -719,7 +840,7 @@ export function ZAIInvestmentFlow({
                       </p>
 
                       {/* Investment Card with Horizontal Stepper */}
-                      <div className="bg-white rounded-xl overflow-hidden border border-[#e0dce0]">
+                      <div ref={investmentCardRef} className="bg-white rounded-xl overflow-hidden border border-[#e0dce0]">
                         {/* Card Header - Deal Info */}
                         <div className="flex items-center gap-4 px-5 py-4 border-b border-[#e0dce0]/50">
                           <img
@@ -727,14 +848,17 @@ export function ZAIInvestmentFlow({
                             alt={deal.companyName}
                             className="w-14 h-14 rounded-xl object-cover shadow-sm"
                           />
-                          <div>
+                          <div className="flex-1">
                             <h2
                               className="text-xl font-medium text-[#373338]"
                               style={{ fontFamily: 'Test Signifier, serif' }}
                             >
                               Invest in {deal.companyName}
                             </h2>
-                            <p className="text-[#7f7582] text-sm mt-0.5">{deal.description}</p>
+                            <EditableAmount
+                              amount={investmentAmount}
+                              onEdit={handleEditAmount}
+                            />
                           </div>
                         </div>
 
@@ -861,6 +985,7 @@ export function ZAIInvestmentFlow({
                                                   {doc.id === 'ppm' ? 'Review document' : 'Review & Sign'}
                                                 </button>
                                               )}
+
                                             </div>
                                           )}
                                         </div>
@@ -900,6 +1025,37 @@ export function ZAIInvestmentFlow({
                           );
                         })()}
                       </div>
+
+                      {/* Suggestions below the card */}
+                      {(() => {
+                        const currentStep = steps.find(s => s.status === 'current');
+                        if (!currentStep) return null;
+
+                        // For signing step, show suggestions for the current document
+                        if (currentStep.id === 'signing') {
+                          const currentDoc = INVESTMENT_DOCUMENTS.find(doc => !signedDocuments.includes(doc.id));
+                          if (currentDoc && STEP_SUGGESTIONS[currentDoc.id]) {
+                            return (
+                              <SuggestionChips
+                                suggestions={STEP_SUGGESTIONS[currentDoc.id]}
+                                onSelect={(suggestion) => console.log('Selected:', suggestion)}
+                              />
+                            );
+                          }
+                          return null;
+                        }
+
+                        // For other steps, show step-specific suggestions
+                        if (STEP_SUGGESTIONS[currentStep.id]) {
+                          return (
+                            <SuggestionChips
+                              suggestions={STEP_SUGGESTIONS[currentStep.id]}
+                              onSelect={(suggestion) => console.log('Selected:', suggestion)}
+                            />
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                   )}
 
@@ -924,6 +1080,100 @@ export function ZAIInvestmentFlow({
                             Before we verify your identity, please select your investor type. This helps us ensure compliance with regulations.
                           </p>
                         </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Investment Progress AI Response */}
+                  {flowState === 'investing' && showProgressResponse && (
+                    <div ref={progressResponseRef} className="w-full max-w-2xl">
+                      {/* AI Avatar */}
+                      <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm border border-[#f0eef0] mb-4">
+                        <img
+                          src="/conciergeIcon.png"
+                          alt="Goodfin AI"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+
+                      {/* AI Response Text */}
+                      <p
+                        className="text-[16px] text-[#48424a] leading-relaxed mb-4"
+                        style={{ fontFamily: 'Soehne, sans-serif' }}
+                      >
+                        Here's your investment progress for {deal.companyName}:
+                      </p>
+
+                      {/* Mini Investment Card */}
+                      <div className="bg-white rounded-xl overflow-hidden border border-[#e0dce0]">
+                        {/* Card Header - Deal Info */}
+                        <div className="flex items-center gap-4 px-5 py-4 border-b border-[#e0dce0]/50">
+                          <img
+                            src={deal.logo}
+                            alt={deal.companyName}
+                            className="w-12 h-12 rounded-xl object-cover shadow-sm"
+                          />
+                          <div className="flex-1">
+                            <h2
+                              className="text-lg font-medium text-[#373338]"
+                              style={{ fontFamily: 'Test Signifier, serif' }}
+                            >
+                              {deal.companyName}
+                            </h2>
+                            <EditableAmount
+                              amount={investmentAmount}
+                              onEdit={handleEditAmount}
+                            />
+                          </div>
+                          <div className="text-right">
+                            <span
+                              className="text-[13px] font-medium text-[#5a8a5a]"
+                              style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                            >
+                              {progress}% Complete
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Horizontal Stepper */}
+                        <div className="px-5 pt-5">
+                          <HorizontalStepper steps={steps} />
+                        </div>
+
+                        {/* Current Step Details */}
+                        {(() => {
+                          const currentStep = steps.find(s => s.status === 'current');
+                          if (!currentStep) return null;
+
+                          return (
+                            <div className="px-5 pb-5 pt-4">
+                              <div className="bg-[#f7f7f8] rounded-xl p-4">
+                                <h3
+                                  className="text-[16px] font-medium text-[#373338] mb-2"
+                                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                >
+                                  {currentStep.label}
+                                </h3>
+                                <p
+                                  className="text-[14px] text-[#7f7582] leading-relaxed mb-4"
+                                  style={{ fontFamily: 'Soehne, sans-serif' }}
+                                >
+                                  {currentStep.description}
+                                </p>
+                                <button
+                                  onClick={() => {
+                                    setShowProgressResponse(false);
+                                    handleStepClick(currentStep.id);
+                                  }}
+                                  className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#373338] text-white text-sm font-medium rounded-lg hover:bg-[#29272a] transition-colors"
+                                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                >
+                                  {currentStep.ctaLabel}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   )}
@@ -986,6 +1236,8 @@ export function ZAIInvestmentFlow({
                             : `Invest in ${deal.companyName}`,
                     displayValue: investmentAmount ? `$${investmentAmount.toLocaleString()}` : undefined,
                     onClose: handleCloseClick,
+                    onProgressClick: handleProgressClick,
+                    onEditAmount: handleEditAmount,
                     // Commit confirmation props
                     checkboxes: showCommitConfirm ? commitCheckboxes : undefined,
                     onCheckboxChange: showCommitConfirm ? handleCommitCheckboxChange : undefined,
