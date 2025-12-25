@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { X, ArrowLeft } from 'lucide-react';
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
 import { cn } from '@/lib/utils';
 import { Header } from '../Welcome02/components/layout/Header';
@@ -8,6 +9,7 @@ import { Greeting } from '../Welcome02/components/dashboard/Greeting';
 import { TabNavigation } from '../DealProductPage/components/TabNavigation';
 import { ThinkingText } from '../AIGreeting/ThinkingText';
 import { VerticalStepper, type Step, type StepStatus } from './components/VerticalStepper';
+import { svgPaths } from '../Welcome02/svgPaths';
 import { DocumentCard } from './components/DocumentCard';
 import { IdentityVerificationModal } from './components/IdentityVerificationModal';
 import { TransferModal } from './components/TransferModal';
@@ -27,7 +29,7 @@ export type { FlowStep, InvestmentDocument, DealInfo, Message } from './types';
 export { INVESTMENT_DOCUMENTS, MOCK_BANK_ACCOUNTS, DEFAULT_DEAL } from './types';
 
 // Flow state type
-type FlowState = 'home' | 'loading' | 'askAmount' | 'investing';
+type FlowState = 'home' | 'loading' | 'askAmount' | 'processingAmount' | 'investing';
 
 // Loading texts for the shimmer animation
 const INVESTMENT_LOADING_TEXTS = [
@@ -35,6 +37,14 @@ const INVESTMENT_LOADING_TEXTS = [
   'fetching the deal...',
   'preparing docs...',
   'almost ready...',
+];
+
+// Loading texts for processing investment amount
+const PROCESSING_AMOUNT_TEXTS = [
+  'processing...',
+  'preparing your investment...',
+  'setting up documents...',
+  'ready!',
 ];
 
 // Tab types for this flow
@@ -76,9 +86,37 @@ export function ZAIInvestmentFlow({
   const [hasCommitted, setHasCommitted] = useState(false);
   const [investmentAmount, setInvestmentAmount] = useState<number | null>(null);
   const [amountError, setAmountError] = useState<string | null>(null);
+  const [showExitModal, setShowExitModal] = useState(false);
+  const [exitModalVisible, setExitModalVisible] = useState(false);
+  const [userMessage, setUserMessage] = useState<string>('');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // Minimum investment amount
   const MIN_INVESTMENT = 10000;
+
+  // Handle click outside menu to close
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    }
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isMenuOpen]);
+
+  // Handle exit modal animation
+  useEffect(() => {
+    if (showExitModal) {
+      const timer = setTimeout(() => setExitModalVisible(true), 10);
+      return () => clearTimeout(timer);
+    } else {
+      setExitModalVisible(false);
+    }
+  }, [showExitModal]);
 
   // Handle input submission from InputBar
   const handleInputSubmit = (value: string) => {
@@ -89,6 +127,7 @@ export function ZAIInvestmentFlow({
       lowerValue.includes('invest') &&
       (lowerValue.includes('anthropic') || lowerValue.includes('deal'))
     ) {
+      setUserMessage(value);
       setFlowState('loading');
     }
   };
@@ -98,7 +137,7 @@ export function ZAIInvestmentFlow({
     setFlowState('askAmount');
   };
 
-  // Handle amount submission - transition to investing
+  // Handle amount submission - transition to processingAmount
   const handleAmountSubmit = (value: string) => {
     const amount = parseFloat(value.replace(/[^0-9.]/g, ''));
     if (!isNaN(amount) && amount > 0) {
@@ -108,8 +147,13 @@ export function ZAIInvestmentFlow({
       }
       setAmountError(null);
       setInvestmentAmount(amount);
-      setFlowState('investing');
+      setFlowState('processingAmount');
     }
+  };
+
+  // Handle processing amount complete - transition to investing
+  const handleProcessingComplete = () => {
+    setFlowState('investing');
   };
 
   // Calculate progress
@@ -216,9 +260,28 @@ export function ZAIInvestmentFlow({
     }
   };
 
-  // Handle back to home
-  const handleBackToHome = () => {
+  // Handle close button click - show confirmation modal
+  const handleCloseClick = () => {
+    setShowExitModal(true);
+  };
+
+  // Handle confirm exit - go back to home
+  const handleConfirmExit = () => {
+    setShowExitModal(false);
     setFlowState('home');
+    // Reset investment state
+    setInvestmentAmount(null);
+    setAmountError(null);
+    setHasCommitted(false);
+    setSignedDocuments([]);
+    setIsIdentityVerified(false);
+    setIsTransferComplete(false);
+    setUserMessage('');
+  };
+
+  // Handle cancel exit - close modal and continue
+  const handleCancelExit = () => {
+    setShowExitModal(false);
   };
 
   const progress = getProgress();
@@ -247,10 +310,78 @@ export function ZAIInvestmentFlow({
 
           {/* Content Container */}
           <div className="relative z-10 flex-1 flex flex-col overflow-hidden">
+            {/* Conversation Header - Show when in investment flow */}
+            {flowState !== 'home' && (
+              <div className="flex items-center justify-between px-4 py-3 border-b border-[#e9e6ea]/50">
+                {/* Left side - Back button */}
+                <button
+                  onClick={handleCloseClick}
+                  className="flex items-center gap-2 text-[#7f7582] hover:text-[#29272a] transition-colors px-2 py-1.5 rounded-lg hover:bg-black/5"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                  <span className="text-sm font-medium">Back</span>
+                </button>
+
+                {/* Right side - Actions */}
+                <div className="flex items-center gap-1">
+                  {/* New Chat / Compose */}
+                  <button
+                    onClick={() => {}}
+                    className="p-2 hover:bg-black/5 rounded-lg transition-colors"
+                    title="New Chat"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <path d={svgPaths.pencilCompose} fill="#69606d" />
+                    </svg>
+                  </button>
+
+                  {/* More Options */}
+                  <div className="relative" ref={menuRef}>
+                    <button
+                      onClick={() => setIsMenuOpen(!isMenuOpen)}
+                      className="p-2 hover:bg-black/5 rounded-lg transition-colors"
+                      title="More Options"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 20" fill="none">
+                        <path d={svgPaths.moreHorizontal} fill="#69606d" />
+                      </svg>
+                    </button>
+                    {isMenuOpen && (
+                      <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-[#e9e6ea] py-1 z-50">
+                        <button
+                          onClick={() => {
+                            setIsMenuOpen(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#29272a] hover:bg-[#f7f7f8] transition-colors"
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <path d={svgPaths.feedback} fill="#69606d" />
+                          </svg>
+                          Got Feedback
+                        </button>
+                        <button
+                          onClick={() => {
+                            handleConfirmExit();
+                            setIsMenuOpen(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#29272a] hover:bg-[#f7f7f8] transition-colors"
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <path d={svgPaths.reset} fill="#69606d" />
+                          </svg>
+                          Reset Conversation
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Main Scrollable Content */}
             <ScrollAreaPrimitive.Root className="flex-1 overflow-hidden">
               <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-none [&>div]:!block">
-                <div className="flex flex-col items-center p-6 pb-32 gap-8 w-full min-h-full">
+                <div className="flex flex-col items-center p-6 pb-32 gap-6 w-full min-h-full">
                   {flowState === 'home' && (
                     /* Home State - Greeting */
                     <div className="w-full max-w-2xl mt-16">
@@ -263,9 +394,22 @@ export function ZAIInvestmentFlow({
                     </div>
                   )}
 
+                  {/* Show user message when in investment flow */}
+                  {flowState !== 'home' && userMessage && (
+                    <div className="w-full max-w-2xl mt-4">
+                      <div className="flex justify-end">
+                        <div className="bg-[#373338] text-white px-4 py-3 rounded-2xl rounded-br-md max-w-[80%]">
+                          <p className="text-[15px] leading-relaxed" style={{ fontFamily: 'Soehne, sans-serif' }}>
+                            {userMessage}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {flowState === 'loading' && (
                     /* Loading State - AI Avatar with Shimmer Animation */
-                    <div className="w-full max-w-2xl mt-8">
+                    <div className="w-full max-w-2xl">
                       <div className="flex items-start gap-3">
                         {/* AI Avatar */}
                         <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm border border-[#f0eef0] flex-shrink-0">
@@ -287,9 +431,9 @@ export function ZAIInvestmentFlow({
                     </div>
                   )}
 
-                  {flowState === 'askAmount' && (
+                  {(flowState === 'askAmount' || flowState === 'processingAmount' || flowState === 'investing') && (
                     /* Ask Amount State - Show deal card and ask for amount */
-                    <div className="w-full max-w-2xl mt-8">
+                    <div className="w-full max-w-2xl">
                       {/* AI Avatar */}
                       <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm border border-[#f0eef0] mb-4">
                         <img
@@ -327,9 +471,46 @@ export function ZAIInvestmentFlow({
                     </div>
                   )}
 
+                  {/* User amount response - show after askAmount */}
+                  {(flowState === 'processingAmount' || flowState === 'investing') && investmentAmount && (
+                    <div className="w-full max-w-2xl">
+                      <div className="flex justify-end">
+                        <div className="bg-[#373338] text-white px-4 py-3 rounded-2xl rounded-br-md">
+                          <p className="text-[15px] leading-relaxed" style={{ fontFamily: 'Soehne, sans-serif' }}>
+                            ${investmentAmount.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {flowState === 'processingAmount' && (
+                    /* Processing Amount State - AI Avatar with Shimmer */
+                    <div className="w-full max-w-2xl">
+                      <div className="flex items-start gap-3">
+                        {/* AI Avatar */}
+                        <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm border border-[#f0eef0] flex-shrink-0">
+                          <img
+                            src="/conciergeIcon.png"
+                            alt="Goodfin AI"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        {/* Shimmer Text */}
+                        <div className="pt-2">
+                          <ThinkingText
+                            isVisible={true}
+                            loadingTexts={PROCESSING_AMOUNT_TEXTS}
+                            onComplete={handleProcessingComplete}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {flowState === 'investing' && (
-                    /* Investing State - Investment Flow */
-                    <div className="w-full max-w-2xl mt-8">
+                    /* Investing State - AI response with Investment Card */
+                    <div className="w-full max-w-2xl">
                       {/* AI Avatar */}
                       <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm border border-[#f0eef0] mb-4">
                         <img
@@ -338,6 +519,14 @@ export function ZAIInvestmentFlow({
                           className="w-full h-full object-cover"
                         />
                       </div>
+
+                      {/* AI Response Text */}
+                      <p
+                        className="text-[16px] text-[#48424a] leading-relaxed mb-4"
+                        style={{ fontFamily: 'Soehne, sans-serif' }}
+                      >
+                        Great! I've prepared your investment of ${investmentAmount?.toLocaleString()} in {deal.companyName}. Here's your investment progress:
+                      </p>
 
                       {/* Investment Card with Tabs inside */}
                       <div className="bg-[#e8e5e8]/50 rounded-xl overflow-hidden">
@@ -405,9 +594,9 @@ export function ZAIInvestmentFlow({
             <div className="absolute bottom-0 left-0 right-0 z-20 flex justify-center p-6 bg-gradient-to-t from-[#f7f7f8] via-[#f7f7f8]/80 to-transparent pointer-events-none">
               <div className="w-full max-w-2xl pointer-events-auto">
                 <InputBarV02
-                  currentMode={(flowState === 'loading' || flowState === 'askAmount' || flowState === 'investing') ? 'investment' : 'default'}
+                  currentMode={(flowState === 'loading' || flowState === 'askAmount' || flowState === 'processingAmount' || flowState === 'investing') ? 'investment' : 'default'}
                   onSubmit={flowState === 'askAmount' ? handleAmountSubmit : handleInputSubmit}
-                  formCallout={(flowState === 'askAmount' || flowState === 'investing') ? {
+                  formCallout={(flowState === 'askAmount' || flowState === 'processingAmount' || flowState === 'investing') ? {
                     state: amountError ? 'error' : flowState === 'askAmount' ? 'awaiting_input' : 'confirmed',
                     dealLogo: deal.logo,
                     headerText: amountError
@@ -416,7 +605,7 @@ export function ZAIInvestmentFlow({
                         ? 'How much would you like to invest?'
                         : `Invest in ${deal.companyName}`,
                     displayValue: investmentAmount ? `$${investmentAmount.toLocaleString()}` : undefined,
-                    onClose: handleBackToHome,
+                    onClose: handleCloseClick,
                   } : undefined}
                 />
               </div>
@@ -446,6 +635,95 @@ export function ZAIInvestmentFlow({
         onClose={() => setSigningDocument(null)}
         onSign={handleDocumentSigned}
       />
+
+      {/* Exit Confirmation Modal */}
+      {showExitModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop with fade animation */}
+          <div
+            className={cn(
+              'absolute inset-0 bg-black/40 backdrop-blur-sm',
+              'transition-opacity duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+              exitModalVisible ? 'opacity-100' : 'opacity-0'
+            )}
+            onClick={handleCancelExit}
+          />
+
+          {/* Modal with scale and fade animation */}
+          <div
+            className={cn(
+              'relative bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden',
+              'transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]',
+              exitModalVisible
+                ? 'opacity-100 scale-100 translate-y-0'
+                : 'opacity-0 scale-95 translate-y-4'
+            )}
+            style={{ fontFamily: 'Soehne, sans-serif' }}
+          >
+            {/* Close button */}
+            <button
+              onClick={handleCancelExit}
+              className="absolute top-4 right-4 p-1 rounded-full hover:bg-black/5 transition-colors"
+            >
+              <X className="w-5 h-5 text-[#685f6a]" />
+            </button>
+
+            {/* Content */}
+            <div className="px-8 pt-10 pb-8 text-center">
+              {/* Icon */}
+              <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[#f0eef0] flex items-center justify-center">
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle cx="12" cy="12" r="10" stroke="#7f7582" strokeWidth="2" />
+                  <path
+                    d="M12 6v6l4 2"
+                    stroke="#7f7582"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+
+              {/* Title */}
+              <h2
+                className="text-[24px] leading-[28px] text-[#373338] mb-3"
+                style={{ fontFamily: 'Test Signifier, serif' }}
+              >
+                Continue anytime
+              </h2>
+
+              {/* Message */}
+              <p className="text-[16px] leading-[22px] text-[#685f6a] mb-8">
+                Your progress has been saved. You can pick up right where you left off whenever you're ready.
+              </p>
+
+              {/* Buttons */}
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={handleConfirmExit}
+                  className="w-full px-6 py-3 border border-[#373338] text-[#373338] rounded-lg text-[16px] font-medium hover:bg-black/5 transition-colors"
+                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                >
+                  Return to home
+                </button>
+                <button
+                  onClick={handleCancelExit}
+                  className="w-full px-6 py-3 bg-[#373338] text-white rounded-lg text-[16px] font-medium hover:bg-[#29272a] transition-colors"
+                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                >
+                  Continue investing
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
