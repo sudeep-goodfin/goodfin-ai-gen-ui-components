@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, ArrowLeft, Check, Loader2, Clock, ChevronDown, Copy } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { HorizontalStepper, type Step } from './HorizontalStepper';
 import type { DealInfo } from '../types';
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
 
@@ -15,10 +14,6 @@ interface TransferModalProps {
   onClose: () => void;
   onBack?: () => void;
   onComplete: (amount: number) => void;
-  // Step statuses from parent
-  commitCompleted?: boolean;
-  signingCompleted?: boolean;
-  kycCompleted?: boolean;
 }
 
 // Wire transfer details
@@ -64,9 +59,6 @@ export function TransferModal({
   onClose,
   onBack,
   onComplete,
-  commitCompleted = true,
-  signingCompleted = true,
-  kycCompleted = true,
 }: TransferModalProps) {
   const [step, setStep] = useState<TransferStep>('input');
   const [transferType, setTransferType] = useState<TransferType>('domestic');
@@ -138,14 +130,6 @@ export function TransferModal({
     return () => clearTimeout(timeout);
   }, [step, onComplete, investmentAmount]);
 
-  // Build stepper steps
-  const stepperSteps: Step[] = [
-    { id: 'commit', label: 'Commit', status: commitCompleted ? 'completed' : 'upcoming' },
-    { id: 'signing', label: 'Signing', status: signingCompleted ? 'completed' : 'upcoming' },
-    { id: 'kyc', label: 'KYC', status: kycCompleted ? 'completed' : 'upcoming' },
-    { id: 'wire', label: 'Wire', status: 'current' },
-  ];
-
   const wireDetails = WIRE_DETAILS[transferType];
 
   if (!isOpen) return null;
@@ -190,9 +174,6 @@ export function TransferModal({
             <div className="p-5">
               {step === 'input' && (
                 <div>
-                  {/* Horizontal Stepper */}
-                  <HorizontalStepper steps={stepperSteps} className="mb-8" />
-
                   {/* Title */}
                   <h2
                     className="text-[22px] text-center text-[#373338] mb-1"
