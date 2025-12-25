@@ -15,9 +15,11 @@ export interface Step {
 interface HorizontalStepperProps {
   steps: Step[];
   className?: string;
+  selectedStepId?: string | null;
+  onStepClick?: (stepId: string) => void;
 }
 
-export function HorizontalStepper({ steps, className }: HorizontalStepperProps) {
+export function HorizontalStepper({ steps, className, selectedStepId, onStepClick }: HorizontalStepperProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const activeStepRef = useRef<HTMLDivElement>(null);
 
@@ -54,6 +56,8 @@ export function HorizontalStepper({ steps, className }: HorizontalStepperProps) 
         {steps.map((step, index) => {
           const isLast = index === steps.length - 1;
           const isActive = step.status === 'current';
+          const isSelected = selectedStepId === step.id;
+          const isClickable = step.status !== 'upcoming';
 
           return (
             <div
@@ -62,14 +66,22 @@ export function HorizontalStepper({ steps, className }: HorizontalStepperProps) 
               ref={isActive ? activeStepRef : null}
             >
               {/* Step */}
-              <div className="flex flex-col items-center">
+              <button
+                className={cn(
+                  "flex flex-col items-center",
+                  isClickable && "cursor-pointer"
+                )}
+                onClick={() => isClickable && onStepClick?.(step.id)}
+                disabled={!isClickable}
+              >
                 {/* Circle */}
                 <div
                   className={cn(
                     'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all flex-shrink-0',
                     step.status === 'completed' && 'bg-[#373338] text-white',
                     step.status === 'current' && 'bg-[#373338] text-white',
-                    step.status === 'upcoming' && 'bg-[#e8e5e8] text-[#a09a9f]'
+                    step.status === 'upcoming' && 'bg-[#e8e5e8] text-[#a09a9f]',
+                    isSelected && 'ring-2 ring-offset-2 ring-[#373338]'
                   )}
                   style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                 >
@@ -84,13 +96,14 @@ export function HorizontalStepper({ steps, className }: HorizontalStepperProps) 
                 <span
                   className={cn(
                     'text-[12px] mt-2 whitespace-nowrap',
-                    step.status === 'upcoming' ? 'text-[#a09a9f]' : 'text-[#373338]'
+                    step.status === 'upcoming' ? 'text-[#a09a9f]' : 'text-[#373338]',
+                    isSelected && 'font-medium'
                   )}
                   style={{ fontFamily: 'Soehne, sans-serif' }}
                 >
                   {step.label}
                 </span>
-              </div>
+              </button>
 
               {/* Connecting line */}
               {!isLast && (

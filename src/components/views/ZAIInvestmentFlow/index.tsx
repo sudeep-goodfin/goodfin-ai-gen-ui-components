@@ -40,6 +40,9 @@ export { INVESTMENT_DOCUMENTS, DEFAULT_DEAL } from './types';
 // Flow state type
 type FlowState = 'home' | 'loading' | 'askAmount' | 'processingAmount' | 'investing';
 
+// User state type - distinguishes between returning and first-time accredited investors
+export type ZAIUserState = 'accredited-returning' | 'accredited-first-time';
+
 // Suggestion chips data for each step
 const STEP_SUGGESTIONS: Record<string, string[]> = {
   commit: [
@@ -159,15 +162,19 @@ const PROCESSING_AMOUNT_TEXTS = [
 
 interface ZAIInvestmentFlowProps {
   deal?: DealInfo;
+  userState?: ZAIUserState;
   onDismiss?: () => void;
   onComplete?: () => void;
 }
 
 export function ZAIInvestmentFlow({
   deal = DEFAULT_DEAL,
+  userState = 'accredited-returning',
   onDismiss,
   onComplete,
 }: ZAIInvestmentFlowProps) {
+  // Determine if this is a first-time investor
+  const isFirstTimeInvestor = userState === 'accredited-first-time';
   // Flow state
   const [flowState, setFlowState] = useState<FlowState>('home');
 
@@ -192,6 +199,9 @@ export function ZAIInvestmentFlow({
   // Document accordion state
   const [expandedDocId, setExpandedDocId] = useState<string | null>(null);
   const [fullscreenDocId, setFullscreenDocId] = useState<string | null>(null);
+
+  // Selected step state - for viewing completed steps
+  const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
 
   // Progress response state - shows new AI response with mini card
   const [showProgressResponse, setShowProgressResponse] = useState(false);
@@ -521,10 +531,35 @@ export function ZAIInvestmentFlow({
 
   const progress = getProgress();
 
+  // Get dynamic placeholder based on current step
+  const getStepPlaceholder = () => {
+    if (flowState !== 'investing') return undefined;
+
+    const currentStep = steps.find(s => s.status === 'current');
+    if (!currentStep) return 'Ask a follow-up question...';
+
+    switch (currentStep.id) {
+      case 'commit':
+        return 'Ask about commitment terms or investment details...';
+      case 'signing':
+        const currentDoc = getCurrentDocument();
+        if (currentDoc) {
+          return `Ask about ${currentDoc.title.toLowerCase()}...`;
+        }
+        return 'Ask about the documents...';
+      case 'kyc':
+        return 'Ask about identity verification or compliance...';
+      case 'wire':
+        return 'Ask about wire transfer or payment details...';
+      default:
+        return 'Ask a follow-up question...';
+    }
+  };
+
   return (
     <div className="flex flex-col h-full w-full bg-[#f0eef0] overflow-hidden font-sans text-[#373338]">
-      {/* Header */}
-      <Header />
+      {/* Header - only show on home screen */}
+      {flowState === 'home' && <Header />}
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar */}
@@ -616,7 +651,7 @@ export function ZAIInvestmentFlow({
             {/* Main Scrollable Content */}
             <ScrollAreaPrimitive.Root className="flex-1 overflow-hidden">
               <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-none [&>div]:!block overflow-y-auto">
-                <div className="flex flex-col items-center p-6 pb-80 gap-6 w-full">
+                <div className="flex flex-col items-center p-6 pb-96 gap-6 w-full">
                   {flowState === 'home' && (
                     /* Home State - Greeting */
                     <>
@@ -844,7 +879,7 @@ export function ZAIInvestmentFlow({
                       </p>
 
                       {/* Investment Card with Horizontal Stepper */}
-                      <div ref={investmentCardRef} className="bg-white rounded-xl overflow-hidden border border-[#e0dce0]">
+                      <div ref={investmentCardRef} className="bg-white rounded-xl border border-[#e0dce0]">
                         {/* Card Header - Deal Info */}
                         <div className="flex items-center gap-4 px-5 py-4 border-b border-[#e0dce0]/50">
                           <img
@@ -868,25 +903,47 @@ export function ZAIInvestmentFlow({
 
                         {/* Horizontal Stepper */}
                         <div className="px-5 pt-5">
-                          <HorizontalStepper steps={steps} />
+                          <HorizontalStepper
+                            steps={steps}
+                            selectedStepId={selectedStepId}
+                            onStepClick={(stepId) => {
+                              // Toggle selection - clicking same step deselects it
+                              if (selectedStepId === stepId) {
+                                setSelectedStepId(null);
+                              } else {
+                                setSelectedStepId(stepId);
+                              }
+                            }}
+                          />
                         </div>
 
                         {/* Current Step Details */}
                         {(() => {
-                          const currentStep = steps.find(s => s.status === 'current');
-                          if (!currentStep) return null;
+                          // Show selected step if one is selected, otherwise show current step
+                          const displayStep = selectedStepId
+                            ? steps.find(s => s.id === selectedStepId)
+                            : steps.find(s => s.status === 'current');
+                          if (!displayStep) return null;
+                          const isViewingCompleted = selectedStepId && displayStep.status === 'completed';
 
                           // Special rendering for Signing step - show documents accordion
-                          if (currentStep.id === 'signing') {
+                          if (displayStep.id === 'signing') {
                             return (
                               <div className="px-5 pb-5 pt-4">
                                 <div className="bg-[#f7f7f8] rounded-xl p-4">
-                                  <h3
-                                    className="text-[16px] font-medium text-[#373338] mb-4"
-                                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                                  >
-                                    {currentStep.label}
-                                  </h3>
+                                  <div className="flex items-center justify-between mb-4">
+                                    <h3
+                                      className="text-[16px] font-medium text-[#373338]"
+                                      style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                    >
+                                      {displayStep.label}
+                                    </h3>
+                                    {isViewingCompleted && (
+                                      <span className="text-[12px] text-[#5a8a5a] bg-[#5a8a5a]/10 px-2 py-1 rounded-full">
+                                        Completed
+                                      </span>
+                                    )}
+                                  </div>
 
                                   {/* Documents Accordion */}
                                   <div className="space-y-2">
@@ -1001,29 +1058,182 @@ export function ZAIInvestmentFlow({
                             );
                           }
 
+                          // Special rendering for Commit step - show fee breakdown
+                          if (displayStep.id === 'commit') {
+                            const adminFeePercent = 0.05;
+                            const fundFeePercent = 0.10;
+                            const amount = investmentAmount || deal.minInvestment;
+                            const adminFee = amount * adminFeePercent;
+                            const fundFee = amount * fundFeePercent;
+
+                            return (
+                              <div className="px-5 pb-5 pt-4">
+                                <div className="bg-[#f7f7f8] rounded-xl p-4">
+                                  {/* Header with completed badge */}
+                                  {isViewingCompleted && (
+                                    <div className="flex items-center justify-between mb-3">
+                                      <h3
+                                        className="text-[16px] font-medium text-[#373338]"
+                                        style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                      >
+                                        {displayStep.label}
+                                      </h3>
+                                      <span className="text-[12px] text-[#5a8a5a] bg-[#5a8a5a]/10 px-2 py-1 rounded-full">
+                                        Completed
+                                      </span>
+                                    </div>
+                                  )}
+                                  {/* Total Investment */}
+                                  <div className="mb-4">
+                                    <p
+                                      className="text-[12px] text-[#7f7582] mb-1"
+                                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                                    >
+                                      Total Investment
+                                    </p>
+                                    <p
+                                      className="text-[28px] text-[#373338]"
+                                      style={{ fontFamily: 'Test Signifier, serif' }}
+                                    >
+                                      ${amount.toLocaleString()}<span className="text-[18px] text-[#7f7582]">.00</span>
+                                    </p>
+                                  </div>
+
+                                  {/* Fee Breakdown */}
+                                  <div className="border-t border-[#e0dce0] pt-3 space-y-2.5">
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2">
+                                        <span
+                                          className="text-[14px] font-medium text-[#373338]"
+                                          style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                        >
+                                          Goodfin Admin Fee
+                                        </span>
+                                        <span
+                                          className="text-[12px] sm:text-[13px] text-[#7f7582]"
+                                          style={{ fontFamily: 'Soehne, sans-serif' }}
+                                        >
+                                          (5% fee one-time)
+                                        </span>
+                                      </div>
+                                      <span
+                                        className="text-[14px] font-medium text-[#373338] flex-shrink-0"
+                                        style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                      >
+                                        ${adminFee.toLocaleString()}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2">
+                                        <span
+                                          className="text-[14px] font-medium text-[#373338]"
+                                          style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                        >
+                                          Underlying Fund Fee
+                                        </span>
+                                        <span
+                                          className="text-[12px] sm:text-[13px] text-[#7f7582]"
+                                          style={{ fontFamily: 'Soehne, sans-serif' }}
+                                        >
+                                          (10% fee one-time)
+                                        </span>
+                                      </div>
+                                      <span
+                                        className="text-[14px] font-medium text-[#373338] flex-shrink-0"
+                                        style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                      >
+                                        ${fundFee.toLocaleString()}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  {/* Carry Structure */}
+                                  <div className="border-t border-[#e0dce0] pt-3 mt-3">
+                                    <p
+                                      className="text-[12px] text-[#7f7582] mb-2"
+                                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                                    >
+                                      Carry Structure
+                                    </p>
+                                    <div className="space-y-2">
+                                      <div className="flex items-center justify-between">
+                                        <span
+                                          className="text-[14px] font-medium text-[#373338]"
+                                          style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                        >
+                                          Goodfin Carry
+                                        </span>
+                                        <span
+                                          className="text-[14px] text-[#7f7582]"
+                                          style={{ fontFamily: 'Soehne, sans-serif' }}
+                                        >
+                                          None
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center justify-between">
+                                        <span
+                                          className="text-[14px] font-medium text-[#373338]"
+                                          style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                        >
+                                          Underlying Fund Carry
+                                        </span>
+                                        <span
+                                          className="text-[14px] text-[#7f7582]"
+                                          style={{ fontFamily: 'Soehne, sans-serif' }}
+                                        >
+                                          5% recursive
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* CTA Button - only show if not viewing completed */}
+                                  {!isViewingCompleted && (
+                                    <button
+                                      onClick={() => handleStepClick(displayStep.id)}
+                                      className="w-full mt-4 inline-flex items-center justify-center gap-1.5 px-4 py-3 bg-[#373338] text-white text-sm font-medium rounded-lg hover:bg-[#29272a] transition-colors"
+                                      style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                    >
+                                      {displayStep.ctaLabel}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          }
+
                           // Default rendering for other steps
                           return (
                             <div className="px-5 pb-5 pt-4">
                               <div className="bg-[#f7f7f8] rounded-xl p-4">
-                                <h3
-                                  className="text-[16px] font-medium text-[#373338] mb-2"
-                                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                                >
-                                  {currentStep.label}
-                                </h3>
+                                <div className="flex items-center justify-between mb-2">
+                                  <h3
+                                    className="text-[16px] font-medium text-[#373338]"
+                                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                  >
+                                    {displayStep.label}
+                                  </h3>
+                                  {isViewingCompleted && (
+                                    <span className="text-[12px] text-[#5a8a5a] bg-[#5a8a5a]/10 px-2 py-1 rounded-full">
+                                      Completed
+                                    </span>
+                                  )}
+                                </div>
                                 <p
                                   className="text-[14px] text-[#7f7582] leading-relaxed mb-4"
                                   style={{ fontFamily: 'Soehne, sans-serif' }}
                                 >
-                                  {currentStep.description}
+                                  {displayStep.description}
                                 </p>
-                                <button
-                                  onClick={() => handleStepClick(currentStep.id)}
-                                  className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#373338] text-white text-sm font-medium rounded-lg hover:bg-[#29272a] transition-colors"
-                                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                                >
-                                  {currentStep.ctaLabel}
-                                </button>
+                                {!isViewingCompleted && (
+                                  <button
+                                    onClick={() => handleStepClick(displayStep.id)}
+                                    className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#373338] text-white text-sm font-medium rounded-lg hover:bg-[#29272a] transition-colors"
+                                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                  >
+                                    {displayStep.ctaLabel}
+                                  </button>
+                                )}
                               </div>
                             </div>
                           );
@@ -1219,6 +1429,7 @@ export function ZAIInvestmentFlow({
                   currentMode={(flowState === 'loading' || flowState === 'askAmount' || flowState === 'processingAmount' || flowState === 'investing') ? 'investment' : 'default'}
                   onSubmit={flowState === 'askAmount' ? handleAmountSubmit : handleInputSubmit}
                   shake={shakeInput}
+                  placeholder={getStepPlaceholder()}
                   formCallout={(flowState === 'askAmount' || flowState === 'processingAmount' || flowState === 'investing') ? {
                     state: showInvestorTypeSelection
                       ? 'investor_type'
@@ -1404,19 +1615,21 @@ export function ZAIInvestmentFlow({
   );
 }
 
-// Variants for showcase
+// Variants for showcase (user states)
 export const zaiInvestmentFlowVariants = [
-  { id: 'default', label: 'Default' },
+  { id: 'accredited-returning', label: 'Accredited Returning' },
+  { id: 'accredited-first-time', label: 'Accredited First Time' },
 ];
 
 // View wrapper for standalone demo
 interface ZAIInvestmentFlowViewProps {
-  variant?: string;
+  userState?: ZAIUserState;
 }
 
-export function ZAIInvestmentFlowView({ variant = 'default' }: ZAIInvestmentFlowViewProps) {
+export function ZAIInvestmentFlowView({ userState = 'accredited-returning' }: ZAIInvestmentFlowViewProps) {
   return (
     <ZAIInvestmentFlow
+      userState={userState}
       onComplete={() => console.log('Investment completed!')}
     />
   );

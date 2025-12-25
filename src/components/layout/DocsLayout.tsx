@@ -149,12 +149,13 @@ type DocsLayoutProps = {
   renderWelcomeView?: (variant: string) => React.ReactNode;
   renderWelcome02View?: (variant: string, showChrome: boolean, homeVariant: string) => React.ReactNode;
   renderInvestmentFlowView?: (step: string, onDismiss: () => void) => React.ReactNode;
-  renderZAIInvestmentFlowView?: (onDismiss: () => void) => React.ReactNode;
+  renderZAIInvestmentFlowView?: (userState: string, onDismiss: () => void) => React.ReactNode;
   onboardingVariants?: VariantOption[];
   welcomeVariants?: VariantOption[];
   welcome02Variants?: VariantOption[];
   welcome02HomeVariants?: VariantOption[];
   investmentFlowSteps?: VariantOption[];
+  zaiInvestmentFlowVariants?: VariantOption[];
   conversationFlowOptions?: { id: string; label: string }[];
 };
 
@@ -171,6 +172,7 @@ export function DocsLayout({
   welcome02Variants = [],
   welcome02HomeVariants = [],
   investmentFlowSteps = [],
+  zaiInvestmentFlowVariants = [],
   conversationFlowOptions = [],
 }: DocsLayoutProps) {
   // Flatten all components from groups
@@ -265,6 +267,10 @@ export function DocsLayout({
   const [activeInvestmentFlowStep, setActiveInvestmentFlowStep] = useState(() => {
     const params = getUrlParams();
     return params.get('investmentStep') || investmentFlowSteps[0]?.id || 'transfer-method';
+  });
+  const [activeZAIInvestmentFlowVariant, setActiveZAIInvestmentFlowVariant] = useState(() => {
+    const params = getUrlParams();
+    return params.get('zaiVariant') || zaiInvestmentFlowVariants[0]?.id || 'accredited-returning';
   });
 
   // Fullscreen state (from URL)
@@ -382,6 +388,7 @@ export function DocsLayout({
       welcome02Variant: viewMode === 'welcome02' ? activeWelcome02Variant : undefined,
       homeVariant: viewMode === 'welcome02' ? activeWelcome02HomeVariant : undefined,
       investmentStep: viewMode === 'investment-flow' ? activeInvestmentFlowStep : undefined,
+      zaiVariant: viewMode === 'z-ai-investment-flow' ? activeZAIInvestmentFlowVariant : undefined,
       // Fullscreen state (only store if true to keep URLs cleaner)
       fullscreen: isFullscreen ? true : undefined,
       // Chrome toggle for welcome02 (only store if true since false is default)
@@ -401,7 +408,7 @@ export function DocsLayout({
     }
 
     updateUrlParams(params);
-  }, [viewMode, activeId, activeGroupId, variantStates, activeConversationFlow, activeOnboardingVariant, activeWelcomeVariant, activeWelcome02Variant, activeWelcome02HomeVariant, activeInvestmentFlowStep, isFullscreen, showWelcome02Chrome, isSidebarCollapsed, selectedRelease, showPresets, showStepper, showSuggestions, presetCount]);
+  }, [viewMode, activeId, activeGroupId, variantStates, activeConversationFlow, activeOnboardingVariant, activeWelcomeVariant, activeWelcome02Variant, activeWelcome02HomeVariant, activeInvestmentFlowStep, activeZAIInvestmentFlowVariant, isFullscreen, showWelcome02Chrome, isSidebarCollapsed, selectedRelease, showPresets, showStepper, showSuggestions, presetCount]);
 
   // Build sidebar sections based on view mode
   const buildSidebarSections = (): SidebarSection[] => {
@@ -436,6 +443,9 @@ export function DocsLayout({
           id: 'z-ai-investment-flow',
           label: 'Z AI Investment Flow',
           icon: viewModeIcons['z-ai-investment-flow'],
+          children: zaiInvestmentFlowVariants.length > 0
+            ? zaiInvestmentFlowVariants.map(v => ({ id: v.id, label: v.label }))
+            : undefined,
         },
         {
           id: 'conversation',
@@ -526,6 +536,9 @@ export function DocsLayout({
       } else if (itemId === 'investment-flow') {
         setViewMode('investment-flow');
         setActiveInvestmentFlowStep(subItemId);
+      } else if (itemId === 'z-ai-investment-flow') {
+        setViewMode('z-ai-investment-flow');
+        setActiveZAIInvestmentFlowVariant(subItemId);
       }
     } else if (sectionId === 'archive') {
       // Archive sub-items
@@ -579,6 +592,7 @@ export function DocsLayout({
     if (viewMode === 'welcome') return activeWelcomeVariant;
     if (viewMode === 'welcome02') return activeWelcome02Variant;
     if (viewMode === 'investment-flow') return activeInvestmentFlowStep;
+    if (viewMode === 'z-ai-investment-flow') return activeZAIInvestmentFlowVariant;
     if (viewMode === 'component') return variantStates[activeId];
     return undefined;
   };
@@ -668,6 +682,17 @@ export function DocsLayout({
           onOptionSelect: (id) => setActiveInvestmentFlowStep(id),
         });
       }
+    } else if (viewMode === 'z-ai-investment-flow') {
+      crumbs.push({ label: 'Z AI Investment Flow' });
+      if (zaiInvestmentFlowVariants.length > 0) {
+        const currentLabel = zaiInvestmentFlowVariants.find(v => v.id === activeZAIInvestmentFlowVariant)?.label || '';
+        crumbs.push({
+          label: currentLabel,
+          dropdownOptions: zaiInvestmentFlowVariants.map(v => ({ id: v.id, label: v.label })),
+          selectedOptionId: activeZAIInvestmentFlowVariant,
+          onOptionSelect: (id) => setActiveZAIInvestmentFlowVariant(id),
+        });
+      }
     }
 
     return crumbs;
@@ -719,7 +744,7 @@ export function DocsLayout({
             setViewMode('welcome02');
             setActiveWelcome02Variant('accredited-returning');
           })}
-          {viewMode === 'z-ai-investment-flow' && renderZAIInvestmentFlowView?.(() => {
+          {viewMode === 'z-ai-investment-flow' && renderZAIInvestmentFlowView?.(activeZAIInvestmentFlowVariant, () => {
             setViewMode('welcome02');
             setActiveWelcome02Variant('accredited-returning');
           })}
@@ -1178,9 +1203,38 @@ export function DocsLayout({
           {/* Z AI Investment Flow View - renders outside the constrained container */}
           {viewMode === 'z-ai-investment-flow' && (
             <div className="flex flex-col flex-1 min-h-0">
+              {/* Options Bar */}
+              <div className="flex flex-wrap items-center gap-4 px-4 md:px-8 py-3 border-b border-border bg-background/50">
+                {/* Variant Selector Pills */}
+                {zaiInvestmentFlowVariants.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">User State:</span>
+                    <div
+                      className="inline-flex gap-1 p-1 rounded-lg"
+                      style={{ backgroundColor: 'var(--grey-100)' }}
+                    >
+                      {zaiInvestmentFlowVariants.map((variant) => (
+                        <button
+                          key={variant.id}
+                          onClick={() => setActiveZAIInvestmentFlowVariant(variant.id)}
+                          className={cn('px-2.5 py-1 text-sm font-medium rounded-md transition-all')}
+                          style={{
+                            backgroundColor: activeZAIInvestmentFlowVariant === variant.id ? '#FFFFFF' : 'transparent',
+                            color: activeZAIInvestmentFlowVariant === variant.id ? 'var(--grey-950)' : 'var(--grey-500)',
+                            boxShadow: activeZAIInvestmentFlowVariant === variant.id ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                          }}
+                        >
+                          {variant.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Direct render - no container */}
               <div className="flex-1 min-h-0 overflow-hidden">
-                {renderZAIInvestmentFlowView?.(() => {
+                {renderZAIInvestmentFlowView?.(activeZAIInvestmentFlowVariant, () => {
                   setViewMode('welcome02');
                   setActiveWelcome02Variant('accredited-returning');
                 })}

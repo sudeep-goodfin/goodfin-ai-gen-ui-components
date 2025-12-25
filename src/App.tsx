@@ -58,6 +58,7 @@ import {
   type OnboardingVariant,
   type WelcomeScreenVariant,
   type InputBarVersion,
+  type ZAIUserState,
 } from './components/views';
 import {
   Layout,
@@ -638,12 +639,14 @@ export function App() {
           />
         );
       }}
-      renderZAIInvestmentFlowView={(onDismiss) => (
+      renderZAIInvestmentFlowView={(userState, onDismiss) => (
         <ZAIInvestmentFlow
+          userState={userState as ZAIUserState}
           onDismiss={onDismiss}
           onComplete={() => {}}
         />
       )}
+      zaiInvestmentFlowVariants={zaiInvestmentFlowVariants}
       onboardingVariants={onboardingVariants}
       welcomeVariants={welcomeScreenVariants}
       welcome02Variants={welcome02Variants}
