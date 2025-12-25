@@ -73,6 +73,36 @@ export function WireBankDetails({ investmentAmount, onComplete }: WireBankDetail
     }
   };
 
+  const handleCopyAll = async () => {
+    let allDetails = '';
+
+    if (transferType === 'domestic') {
+      allDetails = `Account Number: ${DOMESTIC_BANK_DETAILS.accountNumber}
+Routing Number: ${DOMESTIC_BANK_DETAILS.routingNumber}
+Reference ID: ${DOMESTIC_BANK_DETAILS.referenceId}
+Recipient Name: ${DOMESTIC_BANK_DETAILS.recipientName}
+Recipient Address: ${DOMESTIC_BANK_DETAILS.recipientAddress}
+Memo / Reference: ${DOMESTIC_BANK_DETAILS.memoContent}`;
+    } else {
+      allDetails = `SWIFT/BIC Code: ${INTERNATIONAL_BANK_DETAILS.swiftBicCode}
+Routing Number: ${INTERNATIONAL_BANK_DETAILS.routingNumber}
+Bank Name: ${INTERNATIONAL_BANK_DETAILS.bankName}
+Bank Address: ${INTERNATIONAL_BANK_DETAILS.bankAddress}
+Beneficiary Name: ${INTERNATIONAL_BANK_DETAILS.beneficiaryName}
+Account Number: ${INTERNATIONAL_BANK_DETAILS.beneficiaryAccountNumber}
+Beneficiary Address: ${INTERNATIONAL_BANK_DETAILS.beneficiaryAddress}
+Reference ID: ${INTERNATIONAL_BANK_DETAILS.uniqueReferenceId}`;
+    }
+
+    try {
+      await navigator.clipboard.writeText(allDetails);
+      setCopiedField('all');
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
   const handleConfirmFunding = () => {
     if (!isFormValid) return;
     onComplete();
@@ -210,14 +240,38 @@ export function WireBankDetails({ investmentAmount, onComplete }: WireBankDetail
 
           {/* Bank Details Card */}
           <div className="bg-[#eae8eb] border border-[#48424a]/30 rounded-lg p-3">
-            {/* Processing Badge */}
-            <div className="bg-[#9b929e] px-1.5 py-0.5 rounded self-start inline-block mb-3">
-              <span
-                className="text-[9px] text-[#f0eef0] uppercase tracking-[0.3px] font-semibold"
-                style={{ fontFamily: 'Inter, sans-serif' }}
+            {/* Header with Processing Badge and Copy All */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="bg-[#9b929e] px-1.5 py-0.5 rounded">
+                <span
+                  className="text-[9px] text-[#f0eef0] uppercase tracking-[0.3px] font-semibold"
+                  style={{ fontFamily: 'Inter, sans-serif' }}
+                >
+                  Same-day processing before 3:00 PM PT
+                </span>
+              </div>
+              <button
+                onClick={handleCopyAll}
+                className={cn(
+                  'flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-all',
+                  copiedField === 'all'
+                    ? 'bg-[#c5ecc5] text-[#3a7a3a]'
+                    : 'bg-white/60 text-[#685f6a] hover:bg-white/80 border border-[#d0cdd2]'
+                )}
+                style={{ fontFamily: 'Soehne, sans-serif' }}
               >
-                Same-day processing before 3:00 PM PT
-              </span>
+                {copiedField === 'all' ? (
+                  <>
+                    <Check className="w-3 h-3" />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3 h-3" />
+                    Copy All
+                  </>
+                )}
+              </button>
             </div>
 
             {transferType === 'domestic' ? (

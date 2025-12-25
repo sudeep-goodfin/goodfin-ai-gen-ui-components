@@ -1097,78 +1097,81 @@ export function ZAIInvestmentFlow({
 
                             return (
                               <div className="px-5 pb-5 pt-4">
-                                <div className="bg-[#f7f7f8] rounded-xl p-4">
+                                <div className="bg-[#f7f7f8] rounded-xl p-5">
                                   {/* Header with completed badge */}
-                                  {isViewingCompleted && (
-                                    <div className="flex items-center justify-between mb-3">
-                                      <h3
-                                        className="text-[16px] font-medium text-[#373338]"
-                                        style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                  <div className="flex items-center justify-between mb-4">
+                                    <h3
+                                      className="text-[18px] font-medium text-[#373338]"
+                                      style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                    >
+                                      {displayStep.label}
+                                    </h3>
+                                    {isViewingCompleted && (
+                                      <span
+                                        className="text-[12px] text-[#5a8a5a] bg-[#5a8a5a]/10 px-3 py-1.5 rounded-full"
+                                        style={{ fontFamily: 'Soehne, sans-serif' }}
                                       >
-                                        {displayStep.label}
-                                      </h3>
-                                      <span className="text-[12px] text-[#5a8a5a] bg-[#5a8a5a]/10 px-2 py-1 rounded-full">
                                         Completed
                                       </span>
-                                    </div>
-                                  )}
+                                    )}
+                                  </div>
                                   {/* Total Investment */}
-                                  <div className="mb-4">
+                                  <div className="mb-5">
                                     <p
-                                      className="text-[12px] text-[#7f7582] mb-1"
+                                      className="text-[13px] text-[#7f7582] mb-1"
                                       style={{ fontFamily: 'Soehne, sans-serif' }}
                                     >
                                       Total Investment
                                     </p>
                                     <p
-                                      className="text-[28px] text-[#373338]"
+                                      className="text-[32px] text-[#373338]"
                                       style={{ fontFamily: 'Test Signifier, serif' }}
                                     >
-                                      ${amount.toLocaleString()}<span className="text-[18px] text-[#7f7582]">.00</span>
+                                      ${amount.toLocaleString()}<span className="text-[20px] text-[#a09a9f]">.00</span>
                                     </p>
                                   </div>
 
                                   {/* Fee Breakdown */}
-                                  <div className="border-t border-[#e0dce0] pt-3 space-y-2.5">
-                                    <div className="flex items-start justify-between gap-2">
-                                      <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2">
+                                  <div className="border-t border-[#e0dce0] pt-4 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center gap-2">
                                         <span
-                                          className="text-[14px] font-medium text-[#373338]"
+                                          className="text-[15px] font-medium text-[#373338]"
                                           style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                                         >
                                           Goodfin Admin Fee
                                         </span>
                                         <span
-                                          className="text-[12px] sm:text-[13px] text-[#7f7582]"
+                                          className="text-[14px] text-[#7f7582]"
                                           style={{ fontFamily: 'Soehne, sans-serif' }}
                                         >
                                           (5% fee one-time)
                                         </span>
                                       </div>
                                       <span
-                                        className="text-[14px] font-medium text-[#373338] flex-shrink-0"
+                                        className="text-[15px] font-medium text-[#373338]"
                                         style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                                       >
                                         ${adminFee.toLocaleString()}
                                       </span>
                                     </div>
-                                    <div className="flex items-start justify-between gap-2">
-                                      <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center gap-2">
                                         <span
-                                          className="text-[14px] font-medium text-[#373338]"
+                                          className="text-[15px] font-medium text-[#373338]"
                                           style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                                         >
                                           Underlying Fund Fee
                                         </span>
                                         <span
-                                          className="text-[12px] sm:text-[13px] text-[#7f7582]"
+                                          className="text-[14px] text-[#7f7582]"
                                           style={{ fontFamily: 'Soehne, sans-serif' }}
                                         >
                                           (10% fee one-time)
                                         </span>
                                       </div>
                                       <span
-                                        className="text-[14px] font-medium text-[#373338] flex-shrink-0"
+                                        className="text-[15px] font-medium text-[#373338]"
                                         style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                                       >
                                         ${fundFee.toLocaleString()}
@@ -1177,23 +1180,23 @@ export function ZAIInvestmentFlow({
                                   </div>
 
                                   {/* Carry Structure */}
-                                  <div className="border-t border-[#e0dce0] pt-3 mt-3">
+                                  <div className="border-t border-[#e0dce0] pt-4 mt-4">
                                     <p
-                                      className="text-[12px] text-[#7f7582] mb-2"
+                                      className="text-[13px] text-[#7f7582] mb-3"
                                       style={{ fontFamily: 'Soehne, sans-serif' }}
                                     >
                                       Carry Structure
                                     </p>
-                                    <div className="space-y-2">
+                                    <div className="space-y-3">
                                       <div className="flex items-center justify-between">
                                         <span
-                                          className="text-[14px] font-medium text-[#373338]"
+                                          className="text-[15px] font-medium text-[#373338]"
                                           style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                                         >
                                           Goodfin Carry
                                         </span>
                                         <span
-                                          className="text-[14px] text-[#7f7582]"
+                                          className="text-[15px] text-[#7f7582]"
                                           style={{ fontFamily: 'Soehne, sans-serif' }}
                                         >
                                           None
@@ -1201,13 +1204,13 @@ export function ZAIInvestmentFlow({
                                       </div>
                                       <div className="flex items-center justify-between">
                                         <span
-                                          className="text-[14px] font-medium text-[#373338]"
+                                          className="text-[15px] font-medium text-[#373338]"
                                           style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                                         >
                                           Underlying Fund Carry
                                         </span>
                                         <span
-                                          className="text-[14px] text-[#7f7582]"
+                                          className="text-[15px] text-[#7f7582]"
                                           style={{ fontFamily: 'Soehne, sans-serif' }}
                                         >
                                           5% recursive
@@ -1216,25 +1219,25 @@ export function ZAIInvestmentFlow({
                                     </div>
                                   </div>
 
-                                  {/* Apply Credit */}
-                                  {!isViewingCompleted && (
-                                    <div className="border-t border-[#e0dce0] pt-3 mt-3">
-                                      <div className="flex items-center justify-between mb-1.5">
+                                  {/* Apply Credit - editable when active, read-only when completed */}
+                                  {!isViewingCompleted ? (
+                                    <div className="border-t border-[#e0dce0] pt-4 mt-4">
+                                      <div className="flex items-center justify-between mb-2">
                                         <label
-                                          className="text-[12px] text-[#7f7582]"
+                                          className="text-[13px] text-[#7f7582]"
                                           style={{ fontFamily: 'Soehne, sans-serif' }}
                                         >
                                           Apply Credit
                                         </label>
                                         <span
-                                          className="text-[11px] text-[#5a8a5a] bg-[#5a8a5a]/10 px-2 py-0.5 rounded-full"
+                                          className="text-[12px] text-[#5a8a5a] bg-[#5a8a5a]/10 px-2.5 py-1 rounded-full"
                                           style={{ fontFamily: 'Soehne, sans-serif' }}
                                         >
                                           ${availableCredit.toLocaleString()} available
                                         </span>
                                       </div>
                                       <div className="relative">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-[#7f7582]">$</span>
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[15px] text-[#7f7582]">$</span>
                                         <input
                                           type="text"
                                           value={appliedCredit}
@@ -1242,31 +1245,28 @@ export function ZAIInvestmentFlow({
                                             const val = parseInt(e.target.value.replace(/[^0-9]/g, '')) || 0;
                                             setAppliedCredit(Math.min(val, availableCredit));
                                           }}
-                                          className="w-full pl-7 pr-3 py-2.5 bg-white border border-[#d9dde9] rounded-lg text-[13px] text-[#373338] placeholder:text-[#a9a4ab] outline-none focus:border-[#7f7582] transition-colors"
+                                          className="w-full pl-8 pr-4 py-3 bg-white border border-[#e0dce0] rounded-lg text-[15px] text-[#373338] placeholder:text-[#a9a4ab] outline-none focus:border-[#7f7582] transition-colors"
                                           style={{ fontFamily: 'Soehne, sans-serif' }}
                                         />
                                       </div>
                                       <p
-                                        className="text-[11px] text-[#7f7582] mt-1.5"
+                                        className="text-[13px] text-[#7f7582] mt-2"
                                         style={{ fontFamily: 'Soehne, sans-serif' }}
                                       >
                                         Credit from referrals and promotions. Adjust the amount you'd like to apply to this investment.
                                       </p>
                                     </div>
-                                  )}
-
-                                  {/* Total Due Summary */}
-                                  {!isViewingCompleted && appliedCredit > 0 && (
-                                    <div className="border-t border-[#e0dce0] pt-3 mt-3 space-y-2">
+                                  ) : appliedCredit > 0 && (
+                                    <div className="border-t border-[#e0dce0] pt-4 mt-4 space-y-3">
                                       <div className="flex items-center justify-between">
                                         <span
-                                          className="text-[13px] text-[#5a8a5a]"
+                                          className="text-[15px] text-[#5a8a5a]"
                                           style={{ fontFamily: 'Soehne, sans-serif' }}
                                         >
                                           Credit Applied
                                         </span>
                                         <span
-                                          className="text-[13px] text-[#5a8a5a]"
+                                          className="text-[15px] text-[#5a8a5a]"
                                           style={{ fontFamily: 'Soehne, sans-serif' }}
                                         >
                                           -${appliedCredit.toLocaleString()}
@@ -1274,13 +1274,47 @@ export function ZAIInvestmentFlow({
                                       </div>
                                       <div className="flex items-center justify-between">
                                         <span
-                                          className="text-[14px] font-medium text-[#373338]"
+                                          className="text-[16px] font-medium text-[#373338]"
+                                          style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                        >
+                                          Total Paid
+                                        </span>
+                                        <span
+                                          className="text-[16px] font-medium text-[#373338]"
+                                          style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                        >
+                                          ${(amount - appliedCredit).toLocaleString()}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Total Due Summary - only when active */}
+                                  {!isViewingCompleted && appliedCredit > 0 && (
+                                    <div className="border-t border-[#e0dce0] pt-4 mt-4 space-y-3">
+                                      <div className="flex items-center justify-between">
+                                        <span
+                                          className="text-[15px] text-[#5a8a5a]"
+                                          style={{ fontFamily: 'Soehne, sans-serif' }}
+                                        >
+                                          Credit Applied
+                                        </span>
+                                        <span
+                                          className="text-[15px] text-[#5a8a5a]"
+                                          style={{ fontFamily: 'Soehne, sans-serif' }}
+                                        >
+                                          -${appliedCredit.toLocaleString()}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center justify-between">
+                                        <span
+                                          className="text-[16px] font-medium text-[#373338]"
                                           style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                                         >
                                           Total Due
                                         </span>
                                         <span
-                                          className="text-[14px] font-medium text-[#373338]"
+                                          className="text-[16px] font-medium text-[#373338]"
                                           style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                                         >
                                           ${(amount - appliedCredit).toLocaleString()}
@@ -1293,7 +1327,7 @@ export function ZAIInvestmentFlow({
                                   {!isViewingCompleted && (
                                     <button
                                       onClick={() => handleStepClick(displayStep.id)}
-                                      className="w-full mt-4 inline-flex items-center justify-center gap-1.5 px-4 py-3 bg-[#373338] text-white text-sm font-medium rounded-lg hover:bg-[#29272a] transition-colors"
+                                      className="w-full mt-5 inline-flex items-center justify-center gap-1.5 px-4 py-3.5 bg-[#373338] text-white text-[15px] font-medium rounded-lg hover:bg-[#29272a] transition-colors"
                                       style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                                     >
                                       {displayStep.ctaLabel}
