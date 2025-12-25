@@ -177,9 +177,10 @@ interface InputBarProps {
     investmentAction?: InvestmentAction;
     formNudge?: string; // Shows a label above the input (e.g., "enter the investment amount")
     formCallout?: FormCallout; // Shows a callout header with deal info
+    shake?: boolean; // Trigger shake animation (e.g., for invalid input)
 }
 
-export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChange, onSubmit, investmentAction, formNudge, formCallout }: InputBarProps) {
+export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChange, onSubmit, investmentAction, formNudge, formCallout, shake }: InputBarProps) {
   const [inputValue, setInputValue] = useState('');
   const [showCommandPanel, setShowCommandPanel] = useState(false);
   const [panelMode, setPanelMode] = useState<PanelMode>('recipes');
@@ -384,11 +385,69 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
     );
   };
 
-  const moreMenuItems = [
+  // Base "more" items (always in the dropdown)
+  const baseMoreMenuItems = [
     { label: 'Community Insight', value: 'insight', icon: <FileText className="h-4 w-4 text-gray-500" /> },
     { label: 'My Portfolio', value: 'portfolio', icon: <Briefcase className="h-4 w-4 text-gray-500" /> },
     { label: 'Events', value: 'events', icon: <Calendar className="h-4 w-4 text-gray-500" /> },
   ];
+
+  // All main chip items (for mobile dropdown)
+  const mainChipItems = [
+    { label: 'Home', value: 'default', icon: <Home className="h-4 w-4 text-gray-500" /> },
+    { label: 'Deep Research', value: 'research', icon: (
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 12 16">
+        <path d={chatSvgPaths.p282ff240} fill="#6b7280" />
+        <path d={chatSvgPaths.pda45600} fill="#6b7280" />
+        <path d={chatSvgPaths.p27a45c00} fill="#6b7280" />
+      </svg>
+    )},
+    { label: 'Deals', value: 'deals', icon: (
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 20 20">
+        <path d={chatSvgPaths.pbe91080} stroke="#6b7280" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+        <path d={chatSvgPaths.p3fc7e680} stroke="#6b7280" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+        <path d={chatSvgPaths.p553b480} stroke="#6b7280" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+      </svg>
+    )},
+    { label: 'News', value: 'news', icon: (
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 20 20">
+        <path d={chatSvgPaths.p36490700} fill="#6b7280" />
+      </svg>
+    )},
+  ];
+
+  // Mobile: show non-active main items + base more items
+  // Desktop: show only base more items
+  const [isMobile, setIsMobile] = useState(false);
+
+  React.useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Extra slot item for mobile dropdown
+  const extraSlotMenuItem = extraSlotItem ? (() => {
+    switch (extraSlotItem) {
+      case 'insight':
+        return { label: 'Community Insight', value: 'insight', icon: <FileText className="h-4 w-4 text-gray-500" /> };
+      case 'events':
+        return { label: 'Events', value: 'events', icon: <Calendar className="h-4 w-4 text-gray-500" /> };
+      case 'portfolio':
+        return { label: 'My Portfolio', value: 'portfolio', icon: <Briefcase className="h-4 w-4 text-gray-500" /> };
+      default:
+        return null;
+    }
+  })() : null;
+
+  const moreMenuItems = isMobile
+    ? [
+        ...mainChipItems.filter(item => item.value !== currentMode),
+        ...(extraSlotMenuItem && extraSlotItem !== currentMode ? [extraSlotMenuItem] : []),
+        ...baseMoreMenuItems.filter(item => item.value !== currentMode && item.value !== extraSlotItem),
+      ]
+    : baseMoreMenuItems;
 
   const isInvestmentMode = currentMode === 'investment' && investmentAction;
   const hasNudge = !!formNudge;
@@ -397,7 +456,10 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
   return (
     <div className="w-full max-w-3xl flex flex-col items-center gap-2">
       {/* Wrapper for callout + input */}
-      <div className="w-full relative">
+      <div className={cn(
+        "w-full relative",
+        shake && "animate-shake"
+      )}>
         {/* Form Callout Header */}
         {hasCallout && (
           <div
@@ -435,18 +497,18 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
             )}
 
             {/* Main row with deal info and header text */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
                 {formCallout.dealLogo && (
                   <img
                     src={formCallout.dealLogo}
                     alt="Deal"
-                    className="w-10 h-10 rounded-lg object-cover"
+                    className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
                   />
                 )}
                 <span
                   className={cn(
-                    "text-[15px] font-medium text-[#29272a]",
+                    "text-[14px] md:text-[15px] font-medium text-[#29272a] truncate",
                     formCallout.state === 'error' && "text-[#8a2929]"
                   )}
                   style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
@@ -454,12 +516,13 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                   {formCallout.headerText}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
                 {formCallout.onClose && (
                   <>
+                    {/* Investment progress button - hidden on mobile */}
                     <button
                       onClick={formCallout.onProgressClick}
-                      className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-[#685f6a] bg-white/60 hover:bg-white/80 border border-[#d0cdd2] rounded-md transition-colors"
+                      className="hidden md:flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-[#685f6a] bg-white/60 hover:bg-white/80 border border-[#d0cdd2] rounded-md transition-colors"
                       style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                     >
                       Investment progress
@@ -467,10 +530,10 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                     {formCallout.displayValue && (
                       <button
                         onClick={formCallout.onEditAmount}
-                        className="group flex items-center gap-1.5 hover:bg-black/5 rounded-md px-2 py-1 transition-colors"
+                        className="group flex items-center gap-1 md:gap-1.5 hover:bg-black/5 rounded-md px-1.5 md:px-2 py-1 transition-colors"
                       >
                         <span
-                          className="text-[14px] font-medium text-[#29272a]"
+                          className="text-[13px] md:text-[14px] font-medium text-[#29272a]"
                           style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                         >
                           {formCallout.displayValue}
@@ -480,9 +543,9 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                     )}
                     <button
                       onClick={formCallout.onClose}
-                      className="flex items-center justify-center w-5 h-5 rounded-full hover:bg-black/10 transition-colors"
+                      className="flex items-center justify-center w-6 h-6 md:w-5 md:h-5 rounded-full hover:bg-black/10 transition-colors"
                     >
-                      <X className="w-3.5 h-3.5 text-[#29272a]" />
+                      <X className="w-4 h-4 md:w-3.5 md:h-3.5 text-[#29272a]" />
                     </button>
                   </>
                 )}
@@ -709,82 +772,122 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 {/* Left Actions (Chips) - Hidden in investment mode or when callout is shown */}
                 {!isInvestmentMode && !hasCallout ? (
                 <div className="flex gap-[4px] items-center flex-wrap">
-                    {/* Home */}
-                    <Chip
-                        label="Home"
-                        isActive={currentMode === 'default'}
-                        onClick={() => handleToggle('default')}
+                    {/* Home - hidden on mobile unless active */}
+                    <div className={cn(
+                      currentMode === 'default' ? "block" : "hidden md:block"
+                    )}>
+                      <Chip
+                          label="Home"
+                          isActive={currentMode === 'default'}
+                          onClick={() => handleToggle('default')}
+                          icon={
+                              <Home className="size-[11px] text-[#7f7582]" />
+                          }
+                          activeIcon={
+                              <Home className="size-[11px] text-[#f0eef0]" />
+                          }
+                      />
+                    </div>
+
+                    {/* Deep Research - hidden on mobile unless active */}
+                    <div className={cn(
+                      currentMode === 'research' ? "block" : "hidden md:block"
+                    )}>
+                      <Chip
+                          label="Deep Research"
+                          isActive={currentMode === 'research'}
+                          onClick={() => handleToggle('research')}
+                          icon={
+                              <svg className="size-[11px]" fill="none" viewBox="0 0 12 16">
+                                <path d={chatSvgPaths.p282ff240} fill="#7f7582" />
+                                <path d={chatSvgPaths.pda45600} fill="#7f7582" />
+                                <path d={chatSvgPaths.p27a45c00} fill="#7f7582" />
+                              </svg>
+                          }
+                          activeIcon={
+                              <svg className="size-[11px]" fill="none" viewBox="0 0 12 16">
+                                <path d={chatSvgPaths.p282ff240} fill="#f0eef0" />
+                                <path d={chatSvgPaths.pda45600} fill="#f0eef0" />
+                                <path d={chatSvgPaths.p27a45c00} fill="#f0eef0" />
+                              </svg>
+                          }
+                      />
+                    </div>
+
+                    {/* Deals - hidden on mobile unless active */}
+                    <div className={cn(
+                      currentMode === 'deals' ? "block" : "hidden md:block"
+                    )}>
+                      <Chip
+                          label="Deals"
+                          isActive={currentMode === 'deals'}
+                          onClick={() => handleToggle('deals')}
+                          icon={
+                              <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
+                                <path d={chatSvgPaths.pbe91080} stroke="#7f7582" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                                <path d={chatSvgPaths.p3fc7e680} stroke="#7f7582" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                                <path d={chatSvgPaths.p553b480} stroke="#7f7582" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                              </svg>
+                          }
+                          activeIcon={
+                              <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
+                                <path d={chatSvgPaths.pbe91080} stroke="#f0eef0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                                <path d={chatSvgPaths.p3fc7e680} stroke="#f0eef0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                                <path d={chatSvgPaths.p553b480} stroke="#f0eef0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                              </svg>
+                          }
+                      />
+                    </div>
+
+                    {/* News - hidden on mobile unless active */}
+                    <div className={cn(
+                      currentMode === 'news' ? "block" : "hidden md:block"
+                    )}>
+                      <Chip
+                          label="News"
+                          isActive={currentMode === 'news'}
+                          onClick={() => handleToggle('news')}
+                          icon={
+                              <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
+                                <path d={chatSvgPaths.p36490700} fill="#7f7582" />
+                              </svg>
+                          }
+                          activeIcon={
+                              <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
+                                <path d={chatSvgPaths.p36490700} fill="#f0eef0" />
+                              </svg>
+                          }
+                      />
+                    </div>
+
+                    {/* Dynamic Extra Slot - hidden on mobile unless active */}
+                    {extraSlotItem && (
+                      <div className={cn(
+                        currentMode === extraSlotItem ? "block" : "hidden md:block"
+                      )}>
+                        {renderExtraSlot()}
+                      </div>
+                    )}
+
+                    {/* Mobile: Show active "more" item as chip when selected */}
+                    {isMobile && ['insight', 'events', 'portfolio'].includes(currentMode) && currentMode !== extraSlotItem && (
+                      <Chip
+                        label={
+                          currentMode === 'insight' ? 'Community Insight' :
+                          currentMode === 'events' ? 'Events' :
+                          'My Portfolio'
+                        }
+                        isActive={true}
+                        onClick={() => handleToggle(currentMode)}
                         icon={
-                            <Home className="size-[11px] text-[#7f7582]" />
+                          currentMode === 'insight' ? <FileText className="size-[11px] text-[#f0eef0]" /> :
+                          currentMode === 'events' ? <Calendar className="size-[11px] text-[#f0eef0]" /> :
+                          <Briefcase className="size-[11px] text-[#f0eef0]" />
                         }
-                        activeIcon={
-                            <Home className="size-[11px] text-[#f0eef0]" />
-                        }
-                    />
+                      />
+                    )}
 
-                    {/* Deep Research */}
-                    <Chip
-                        label="Deep Research"
-                        isActive={currentMode === 'research'}
-                        onClick={() => handleToggle('research')}
-                        icon={
-                            <svg className="size-[11px]" fill="none" viewBox="0 0 12 16">
-                              <path d={chatSvgPaths.p282ff240} fill="#7f7582" />
-                              <path d={chatSvgPaths.pda45600} fill="#7f7582" />
-                              <path d={chatSvgPaths.p27a45c00} fill="#7f7582" />
-                            </svg>
-                        }
-                        activeIcon={
-                            <svg className="size-[11px]" fill="none" viewBox="0 0 12 16">
-                              <path d={chatSvgPaths.p282ff240} fill="#f0eef0" />
-                              <path d={chatSvgPaths.pda45600} fill="#f0eef0" />
-                              <path d={chatSvgPaths.p27a45c00} fill="#f0eef0" />
-                            </svg>
-                        }
-                    />
-
-                    {/* Deals */}
-                    <Chip
-                        label="Deals"
-                        isActive={currentMode === 'deals'}
-                        onClick={() => handleToggle('deals')}
-                        icon={
-                            <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
-                              <path d={chatSvgPaths.pbe91080} stroke="#7f7582" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                              <path d={chatSvgPaths.p3fc7e680} stroke="#7f7582" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                              <path d={chatSvgPaths.p553b480} stroke="#7f7582" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                            </svg>
-                        }
-                        activeIcon={
-                            <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
-                              <path d={chatSvgPaths.pbe91080} stroke="#f0eef0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                              <path d={chatSvgPaths.p3fc7e680} stroke="#f0eef0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                              <path d={chatSvgPaths.p553b480} stroke="#f0eef0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                            </svg>
-                        }
-                    />
-
-                    {/* News */}
-                    <Chip
-                        label="News"
-                        isActive={currentMode === 'news'}
-                        onClick={() => handleToggle('news')}
-                        icon={
-                            <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
-                              <path d={chatSvgPaths.p36490700} fill="#7f7582" />
-                            </svg>
-                        }
-                        activeIcon={
-                            <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
-                              <path d={chatSvgPaths.p36490700} fill="#f0eef0" />
-                            </svg>
-                        }
-                    />
-
-                    {/* Dynamic Extra Slot */}
-                    {renderExtraSlot()}
-
-                    {/* More - With Simple Dropdown */}
+                    {/* More - With Simple Dropdown - always visible */}
                     <SimpleDropdown
                       items={moreMenuItems}
                       onSelect={(value) => onModeChange?.(value as ChatMode)}
