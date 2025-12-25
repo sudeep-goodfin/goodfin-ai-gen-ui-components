@@ -92,6 +92,26 @@ export function ZAIInvestmentFlow({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // Commit confirmation state
+  const [showCommitConfirm, setShowCommitConfirm] = useState(false);
+  const [commitCheckboxes, setCommitCheckboxes] = useState([
+    {
+      id: 'process',
+      text: 'By entering an amount above, you are requesting an allocation to invest in this deal and will be expected to complete the process in a timely manner. This includes signing of legal documents, a brief compliance check and wiring of funds from your bank account.',
+      checked: false,
+    },
+    {
+      id: 'allocation',
+      text: 'Your allocation will be reserved only after we confirm receipt of your wire transfer. The investment will be final only after the full transaction with the underlying fund or company is closed, which can take weeks or longer, depending on the circumstances of the transaction.',
+      checked: false,
+    },
+    {
+      id: 'ownership',
+      text: 'I understand and acknowledge that I am not purchasing direct shares or ownership in the target company or non-Goodfin fund. My investment represents an interest in a Goodfin-managed vehicle, which pools capital and holds the shares or interests directly or indirectly through another entity or entities.',
+      checked: false,
+    },
+  ]);
+
   // Minimum investment amount
   const MIN_INVESTMENT = 10000;
 
@@ -195,7 +215,7 @@ export function ZAIInvestmentFlow({
       id: 'commit',
       label: 'Commit',
       status: getCommitStatus(),
-      description: `Confirm your investment of $${deal.minInvestment.toLocaleString()} in ${deal.companyName}. This locks in your allocation.`,
+      description: `Confirm your investment of $${(investmentAmount || deal.minInvestment).toLocaleString()} in ${deal.companyName}. This locks in your allocation.`,
       ctaLabel: 'Confirm commitment',
     },
     {
@@ -250,7 +270,8 @@ export function ZAIInvestmentFlow({
   // Handle step click
   const handleStepClick = (stepId: string) => {
     if (stepId === 'commit' && !hasCommitted) {
-      setHasCommitted(true);
+      // Show commit confirmation instead of immediately committing
+      setShowCommitConfirm(true);
     } else if (stepId === 'signing') {
       setActiveTab('documents');
     } else if (stepId === 'kyc' && getKYCStatus() === 'current') {
@@ -260,9 +281,31 @@ export function ZAIInvestmentFlow({
     }
   };
 
+  // Handle checkbox change for commit confirmation
+  const handleCommitCheckboxChange = (id: string, checked: boolean) => {
+    setCommitCheckboxes(prev =>
+      prev.map(cb => cb.id === id ? { ...cb, checked } : cb)
+    );
+  };
+
+  // Handle commit confirmation submission
+  const handleCommitConfirm = () => {
+    if (commitCheckboxes.every(cb => cb.checked)) {
+      setHasCommitted(true);
+      setShowCommitConfirm(false);
+      // Reset checkboxes for next time
+      setCommitCheckboxes(prev => prev.map(cb => ({ ...cb, checked: false })));
+    }
+  };
+
   // Handle close button click - show confirmation modal
   const handleCloseClick = () => {
-    setShowExitModal(true);
+    if (showCommitConfirm) {
+      // Cancel commit confirmation and go back to regular flow
+      setShowCommitConfirm(false);
+    } else {
+      setShowExitModal(true);
+    }
   };
 
   // Handle confirm exit - go back to home
@@ -277,6 +320,8 @@ export function ZAIInvestmentFlow({
     setIsIdentityVerified(false);
     setIsTransferComplete(false);
     setUserMessage('');
+    setShowCommitConfirm(false);
+    setCommitCheckboxes(prev => prev.map(cb => ({ ...cb, checked: false })));
   };
 
   // Handle cancel exit - close modal and continue
@@ -380,8 +425,8 @@ export function ZAIInvestmentFlow({
 
             {/* Main Scrollable Content */}
             <ScrollAreaPrimitive.Root className="flex-1 overflow-hidden">
-              <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-none [&>div]:!block">
-                <div className="flex flex-col items-center p-6 pb-32 gap-6 w-full min-h-full">
+              <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-none [&>div]:!block overflow-y-auto">
+                <div className="flex flex-col items-center p-6 pb-52 gap-6 w-full">
                   {flowState === 'home' && (
                     /* Home State - Greeting */
                     <div className="w-full max-w-2xl mt-16">
@@ -597,15 +642,28 @@ export function ZAIInvestmentFlow({
                   currentMode={(flowState === 'loading' || flowState === 'askAmount' || flowState === 'processingAmount' || flowState === 'investing') ? 'investment' : 'default'}
                   onSubmit={flowState === 'askAmount' ? handleAmountSubmit : handleInputSubmit}
                   formCallout={(flowState === 'askAmount' || flowState === 'processingAmount' || flowState === 'investing') ? {
-                    state: amountError ? 'error' : flowState === 'askAmount' ? 'awaiting_input' : 'confirmed',
+                    state: showCommitConfirm
+                      ? 'commit_confirm'
+                      : amountError
+                        ? 'error'
+                        : flowState === 'askAmount'
+                          ? 'awaiting_input'
+                          : 'confirmed',
                     dealLogo: deal.logo,
                     headerText: amountError
                       ? amountError
-                      : flowState === 'askAmount'
-                        ? 'How much would you like to invest?'
-                        : `Invest in ${deal.companyName}`,
+                      : showCommitConfirm
+                        ? 'Confirm your commitment'
+                        : flowState === 'askAmount'
+                          ? 'How much would you like to invest?'
+                          : `Invest in ${deal.companyName}`,
                     displayValue: investmentAmount ? `$${investmentAmount.toLocaleString()}` : undefined,
                     onClose: handleCloseClick,
+                    // Commit confirmation props
+                    checkboxes: showCommitConfirm ? commitCheckboxes : undefined,
+                    onCheckboxChange: showCommitConfirm ? handleCommitCheckboxChange : undefined,
+                    ctaText: 'I agree and understand',
+                    onCtaClick: handleCommitConfirm,
                   } : undefined}
                 />
               </div>
