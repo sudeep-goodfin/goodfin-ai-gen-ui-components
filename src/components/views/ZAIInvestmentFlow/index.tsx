@@ -7,7 +7,7 @@ import { Sidebar } from '../Welcome02/components/layout/Sidebar';
 import { InputBarV02 } from '../Welcome02/components/dashboard/InputBar';
 import { Greeting } from '../Welcome02/components/dashboard/Greeting';
 import { ThinkingText } from '../AIGreeting/ThinkingText';
-import { VerticalStepper, type Step, type StepStatus } from './components/VerticalStepper';
+import { HorizontalStepper, type Step, type StepStatus } from './components/HorizontalStepper';
 import { svgPaths } from '../Welcome02/svgPaths';
 import { IdentityVerificationModal } from './components/IdentityVerificationModal';
 import { TransferModal } from './components/TransferModal';
@@ -613,7 +613,7 @@ export function ZAIInvestmentFlow({
                         Great! I've prepared your investment of ${investmentAmount?.toLocaleString()} in {deal.companyName}. Let's walk through the steps:
                       </p>
 
-                      {/* Investment Card with Stepper */}
+                      {/* Investment Card with Horizontal Stepper */}
                       <div className="bg-[#e8e5e8]/50 rounded-xl overflow-hidden">
                         {/* Card Header - Deal Info */}
                         <div className="flex items-center gap-4 px-5 py-4 border-b border-[#e0dce0]/50">
@@ -633,10 +633,41 @@ export function ZAIInvestmentFlow({
                           </div>
                         </div>
 
-                        {/* Stepper Content */}
-                        <div className="px-5 py-5">
-                          <VerticalStepper steps={steps} onStepClick={handleStepClick} />
+                        {/* Horizontal Stepper */}
+                        <div className="px-5 pt-5">
+                          <HorizontalStepper steps={steps} />
                         </div>
+
+                        {/* Current Step Details */}
+                        {(() => {
+                          const currentStep = steps.find(s => s.status === 'current');
+                          if (!currentStep) return null;
+                          return (
+                            <div className="px-5 pb-5 pt-4">
+                              <div className="bg-white rounded-xl p-4 border border-[#e0dce0]/50">
+                                <h3
+                                  className="text-[16px] font-medium text-[#373338] mb-2"
+                                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                >
+                                  {currentStep.label}
+                                </h3>
+                                <p
+                                  className="text-[14px] text-[#7f7582] leading-relaxed mb-4"
+                                  style={{ fontFamily: 'Soehne, sans-serif' }}
+                                >
+                                  {currentStep.description}
+                                </p>
+                                <button
+                                  onClick={() => handleStepClick(currentStep.id)}
+                                  className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#373338] text-white text-sm font-medium rounded-lg hover:bg-[#29272a] transition-colors"
+                                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                >
+                                  {currentStep.ctaLabel}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   )}
@@ -735,9 +766,6 @@ export function ZAIInvestmentFlow({
         onClose={() => setShowTransferModal(false)}
         onBack={() => setShowTransferModal(false)}
         onComplete={(amount) => handleTransferComplete(amount)}
-        commitCompleted={hasCommitted}
-        signingCompleted={signedDocuments.length === INVESTMENT_DOCUMENTS.length}
-        kycCompleted={isIdentityVerified}
       />
 
       <DocumentSigningModal

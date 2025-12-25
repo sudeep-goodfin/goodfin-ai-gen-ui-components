@@ -7,6 +7,8 @@ export interface Step {
   id: string;
   label: string;
   status: StepStatus;
+  description?: string;
+  ctaLabel?: string;
 }
 
 interface HorizontalStepperProps {
