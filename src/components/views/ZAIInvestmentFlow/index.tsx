@@ -230,7 +230,7 @@ export function ZAIInvestmentFlow({
       label: 'KYC',
       status: getKYCStatus(),
       description: 'Complete identity verification to confirm your accredited investor status. This typically takes 2-3 minutes.',
-      ctaLabel: 'Verify identity',
+      ctaLabel: 'Verify with Footprint',
     },
     {
       id: 'wire',
@@ -426,7 +426,7 @@ export function ZAIInvestmentFlow({
             {/* Main Scrollable Content */}
             <ScrollAreaPrimitive.Root className="flex-1 overflow-hidden">
               <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-none [&>div]:!block overflow-y-auto">
-                <div className="flex flex-col items-center p-6 pb-52 gap-6 w-full">
+                <div className="flex flex-col items-center p-6 pb-80 gap-6 w-full">
                   {flowState === 'home' && (
                     /* Home State - Greeting */
                     <div className="w-full max-w-2xl mt-16">
