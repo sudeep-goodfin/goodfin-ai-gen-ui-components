@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { X, ArrowLeft, Check, Loader2, Clock, ChevronDown, Copy } from 'lucide-react';
+import { X, ArrowLeft, Check, Loader2, ChevronDown, Copy, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { DealInfo } from '../types';
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
 
-type TransferStep = 'input' | 'processing' | 'success';
+type TransferStep = 'details' | 'confirm' | 'processing' | 'success';
 type TransferType = 'domestic' | 'international';
 
 interface TransferModalProps {
@@ -16,33 +16,45 @@ interface TransferModalProps {
   onComplete: (amount: number) => void;
 }
 
-// Wire transfer details
-const WIRE_DETAILS = {
-  domestic: {
-    accountNumber: '708230189443067',
-    routingNumber: '121145433',
-    recipientName: 'Column National Association',
-    address: '1 Letterman Drive, Building A, Suite A4-700 San Francisco, CA 94129',
-  },
-  international: {
-    accountNumber: '708230189443067',
-    swiftCode: 'CLNAUS66',
-    recipientName: 'Column National Association',
-    address: '1 Letterman Drive, Building A, Suite A4-700 San Francisco, CA 94129',
-  },
+// Domestic bank details
+const DOMESTIC_BANK_DETAILS = {
+  accountNumber: '9800000000',
+  routingNumber: '084009519',
+  referenceId: 'GF-2024-INV-78432',
+  recipientName: 'Goodfin Capital LLC',
+  recipientAddress: '123 Financial District, Suite 400, San Francisco, CA 94111',
+  memoContent: 'Investment - GF-2024-INV-78432',
+};
+
+// International bank details
+const INTERNATIONAL_BANK_DETAILS = {
+  // Step 1: Beneficiary bank information
+  swiftBicCode: 'CLNOUS66MER',
+  routingNumber: '121145433',
+  bankName: 'Column National Association',
+  bankAddress: '1 Letterman Drive, Building A, Suite A4-700 San Francisco, CA 94129 USA',
+  // Step 2: Beneficiary information
+  beneficiaryName: 'GoodFin, Inc.',
+  beneficiaryAccountNumber: '187418829466566',
+  beneficiaryAddress: '16192 Coastal Highway, Lewes, DE 19958',
+  // Step 3: Memo content
+  uniqueReferenceId: 'TF4GN',
 };
 
 const COUNTRY_OPTIONS = [
-  'United States of America (the)',
+  'United States',
   'Canada',
   'United Kingdom',
   'Germany',
   'France',
   'Australia',
-  'Japan',
-  'Singapore',
-  'Switzerland',
   'Other',
+];
+
+const ACCOUNT_HOLDER_OPTIONS = [
+  'I am the account holder',
+  'Joint account holder',
+  'Business account',
 ];
 
 const PROCESSING_TEXTS = [
@@ -60,25 +72,22 @@ export function TransferModal({
   onBack,
   onComplete,
 }: TransferModalProps) {
-  const [step, setStep] = useState<TransferStep>('input');
+  const [step, setStep] = useState<TransferStep>('details');
   const [transferType, setTransferType] = useState<TransferType>('domestic');
   const [processingTextIndex, setProcessingTextIndex] = useState(0);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
 
-  // Form fields
+  // Funding source form state
   const [bankName, setBankName] = useState('');
-  const [country, setCountry] = useState('United States of America (the)');
-  const [isCustomer, setIsCustomer] = useState('Yes');
+  const [bankLocation, setBankLocation] = useState('');
+  const [accountHolder, setAccountHolder] = useState('');
   const [promoCode, setPromoCode] = useState('');
-  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
-  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
-
-  // Generate unique reference ID
-  const referenceId = `32IE0`;
-  const investorName = 'sudeep mp';
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  const [showAccountHolderDropdown, setShowAccountHolderDropdown] = useState(false);
 
   // Form validation
-  const isFormValid = bankName.trim().length > 0;
+  const isFormValid = bankName.trim() && bankLocation && accountHolder;
 
   // Handle copy to clipboard
   const handleCopy = async (text: string, field: string) => {
@@ -91,7 +100,11 @@ export function TransferModal({
     }
   };
 
-  const handleConfirmTransfer = () => {
+  const handleInitiateTransfer = () => {
+    setStep('confirm');
+  };
+
+  const handleConfirmFunding = () => {
     if (!isFormValid) return;
     setStep('processing');
   };
@@ -122,19 +135,76 @@ export function TransferModal({
     const timeout = setTimeout(() => {
       onComplete(investmentAmount);
       // Reset state
-      setStep('input');
+      setStep('details');
       setBankName('');
+      setBankLocation('');
+      setAccountHolder('');
       setPromoCode('');
     }, 2500);
 
     return () => clearTimeout(timeout);
   }, [step, onComplete, investmentAmount]);
 
-  const wireDetails = WIRE_DETAILS[transferType];
-
   if (!isOpen) return null;
 
   const isProcessingOrSuccess = step === 'processing' || step === 'success';
+
+  // Copy field component with click-to-copy behavior
+  const CopyField = ({
+    label,
+    value,
+    fieldKey,
+  }: {
+    label: string;
+    value: string;
+    fieldKey: string;
+  }) => {
+    const isCopied = copiedField === fieldKey;
+
+    return (
+      <div
+        className={cn(
+          'group/row flex items-start justify-between py-2 px-3 -mx-3 rounded-lg cursor-pointer',
+          'transition-all duration-500 ease-out',
+          isCopied ? 'bg-[#dcf5dc]' : 'bg-transparent hover:bg-[#f7f7f8]'
+        )}
+        onClick={() => handleCopy(value, fieldKey)}
+      >
+        <div className="flex flex-col gap-0.5 flex-1 mr-3">
+          <span
+            className="text-[11px] leading-[16px] text-[#8a7f91] uppercase tracking-[0.6px] font-semibold"
+            style={{ fontFamily: 'Inter, sans-serif' }}
+          >
+            {label}
+          </span>
+          <span
+            className="text-[14px] leading-[20px] text-[#373338]"
+            style={{ fontFamily: 'Soehne, sans-serif' }}
+          >
+            {value}
+          </span>
+        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleCopy(value, fieldKey);
+          }}
+          className={cn(
+            'p-2 rounded-lg transition-all flex-shrink-0',
+            isCopied
+              ? 'bg-[#c5ecc5] opacity-100'
+              : 'opacity-0 group-hover/row:opacity-100 hover:bg-[#e0dce0]'
+          )}
+        >
+          {isCopied ? (
+            <Check className="w-4 h-4 text-[#3a7a3a]" />
+          ) : (
+            <Copy className="w-4 h-4 text-[#685f6a]" />
+          )}
+        </button>
+      </div>
+    );
+  };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
@@ -145,12 +215,19 @@ export function TransferModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-lg mx-4 bg-white rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
+      <div className="relative w-full max-w-xl mx-4 bg-white rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#e0dce0] flex-shrink-0">
-          {onBack && !isProcessingOrSuccess ? (
+          {onBack && !isProcessingOrSuccess && step === 'details' ? (
             <button
               onClick={onBack}
+              className="p-1.5 rounded-full hover:bg-[#f7f7f8] transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 text-[#7f7582]" />
+            </button>
+          ) : step === 'confirm' ? (
+            <button
+              onClick={() => setStep('details')}
               className="p-1.5 rounded-full hover:bg-[#f7f7f8] transition-colors"
             >
               <ArrowLeft className="w-5 h-5 text-[#7f7582]" />
@@ -158,6 +235,12 @@ export function TransferModal({
           ) : (
             <div className="w-8" />
           )}
+          <h3
+            className="text-[16px] font-medium text-[#373338]"
+            style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+          >
+            {step === 'details' ? 'Receiving Bank Details' : step === 'confirm' ? 'Confirm Funding Source' : ''}
+          </h3>
           {!isProcessingOrSuccess && (
             <button
               onClick={onClose}
@@ -166,373 +249,421 @@ export function TransferModal({
               <X className="w-5 h-5 text-[#7f7582]" />
             </button>
           )}
+          {isProcessingOrSuccess && <div className="w-8" />}
         </div>
 
         {/* Scrollable Content */}
         <ScrollAreaPrimitive.Root className="flex-1 overflow-hidden">
           <ScrollAreaPrimitive.Viewport className="h-full w-full">
             <div className="p-5">
-              {step === 'input' && (
+              {step === 'details' && (
                 <div>
-                  {/* Title */}
-                  <h2
-                    className="text-[22px] text-center text-[#373338] mb-1"
-                    style={{ fontFamily: 'Test Signifier, serif' }}
-                  >
-                    Transfer your funds
-                  </h2>
-
-                  {/* Amount */}
-                  <p
-                    className="text-[36px] text-center text-[#373338] mb-4"
-                    style={{ fontFamily: 'Test Signifier, serif' }}
-                  >
-                    ${investmentAmount.toLocaleString()}
-                  </p>
+                  {/* Amount Header */}
+                  <div className="text-center mb-5">
+                    <p
+                      className="text-[14px] text-[#7f7582] mb-1"
+                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                    >
+                      Transfer Amount
+                    </p>
+                    <p
+                      className="text-[32px] text-[#373338]"
+                      style={{ fontFamily: 'Test Signifier, serif' }}
+                    >
+                      ${investmentAmount.toLocaleString()}
+                    </p>
+                  </div>
 
                   {/* Description */}
                   <p
-                    className="text-[14px] text-center text-[#7f7582] mb-6 leading-relaxed"
+                    className="text-[14px] text-center text-[#7f7582] mb-5 leading-relaxed"
                     style={{ fontFamily: 'Soehne, sans-serif' }}
                   >
-                    To add funds, send a wire from your bank to Goodfin using the details below.
-                    We'll email you when the transfer is complete.
+                    We'll reserve your allocation once your wire is received and confirmed.
                   </p>
 
-                  {/* Domestic / International Toggle */}
-                  <div className="flex gap-2 mb-6">
-                    <button
-                      onClick={() => setTransferType('domestic')}
-                      className={cn(
-                        'px-4 py-2.5 rounded-lg text-[14px] font-medium transition-colors',
-                        transferType === 'domestic'
-                          ? 'bg-[#373338] text-white'
-                          : 'bg-white text-[#373338] border border-[#e0dce0] hover:bg-[#f7f7f8]'
-                      )}
+                  {/* Transfer Type Dropdown */}
+                  <div className="mb-5">
+                    <label
+                      className="block text-[13px] text-[#373338] font-medium mb-2"
                       style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                     >
-                      Domestic
-                    </button>
-                    <button
-                      onClick={() => setTransferType('international')}
-                      className={cn(
-                        'px-4 py-2.5 rounded-lg text-[14px] font-medium transition-colors',
-                        transferType === 'international'
-                          ? 'bg-[#373338] text-white'
-                          : 'bg-white text-[#373338] border border-[#e0dce0] hover:bg-[#f7f7f8]'
+                      Are you sending funds from the U.S.?
+                    </label>
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowDropdown(!showDropdown)}
+                        className="w-full flex items-center justify-between px-4 py-3 bg-white border border-[#e0dce0] rounded-xl text-[14px] text-[#373338] hover:border-[#7f7582] transition-colors"
+                        style={{ fontFamily: 'Soehne, sans-serif' }}
+                      >
+                        <span>{transferType === 'domestic' ? 'Yes, Domestic' : 'No, International'}</span>
+                        <ChevronDown className={cn('w-5 h-5 text-[#7f7582] transition-transform', showDropdown && 'rotate-180')} />
+                      </button>
+
+                      {showDropdown && (
+                        <>
+                          <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
+                          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#e0dce0] rounded-xl shadow-lg z-50">
+                            <button
+                              onClick={() => {
+                                setTransferType('domestic');
+                                setShowDropdown(false);
+                              }}
+                              className={cn(
+                                'w-full px-4 py-3 text-left text-[14px] hover:bg-[#f7f7f8] rounded-t-xl',
+                                transferType === 'domestic' && 'bg-[#f7f7f8]'
+                              )}
+                              style={{ fontFamily: 'Soehne, sans-serif' }}
+                            >
+                              Yes, Domestic
+                            </button>
+                            <button
+                              onClick={() => {
+                                setTransferType('international');
+                                setShowDropdown(false);
+                              }}
+                              className={cn(
+                                'w-full px-4 py-3 text-left text-[14px] hover:bg-[#f7f7f8] rounded-b-xl',
+                                transferType === 'international' && 'bg-[#f7f7f8]'
+                              )}
+                              style={{ fontFamily: 'Soehne, sans-serif' }}
+                            >
+                              No, International
+                            </button>
+                          </div>
+                        </>
                       )}
-                      style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                    >
-                      International
-                    </button>
-                  </div>
-
-                  {/* Wire Details */}
-                  <div className="space-y-4 mb-6">
-                    {/* Account Number */}
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-[12px] text-[#7f7582] mb-1" style={{ fontFamily: 'Soehne, sans-serif' }}>
-                          Account Number
-                        </p>
-                        <p className="text-[15px] text-[#373338]" style={{ fontFamily: 'Soehne, sans-serif' }}>
-                          {wireDetails.accountNumber}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleCopy(wireDetails.accountNumber, 'account')}
-                        className={cn(
-                          'px-4 py-2 rounded-lg text-[14px] font-medium border transition-colors flex items-center gap-2',
-                          copiedField === 'account'
-                            ? 'bg-[#e8f5e8] border-[#5a8a5a] text-[#5a8a5a]'
-                            : 'bg-white border-[#e0dce0] text-[#373338] hover:bg-[#f7f7f8]'
-                        )}
-                        style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                      >
-                        {copiedField === 'account' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                        {copiedField === 'account' ? 'Copied' : 'Copy'}
-                      </button>
-                    </div>
-
-                    {/* Routing Number / SWIFT */}
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-[12px] text-[#7f7582] mb-1" style={{ fontFamily: 'Soehne, sans-serif' }}>
-                          {transferType === 'domestic' ? 'Routing Number' : 'SWIFT Code'}
-                        </p>
-                        <p className="text-[15px] text-[#373338]" style={{ fontFamily: 'Soehne, sans-serif' }}>
-                          {transferType === 'domestic' ? wireDetails.routingNumber : (wireDetails as any).swiftCode}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleCopy(transferType === 'domestic' ? wireDetails.routingNumber! : (wireDetails as any).swiftCode, 'routing')}
-                        className={cn(
-                          'px-4 py-2 rounded-lg text-[14px] font-medium border transition-colors flex items-center gap-2',
-                          copiedField === 'routing'
-                            ? 'bg-[#e8f5e8] border-[#5a8a5a] text-[#5a8a5a]'
-                            : 'bg-white border-[#e0dce0] text-[#373338] hover:bg-[#f7f7f8]'
-                        )}
-                        style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                      >
-                        {copiedField === 'routing' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                        {copiedField === 'routing' ? 'Copied' : 'Copy'}
-                      </button>
-                    </div>
-
-                    {/* Reference ID */}
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-[12px] text-[#7f7582] mb-1" style={{ fontFamily: 'Soehne, sans-serif' }}>
-                          Unique Reference ID
-                        </p>
-                        <p className="text-[15px] text-[#373338]" style={{ fontFamily: 'Soehne, sans-serif' }}>
-                          {referenceId}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleCopy(referenceId, 'reference')}
-                        className={cn(
-                          'px-4 py-2 rounded-lg text-[14px] font-medium border transition-colors flex items-center gap-2',
-                          copiedField === 'reference'
-                            ? 'bg-[#e8f5e8] border-[#5a8a5a] text-[#5a8a5a]'
-                            : 'bg-white border-[#e0dce0] text-[#373338] hover:bg-[#f7f7f8]'
-                        )}
-                        style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                      >
-                        {copiedField === 'reference' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                        {copiedField === 'reference' ? 'Copied' : 'Copy'}
-                      </button>
-                    </div>
-
-                    {/* Recipient Name */}
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-[12px] text-[#7f7582] mb-1" style={{ fontFamily: 'Soehne, sans-serif' }}>
-                          Recipient name
-                        </p>
-                        <p className="text-[15px] text-[#373338]" style={{ fontFamily: 'Soehne, sans-serif' }}>
-                          {wireDetails.recipientName}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleCopy(wireDetails.recipientName, 'recipient')}
-                        className={cn(
-                          'px-4 py-2 rounded-lg text-[14px] font-medium border transition-colors flex items-center gap-2',
-                          copiedField === 'recipient'
-                            ? 'bg-[#e8f5e8] border-[#5a8a5a] text-[#5a8a5a]'
-                            : 'bg-white border-[#e0dce0] text-[#373338] hover:bg-[#f7f7f8]'
-                        )}
-                        style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                      >
-                        {copiedField === 'recipient' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                        {copiedField === 'recipient' ? 'Copied' : 'Copy'}
-                      </button>
-                    </div>
-
-                    {/* Address */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 mr-4">
-                        <p className="text-[12px] text-[#7f7582] mb-1" style={{ fontFamily: 'Soehne, sans-serif' }}>
-                          Address
-                        </p>
-                        <p className="text-[15px] text-[#373338] leading-relaxed" style={{ fontFamily: 'Soehne, sans-serif' }}>
-                          {wireDetails.address}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleCopy(wireDetails.address, 'address')}
-                        className={cn(
-                          'px-4 py-2 rounded-lg text-[14px] font-medium border transition-colors flex items-center gap-2 flex-shrink-0',
-                          copiedField === 'address'
-                            ? 'bg-[#e8f5e8] border-[#5a8a5a] text-[#5a8a5a]'
-                            : 'bg-white border-[#e0dce0] text-[#373338] hover:bg-[#f7f7f8]'
-                        )}
-                        style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                      >
-                        {copiedField === 'address' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                        {copiedField === 'address' ? 'Copied' : 'Copy'}
-                      </button>
                     </div>
                   </div>
 
-                  {/* Memo Content */}
-                  <div className="mb-6">
-                    <p className="text-[12px] text-[#7f7582] mb-2" style={{ fontFamily: 'Soehne, sans-serif' }}>
-                      Enter memo content
+                  {/* Bank Details Card */}
+                  <div className="bg-[#f7f7f8] border border-[#48424a] rounded-xl p-4 mb-5">
+                    {/* Processing Badge */}
+                    <div className="bg-[#9b929e] px-2 py-1 rounded self-start inline-block mb-4">
+                      <span
+                        className="text-[11px] text-[#f0eef0] uppercase tracking-[0.36px] font-semibold"
+                        style={{ fontFamily: 'Inter, sans-serif' }}
+                      >
+                        Same-day processing if received before 3:00 PM PT
+                      </span>
+                    </div>
+
+                    {transferType === 'domestic' ? (
+                      /* Domestic Bank Details */
+                      <div className="flex flex-col gap-0.5">
+                        <CopyField
+                          label="Account Number"
+                          value={DOMESTIC_BANK_DETAILS.accountNumber}
+                          fieldKey="accountNumber"
+                        />
+                        <CopyField
+                          label="Routing Number"
+                          value={DOMESTIC_BANK_DETAILS.routingNumber}
+                          fieldKey="routingNumber"
+                        />
+                        <CopyField
+                          label="Reference ID"
+                          value={DOMESTIC_BANK_DETAILS.referenceId}
+                          fieldKey="referenceId"
+                        />
+                        <CopyField
+                          label="Recipient Name"
+                          value={DOMESTIC_BANK_DETAILS.recipientName}
+                          fieldKey="recipientName"
+                        />
+                        <CopyField
+                          label="Recipient Address"
+                          value={DOMESTIC_BANK_DETAILS.recipientAddress}
+                          fieldKey="recipientAddress"
+                        />
+                        <CopyField
+                          label="Memo / Reference"
+                          value={DOMESTIC_BANK_DETAILS.memoContent}
+                          fieldKey="memoContent"
+                        />
+                      </div>
+                    ) : (
+                      /* International Bank Details - Step by Step */
+                      <div className="flex flex-col gap-5">
+                        {/* Step 1: Beneficiary Bank Information */}
+                        <div className="flex flex-col gap-0.5">
+                          <div className="py-1.5 mb-1">
+                            <p
+                              className="text-[14px] text-[#373338] uppercase"
+                              style={{ fontFamily: 'Test Signifier, serif' }}
+                            >
+                              Step 1
+                            </p>
+                            <p
+                              className="text-[12px] text-[#685f6a]"
+                              style={{ fontFamily: 'Soehne, sans-serif' }}
+                            >
+                              Enter beneficiary bank information
+                            </p>
+                          </div>
+                          <CopyField
+                            label="SWIFT/BIC Code"
+                            value={INTERNATIONAL_BANK_DETAILS.swiftBicCode}
+                            fieldKey="swiftBicCode"
+                          />
+                          <CopyField
+                            label="SWIFT ABA/Routing Number (if asked)"
+                            value={INTERNATIONAL_BANK_DETAILS.routingNumber}
+                            fieldKey="intlRoutingNumber"
+                          />
+                          <CopyField
+                            label="Bank Name"
+                            value={INTERNATIONAL_BANK_DETAILS.bankName}
+                            fieldKey="intlBankName"
+                          />
+                          <CopyField
+                            label="Bank Address"
+                            value={INTERNATIONAL_BANK_DETAILS.bankAddress}
+                            fieldKey="bankAddress"
+                          />
+                        </div>
+
+                        {/* Step 2: Beneficiary Information */}
+                        <div className="flex flex-col gap-0.5">
+                          <div className="py-1.5 mb-1">
+                            <p
+                              className="text-[14px] text-[#373338] uppercase"
+                              style={{ fontFamily: 'Test Signifier, serif' }}
+                            >
+                              Step 2
+                            </p>
+                            <p
+                              className="text-[12px] text-[#685f6a]"
+                              style={{ fontFamily: 'Soehne, sans-serif' }}
+                            >
+                              Enter beneficiary information
+                            </p>
+                          </div>
+                          <CopyField
+                            label="Beneficiary Name"
+                            value={INTERNATIONAL_BANK_DETAILS.beneficiaryName}
+                            fieldKey="beneficiaryName"
+                          />
+                          <CopyField
+                            label="Beneficiary Account Number"
+                            value={INTERNATIONAL_BANK_DETAILS.beneficiaryAccountNumber}
+                            fieldKey="beneficiaryAccountNumber"
+                          />
+                          <CopyField
+                            label="Beneficiary Address"
+                            value={INTERNATIONAL_BANK_DETAILS.beneficiaryAddress}
+                            fieldKey="beneficiaryAddress"
+                          />
+                        </div>
+
+                        {/* Step 3: Memo Content */}
+                        <div className="flex flex-col gap-0.5">
+                          <div className="py-1.5 mb-1">
+                            <p
+                              className="text-[14px] text-[#373338] uppercase"
+                              style={{ fontFamily: 'Test Signifier, serif' }}
+                            >
+                              Step 3
+                            </p>
+                            <p
+                              className="text-[12px] text-[#685f6a]"
+                              style={{ fontFamily: 'Soehne, sans-serif' }}
+                            >
+                              Enter memo content
+                            </p>
+                          </div>
+                          <CopyField
+                            label="Unique Reference ID"
+                            value={INTERNATIONAL_BANK_DETAILS.uniqueReferenceId}
+                            fieldKey="uniqueReferenceId"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CTA Button */}
+                  <button
+                    onClick={handleInitiateTransfer}
+                    className="w-full py-3.5 bg-[#373338] text-white text-[15px] font-medium rounded-xl hover:bg-[#29272a] transition-colors"
+                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                  >
+                    I've initiated the bank transfer
+                  </button>
+                </div>
+              )}
+
+              {step === 'confirm' && (
+                <div>
+                  {/* Title */}
+                  <div className="mb-5">
+                    <p
+                      className="text-[18px] text-[#373338] mb-1"
+                      style={{ fontFamily: 'Test Signifier, serif' }}
+                    >
+                      Confirm your funding source
                     </p>
-                    <div className="bg-[#f7f7f8] rounded-xl p-4 border border-[#e0dce0]">
-                      <p className="text-[14px] text-[#373338] leading-relaxed" style={{ fontFamily: 'Soehne, sans-serif' }}>
-                        Investor Name: {investorName}
-                        <br />
-                        Unique Reference ID: {referenceId}
-                      </p>
-                    </div>
+                    <p
+                      className="text-[14px] text-[#685f6a]"
+                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                    >
+                      Please provide details about the bank you're sending from.
+                    </p>
                   </div>
-
-                  {/* Divider */}
-                  <div className="h-px bg-[#e0dce0] mb-6" />
 
                   {/* Bank Name Input */}
                   <div className="mb-4">
-                    <label className="block text-[12px] text-[#7f7582] mb-2" style={{ fontFamily: 'Soehne, sans-serif' }}>
-                      What is the name of the bank from which you will be wiring your investment?
+                    <label
+                      className="block text-[12px] text-[#685f6a] uppercase tracking-wide mb-2"
+                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                    >
+                      Bank Name
                     </label>
                     <input
                       type="text"
                       value={bankName}
                       onChange={(e) => setBankName(e.target.value)}
-                      placeholder="Name of the bank"
-                      className="w-full px-4 py-3 bg-white border border-[#e0dce0] rounded-xl text-[15px] text-[#373338] placeholder:text-[#a09a9f] outline-none focus:border-[#7f7582] transition-colors"
+                      placeholder="e.g. Chase, Bank of America"
+                      className="w-full px-4 py-3 bg-white border border-[#d9dde9] rounded-xl text-[15px] text-[#373338] placeholder:text-[#a9a4ab] outline-none focus:border-[#7f7582] transition-colors"
                       style={{ fontFamily: 'Soehne, sans-serif' }}
                     />
                   </div>
 
-                  {/* Country Dropdown */}
+                  {/* Bank Location Dropdown */}
                   <div className="mb-4 relative">
-                    <label className="block text-[12px] text-[#7f7582] mb-2" style={{ fontFamily: 'Soehne, sans-serif' }}>
-                      In what country is the bank located?
-                    </label>
-                    <button
-                      onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-                      className="w-full px-4 py-3 bg-white border border-[#e0dce0] rounded-xl text-[15px] text-[#373338] outline-none hover:border-[#7f7582] transition-colors flex items-center justify-between"
+                    <label
+                      className="block text-[12px] text-[#685f6a] uppercase tracking-wide mb-2"
                       style={{ fontFamily: 'Soehne, sans-serif' }}
                     >
-                      <span>{country}</span>
-                      <ChevronDown className={cn('w-5 h-5 text-[#7f7582] transition-transform', showCountryDropdown && 'rotate-180')} />
-                    </button>
-                    {showCountryDropdown && (
-                      <>
-                        <div className="fixed inset-0 z-40" onClick={() => setShowCountryDropdown(false)} />
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#e0dce0] rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto">
-                          {COUNTRY_OPTIONS.map((option) => (
-                            <button
-                              key={option}
-                              onClick={() => {
-                                setCountry(option);
-                                setShowCountryDropdown(false);
-                              }}
-                              className={cn(
-                                'w-full px-4 py-2.5 text-left text-[14px] hover:bg-[#f7f7f8] transition-colors',
-                                country === option ? 'bg-[#f7f7f8] text-[#373338]' : 'text-[#685f6a]'
-                              )}
-                              style={{ fontFamily: 'Soehne, sans-serif' }}
-                            >
-                              {option}
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Customer of Bank Dropdown */}
-                  <div className="mb-4 relative">
-                    <label className="block text-[12px] text-[#7f7582] mb-2" style={{ fontFamily: 'Soehne, sans-serif' }}>
-                      Is the subscriber a customer of the bank?
+                      Bank Location
                     </label>
                     <button
-                      onClick={() => setShowCustomerDropdown(!showCustomerDropdown)}
-                      className="w-full px-4 py-3 bg-white border border-[#e0dce0] rounded-xl text-[15px] text-[#373338] outline-none hover:border-[#7f7582] transition-colors flex items-center justify-between"
+                      onClick={() => {
+                        setShowLocationDropdown(!showLocationDropdown);
+                        setShowAccountHolderDropdown(false);
+                      }}
+                      className="w-full flex items-center justify-between px-4 py-3 bg-white border border-[#d9dde9] rounded-xl text-[15px] hover:border-[#7f7582] transition-colors"
                       style={{ fontFamily: 'Soehne, sans-serif' }}
                     >
-                      <span>{isCustomer}</span>
-                      <ChevronDown className={cn('w-5 h-5 text-[#7f7582] transition-transform', showCustomerDropdown && 'rotate-180')} />
-                    </button>
-                    {showCustomerDropdown && (
-                      <>
-                        <div className="fixed inset-0 z-40" onClick={() => setShowCustomerDropdown(false)} />
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#e0dce0] rounded-xl shadow-lg z-50">
-                          {['Yes', 'No'].map((option) => (
-                            <button
-                              key={option}
-                              onClick={() => {
-                                setIsCustomer(option);
-                                setShowCustomerDropdown(false);
-                              }}
-                              className={cn(
-                                'w-full px-4 py-2.5 text-left text-[14px] hover:bg-[#f7f7f8] transition-colors',
-                                isCustomer === option ? 'bg-[#f7f7f8] text-[#373338]' : 'text-[#685f6a]'
-                              )}
-                              style={{ fontFamily: 'Soehne, sans-serif' }}
-                            >
-                              {option}
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Promo Code */}
-                  <div className="mb-6">
-                    <label className="block text-[12px] text-[#7f7582] mb-2" style={{ fontFamily: 'Soehne, sans-serif' }}>
-                      Have a promo code? Apply here.
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={promoCode}
-                        onChange={(e) => setPromoCode(e.target.value)}
-                        placeholder="Promo code"
-                        className="flex-1 px-4 py-3 bg-white border border-[#e0dce0] rounded-xl text-[15px] text-[#373338] placeholder:text-[#a09a9f] outline-none focus:border-[#7f7582] transition-colors"
-                        style={{ fontFamily: 'Soehne, sans-serif' }}
+                      <span className={bankLocation ? 'text-[#373338]' : 'text-[#a9a4ab]'}>
+                        {bankLocation || 'Select country'}
+                      </span>
+                      <ChevronDown
+                        className={cn(
+                          'w-5 h-5 text-[#685f6a] transition-transform',
+                          showLocationDropdown && 'rotate-180'
+                        )}
                       />
-                      <button
-                        className="px-6 py-3 bg-white border border-[#e0dce0] rounded-xl text-[14px] font-medium text-[#a09a9f] hover:bg-[#f7f7f8] transition-colors"
-                        style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                      >
-                        Apply
-                      </button>
-                    </div>
+                    </button>
+
+                    {showLocationDropdown && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setShowLocationDropdown(false)} />
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#d9dde9] rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto">
+                          {COUNTRY_OPTIONS.map((country) => (
+                            <button
+                              key={country}
+                              onClick={() => {
+                                setBankLocation(country);
+                                setShowLocationDropdown(false);
+                              }}
+                              className={cn(
+                                'w-full px-4 py-3 text-left text-[14px] hover:bg-[#f7f7f8]',
+                                bankLocation === country && 'bg-[#f7f7f8]'
+                              )}
+                              style={{ fontFamily: 'Soehne, sans-serif' }}
+                            >
+                              {country}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
 
-                  {/* Processing Time Notice */}
-                  <div className="flex items-start gap-3 p-4 bg-[#f7f7f8] rounded-xl mb-6">
-                    <Clock className="w-5 h-5 text-[#7f7582] flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-[13px] font-medium text-[#373338] mb-0.5" style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}>
-                        Processing time
-                      </p>
-                      <p className="text-[12px] text-[#7f7582] leading-relaxed" style={{ fontFamily: 'Soehne, sans-serif' }}>
-                        Funds will usually be credited to your Goodfin account on the same day if submitted before 3pm PT.
-                      </p>
-                    </div>
+                  {/* Account Holder Dropdown */}
+                  <div className="mb-4 relative">
+                    <label
+                      className="block text-[12px] text-[#685f6a] uppercase tracking-wide mb-2"
+                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                    >
+                      Account Holder Status
+                    </label>
+                    <button
+                      onClick={() => {
+                        setShowAccountHolderDropdown(!showAccountHolderDropdown);
+                        setShowLocationDropdown(false);
+                      }}
+                      className="w-full flex items-center justify-between px-4 py-3 bg-white border border-[#d9dde9] rounded-xl text-[15px] hover:border-[#7f7582] transition-colors"
+                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                    >
+                      <span className={accountHolder ? 'text-[#373338]' : 'text-[#a9a4ab]'}>
+                        {accountHolder || 'Select status'}
+                      </span>
+                      <ChevronDown
+                        className={cn(
+                          'w-5 h-5 text-[#685f6a] transition-transform',
+                          showAccountHolderDropdown && 'rotate-180'
+                        )}
+                      />
+                    </button>
+
+                    {showAccountHolderDropdown && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setShowAccountHolderDropdown(false)} />
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#d9dde9] rounded-xl shadow-lg z-50">
+                          {ACCOUNT_HOLDER_OPTIONS.map((status) => (
+                            <button
+                              key={status}
+                              onClick={() => {
+                                setAccountHolder(status);
+                                setShowAccountHolderDropdown(false);
+                              }}
+                              className={cn(
+                                'w-full px-4 py-3 text-left text-[14px] hover:bg-[#f7f7f8]',
+                                accountHolder === status && 'bg-[#f7f7f8]'
+                              )}
+                              style={{ fontFamily: 'Soehne, sans-serif' }}
+                            >
+                              {status}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
 
-                  {/* Disclaimer */}
-                  <p className="text-[13px] text-center text-[#7f7582] mb-4 leading-relaxed" style={{ fontFamily: 'Soehne, sans-serif' }}>
-                    Your allocation will be reserved only after we confirm
-                    <br />
-                    receipt of your wire transfer.
-                  </p>
-
-                  {/* Validation Message */}
-                  {!isFormValid && (
-                    <p className="text-[13px] text-center text-[#e85c4a] mb-4" style={{ fontFamily: 'Soehne, sans-serif' }}>
-                      Please fill in all of the fields
-                    </p>
-                  )}
+                  {/* Promo Code Input (Optional) */}
+                  <div className="mb-6">
+                    <label
+                      className="block text-[12px] text-[#685f6a] uppercase tracking-wide mb-2"
+                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                    >
+                      Promo Code (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={promoCode}
+                      onChange={(e) => setPromoCode(e.target.value)}
+                      placeholder="Enter code"
+                      className="w-full px-4 py-3 bg-white border border-[#d9dde9] rounded-xl text-[15px] text-[#373338] placeholder:text-[#a9a4ab] outline-none focus:border-[#7f7582] transition-colors"
+                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                    />
+                  </div>
 
                   {/* Confirm Button */}
                   <button
-                    onClick={handleConfirmTransfer}
+                    onClick={handleConfirmFunding}
                     disabled={!isFormValid}
                     className={cn(
-                      'w-full py-3.5 text-[16px] font-medium rounded-xl transition-colors mb-4',
+                      'w-full py-3.5 text-[15px] font-medium rounded-xl transition-colors',
                       isFormValid
                         ? 'bg-[#373338] text-white hover:bg-[#29272a]'
                         : 'bg-[#e0dce0] text-[#a09a9f] cursor-not-allowed'
                     )}
                     style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                   >
-                    Confirm transfer
-                  </button>
-
-                  {/* Support Accordion */}
-                  <button className="w-full flex items-center justify-center gap-2 py-3 text-[14px] text-[#7f7582] hover:text-[#373338] transition-colors">
-                    <span className="flex items-center justify-center w-5 h-5 rounded-full border border-[#c0bcc0]">?</span>
-                    <span style={{ fontFamily: 'Soehne, sans-serif' }}>Support</span>
-                    <ChevronDown className="w-4 h-4" />
+                    Confirm and continue
                   </button>
                 </div>
               )}
@@ -570,7 +701,11 @@ export function TransferModal({
                   </p>
                   <div className="inline-block px-4 py-2 bg-[#f7f7f8] rounded-lg">
                     <p className="text-[11px] text-[#7f7582] uppercase tracking-wide">Reference</p>
-                    <p className="text-[14px] font-mono text-[#373338]">{referenceId}</p>
+                    <p className="text-[14px] font-mono text-[#373338]">
+                      {transferType === 'domestic'
+                        ? DOMESTIC_BANK_DETAILS.referenceId
+                        : INTERNATIONAL_BANK_DETAILS.uniqueReferenceId}
+                    </p>
                   </div>
                   <p className="text-[12px] text-[#a09a9f] mt-4">
                     We'll email you when the transfer is complete.

@@ -24,6 +24,8 @@ import { svgPaths } from '../Welcome02/svgPaths';
 import { IdentityVerificationModal } from './components/IdentityVerificationModal';
 import { TransferModal } from './components/TransferModal';
 import { DocumentSigningModal } from './components/DocumentSigningModal';
+import { WireBankDetails } from './components/WireBankDetails';
+import { DocumentSigningInline } from './components/DocumentSigningInline';
 import {
   type FlowStep,
   type Message,
@@ -1005,48 +1007,24 @@ export function ZAIInvestmentFlow({
 
                                           {/* Accordion Content */}
                                           {isExpanded && (
-                                            <div className="px-4 pb-4 border-t border-[#e0dce0]">
-                                              {/* Description */}
-                                              <p
-                                                className="text-[13px] text-[#7f7582] leading-relaxed mt-3 mb-4"
-                                                style={{ fontFamily: 'Soehne, sans-serif' }}
-                                              >
-                                                {doc.fullSummary}
-                                              </p>
-
-                                              {/* PDF Preview */}
-                                              {pdfUrl && (
-                                                <div className="w-full bg-[#f7f7f8] rounded-lg border border-[#e0dce0] overflow-hidden mb-4 relative group">
-                                                  <iframe
-                                                    src={`${pdfUrl}#toolbar=0&navpanes=0&view=FitH`}
-                                                    className="w-full h-[200px] border-none"
-                                                    title={doc.title}
-                                                  />
-                                                  {/* Fullscreen button */}
-                                                  <button
-                                                    onClick={() => setFullscreenDocId(doc.id)}
-                                                    className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-white border border-[#d9d5db] rounded-lg shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    title="View fullscreen"
-                                                  >
-                                                    <Maximize2 className="w-4 h-4 text-[#685f6a]" />
-                                                  </button>
-                                                </div>
-                                              )}
-
-                                              {/* Review & Sign Button */}
-                                              {!isSigned && (
-                                                <button
-                                                  onClick={() => {
-                                                    setSigningDocument(doc);
+                                            <div className="px-4 pb-4 border-t border-[#e0dce0] pt-3">
+                                              {!isSigned ? (
+                                                <DocumentSigningInline
+                                                  document={doc}
+                                                  onSign={(docId) => {
+                                                    handleDocumentSigned(docId);
                                                     setExpandedDocId(null);
                                                   }}
-                                                  className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#373338] text-white text-sm font-medium rounded-lg hover:bg-[#29272a] transition-colors"
-                                                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                                  onFullscreen={(docId) => setFullscreenDocId(docId)}
+                                                />
+                                              ) : (
+                                                <p
+                                                  className="text-[13px] text-[#5a8a5a] leading-relaxed"
+                                                  style={{ fontFamily: 'Soehne, sans-serif' }}
                                                 >
-                                                  {doc.id === 'ppm' ? 'Review document' : 'Review & Sign'}
-                                                </button>
+                                                  {doc.id === 'ppm' ? 'You have reviewed this document.' : 'You have reviewed and signed this document.'}
+                                                </p>
                                               )}
-
                                             </div>
                                           )}
                                         </div>
@@ -1197,6 +1175,26 @@ export function ZAIInvestmentFlow({
                                       {displayStep.ctaLabel}
                                     </button>
                                   )}
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          // Special rendering for Wire step - show bank details inline
+                          if (displayStep.id === 'wire' && !isViewingCompleted) {
+                            return (
+                              <div className="px-5 pb-5 pt-4">
+                                <div className="bg-[#f7f7f8] rounded-xl p-4">
+                                  <h3
+                                    className="text-[16px] font-medium text-[#373338] mb-3"
+                                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                  >
+                                    Wire Transfer
+                                  </h3>
+                                  <WireBankDetails
+                                    investmentAmount={investmentAmount || 0}
+                                    onComplete={() => handleTransferComplete(investmentAmount || 0)}
+                                  />
                                 </div>
                               </div>
                             );
@@ -1358,6 +1356,29 @@ export function ZAIInvestmentFlow({
                         {(() => {
                           const currentStep = steps.find(s => s.status === 'current');
                           if (!currentStep) return null;
+
+                          // Special rendering for Wire step - show bank details inline
+                          if (currentStep.id === 'wire') {
+                            return (
+                              <div className="px-5 pb-5 pt-4">
+                                <div className="bg-[#f7f7f8] rounded-xl p-4">
+                                  <h3
+                                    className="text-[16px] font-medium text-[#373338] mb-3"
+                                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                  >
+                                    Wire Transfer
+                                  </h3>
+                                  <WireBankDetails
+                                    investmentAmount={investmentAmount || 0}
+                                    onComplete={() => {
+                                      setShowProgressResponse(false);
+                                      handleTransferComplete(investmentAmount || 0);
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            );
+                          }
 
                           return (
                             <div className="px-5 pb-5 pt-4">
