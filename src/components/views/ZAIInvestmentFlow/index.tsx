@@ -181,6 +181,7 @@ export function ZAIInvestmentFlow({
   const [hasCommitted, setHasCommitted] = useState(false);
   const [investmentAmount, setInvestmentAmount] = useState<number | null>(null);
   const [amountError, setAmountError] = useState<string | null>(null);
+  const [shakeInput, setShakeInput] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
   const [exitModalVisible, setExitModalVisible] = useState(false);
   const [userMessage, setUserMessage] = useState<string>('');
@@ -294,6 +295,9 @@ export function ZAIInvestmentFlow({
     if (!isNaN(amount) && amount > 0) {
       if (amount < MIN_INVESTMENT) {
         setAmountError(`Minimum investment is $${MIN_INVESTMENT.toLocaleString()}`);
+        // Trigger shake animation
+        setShakeInput(true);
+        setTimeout(() => setShakeInput(false), 600); // Reset after animation
         return;
       }
       setAmountError(null);
@@ -1214,6 +1218,7 @@ export function ZAIInvestmentFlow({
                 <InputBarV02
                   currentMode={(flowState === 'loading' || flowState === 'askAmount' || flowState === 'processingAmount' || flowState === 'investing') ? 'investment' : 'default'}
                   onSubmit={flowState === 'askAmount' ? handleAmountSubmit : handleInputSubmit}
+                  shake={shakeInput}
                   formCallout={(flowState === 'askAmount' || flowState === 'processingAmount' || flowState === 'investing') ? {
                     state: showInvestorTypeSelection
                       ? 'investor_type'
