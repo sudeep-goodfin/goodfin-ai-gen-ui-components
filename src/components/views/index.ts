@@ -146,7 +146,6 @@ export {
   ZAIInvestmentFlowView,
   zaiInvestmentFlowVariants,
   INVESTMENT_DOCUMENTS,
-  MOCK_BANK_ACCOUNTS,
   DEFAULT_DEAL,
 } from './ZAIInvestmentFlow';
 export type {

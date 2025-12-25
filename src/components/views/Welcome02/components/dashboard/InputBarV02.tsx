@@ -127,7 +127,7 @@ interface InvestmentAction {
 }
 
 // Callout states
-export type CalloutState = 'default' | 'awaiting_input' | 'confirmed' | 'error' | 'commit_confirm';
+export type CalloutState = 'default' | 'awaiting_input' | 'confirmed' | 'error' | 'commit_confirm' | 'investor_type';
 
 interface CalloutResponse {
   id: string;
@@ -142,6 +142,13 @@ export interface CommitCheckbox {
   checked: boolean;
 }
 
+// Investor type option
+export interface InvestorTypeOption {
+  id: string;
+  title: string;
+  subtitle: string;
+}
+
 interface FormCallout {
   state: CalloutState;
   dealLogo?: string;
@@ -154,6 +161,10 @@ interface FormCallout {
   onCheckboxChange?: (id: string, checked: boolean) => void;
   ctaText?: string;
   onCtaClick?: () => void;
+  // Investor type selection props
+  investorTypeOptions?: InvestorTypeOption[];
+  selectedInvestorType?: string;
+  onInvestorTypeSelect?: (id: string) => void;
 }
 
 interface InputBarProps {
@@ -394,7 +405,8 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
               formCallout.state === 'awaiting_input' && "bg-[#c4a882] animate-pulse",
               formCallout.state === 'confirmed' && "bg-[#e8e5e8]",
               formCallout.state === 'error' && "bg-[#e8a8a8]",
-              formCallout.state === 'commit_confirm' && "bg-[#e8e5e8]"
+              formCallout.state === 'commit_confirm' && "bg-[#e8e5e8]",
+              formCallout.state === 'investor_type' && "bg-[#f7f7f8]"
             )}
             style={formCallout.state === 'awaiting_input' ? { animationDuration: '3s' } : undefined}
           >
@@ -504,6 +516,37 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 ))}
               </div>
             )}
+
+            {/* Investor Type Selection */}
+            {formCallout.state === 'investor_type' && formCallout.investorTypeOptions && (
+              <div className="flex flex-col gap-3 mt-2">
+                {formCallout.investorTypeOptions.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => formCallout.onInvestorTypeSelect?.(option.id)}
+                    className={cn(
+                      "w-full text-left p-4 rounded-xl border-2 transition-all",
+                      formCallout.selectedInvestorType === option.id
+                        ? "border-[#373338] bg-white"
+                        : "border-[#e0dce0] bg-white hover:border-[#c0bcc0]"
+                    )}
+                  >
+                    <h4
+                      className="text-[18px] leading-[24px] text-[#373338] mb-2"
+                      style={{ fontFamily: 'Test Signifier, serif' }}
+                    >
+                      {option.title}
+                    </h4>
+                    <span
+                      className="inline-block px-3 py-1.5 text-[12px] leading-[16px] text-[#685f6a] bg-[#e8e5e8] rounded-md uppercase tracking-wide"
+                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                    >
+                      {option.subtitle}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -511,7 +554,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
         <div className={cn(
           "bg-white relative shrink-0 w-full",
           hasCallout ? "rounded-b-[16px]" : "rounded-[16px]",
-          formCallout?.state === 'commit_confirm' ? "h-auto" : hasNudge ? "min-h-[140px]" : isInvestmentMode ? "min-h-[140px]" : "h-[108px]"
+          (formCallout?.state === 'commit_confirm' || formCallout?.state === 'investor_type') ? "h-auto" : hasNudge ? "min-h-[140px]" : isInvestmentMode ? "min-h-[140px]" : "h-[108px]"
         )}>
           {/* Border & Shadow Layer */}
           <div aria-hidden="true" className={cn(
@@ -545,6 +588,20 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
               >
                 {formCallout.ctaText || 'I agree and understand'}
+              </button>
+            ) : formCallout?.state === 'investor_type' ? (
+              <button
+                onClick={formCallout.onCtaClick}
+                disabled={!formCallout.selectedInvestorType}
+                className={cn(
+                  "w-full py-3.5 rounded-xl text-[16px] font-medium transition-all",
+                  formCallout.selectedInvestorType
+                    ? "bg-[#373338] text-white hover:bg-[#29272a] cursor-pointer"
+                    : "bg-[#e8e5e8] text-[#9a909a] cursor-not-allowed"
+                )}
+                style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+              >
+                {formCallout.ctaText || 'Continue'}
               </button>
             ) : (
               <>
@@ -606,8 +663,8 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
               </>
             )}
 
-            {/* Bottom Section - relative container for overlay - hidden in commit_confirm state */}
-            {formCallout?.state !== 'commit_confirm' && (
+            {/* Bottom Section - relative container for overlay - hidden in commit_confirm and investor_type states */}
+            {formCallout?.state !== 'commit_confirm' && formCallout?.state !== 'investor_type' && (
             <div className="relative">
               {/* Voice Recording Interface - overlayed at bottom */}
               {showRecordingOverlay && (
