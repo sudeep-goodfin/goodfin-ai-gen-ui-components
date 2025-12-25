@@ -127,12 +127,19 @@ interface InvestmentAction {
 }
 
 // Callout states
-export type CalloutState = 'default' | 'awaiting_input' | 'confirmed' | 'error';
+export type CalloutState = 'default' | 'awaiting_input' | 'confirmed' | 'error' | 'commit_confirm';
 
 interface CalloutResponse {
   id: string;
   question: string;
   answer: string;
+}
+
+// Checkbox item for commit confirmation
+export interface CommitCheckbox {
+  id: string;
+  text: string;
+  checked: boolean;
 }
 
 interface FormCallout {
@@ -142,6 +149,11 @@ interface FormCallout {
   displayValue?: string; // e.g., "$50,000" shown on the right
   responses?: CalloutResponse[]; // Collected responses from user
   onClose?: () => void;
+  // Commit confirmation specific props
+  checkboxes?: CommitCheckbox[];
+  onCheckboxChange?: (id: string, checked: boolean) => void;
+  ctaText?: string;
+  onCtaClick?: () => void;
 }
 
 interface InputBarProps {
@@ -381,7 +393,8 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
               formCallout.state === 'default' && "bg-[#a8d4f0]",
               formCallout.state === 'awaiting_input' && "bg-[#c4a882] animate-pulse",
               formCallout.state === 'confirmed' && "bg-[#e8e5e8]",
-              formCallout.state === 'error' && "bg-[#e8a8a8]"
+              formCallout.state === 'error' && "bg-[#e8a8a8]",
+              formCallout.state === 'commit_confirm' && "bg-[#e8e5e8]"
             )}
             style={formCallout.state === 'awaiting_input' ? { animationDuration: '3s' } : undefined}
           >
@@ -446,6 +459,51 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 )}
               </div>
             </div>
+
+            {/* Checkboxes for commit confirmation */}
+            {formCallout.state === 'commit_confirm' && formCallout.checkboxes && (
+              <div className="flex flex-col gap-4 mt-2 pt-3 border-t border-black/10">
+                {formCallout.checkboxes.map((checkbox) => (
+                  <label
+                    key={checkbox.id}
+                    className="flex items-start gap-3 cursor-pointer group"
+                  >
+                    <div className="relative flex-shrink-0 mt-0.5">
+                      <input
+                        type="checkbox"
+                        checked={checkbox.checked}
+                        onChange={(e) => formCallout.onCheckboxChange?.(checkbox.id, e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className={cn(
+                        "w-5 h-5 rounded border-2 flex items-center justify-center transition-colors",
+                        checkbox.checked
+                          ? "bg-[#373338] border-[#373338]"
+                          : "bg-white border-[#c0bcc0] group-hover:border-[#9a909a]"
+                      )}>
+                        {checkbox.checked && (
+                          <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+                            <path
+                              d="M1 5L4.5 8.5L11 1"
+                              stroke="white"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        )}
+                      </div>
+                    </div>
+                    <span
+                      className="text-[14px] leading-[20px] text-[#48424a]"
+                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                    >
+                      {checkbox.text}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -453,7 +511,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
         <div className={cn(
           "bg-white relative shrink-0 w-full",
           hasCallout ? "rounded-b-[16px]" : "rounded-[16px]",
-          hasNudge ? "min-h-[140px]" : isInvestmentMode ? "min-h-[140px]" : "h-[108px]"
+          formCallout?.state === 'commit_confirm' ? "h-auto" : hasNudge ? "min-h-[140px]" : isInvestmentMode ? "min-h-[140px]" : "h-[108px]"
         )}>
           {/* Border & Shadow Layer */}
           <div aria-hidden="true" className={cn(
@@ -473,63 +531,83 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
         />
 
         <div className="relative z-10 flex flex-col justify-between w-full h-full p-[16px]">
-            {/* Investment Action Header */}
-            {isInvestmentMode && !hasCallout && (
-              <div className="flex items-center justify-between bg-[#a8d4f0] rounded-lg px-4 py-2.5 mb-3">
-                <span
-                  className="text-[15px] font-medium text-[#29272a]"
-                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                >
-                  {investmentAction.label}
-                </span>
-                <button
-                  onClick={investmentAction.onClose}
-                  className="flex items-center justify-center w-5 h-5 rounded-full hover:bg-black/10 transition-colors"
-                >
-                  <X className="w-3.5 h-3.5 text-[#29272a]" />
-                </button>
-              </div>
+            {/* Commit Confirm CTA Button - replaces entire input area */}
+            {formCallout?.state === 'commit_confirm' ? (
+              <button
+                onClick={formCallout.onCtaClick}
+                disabled={formCallout.checkboxes?.some(cb => !cb.checked)}
+                className={cn(
+                  "w-full py-3.5 rounded-xl text-[16px] font-medium transition-all",
+                  formCallout.checkboxes?.every(cb => cb.checked)
+                    ? "bg-[#373338] text-white hover:bg-[#29272a] cursor-pointer"
+                    : "bg-[#e8e5e8] text-[#9a909a] cursor-not-allowed"
+                )}
+                style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+              >
+                {formCallout.ctaText || 'I agree and understand'}
+              </button>
+            ) : (
+              <>
+                {/* Investment Action Header */}
+                {isInvestmentMode && !hasCallout && (
+                  <div className="flex items-center justify-between bg-[#a8d4f0] rounded-lg px-4 py-2.5 mb-3">
+                    <span
+                      className="text-[15px] font-medium text-[#29272a]"
+                      style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                    >
+                      {investmentAction.label}
+                    </span>
+                    <button
+                      onClick={investmentAction.onClose}
+                      className="flex items-center justify-center w-5 h-5 rounded-full hover:bg-black/10 transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5 text-[#29272a]" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Input Area */}
+                <div className={cn(
+                  "flex items-center gap-2 flex-wrap",
+                  (isInvestmentMode || hasCallout) ? "flex-1 min-h-[24px]" : "h-[24px] overflow-hidden"
+                )}>
+                  {/* Selected Pills - hidden in investment mode or callout */}
+                  {!isInvestmentMode && !hasCallout && selectedPills.map((pill) => (
+                    <PillTag
+                      key={pill.id}
+                      pill={pill}
+                      onRemove={() => handleRemovePill(pill.id)}
+                    />
+                  ))}
+
+                  {/* Input - disabled when recording/processing/transcribed */}
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    disabled={showRecordingOverlay}
+                    placeholder={
+                      hasCallout
+                        ? "Enter your response..."
+                        : isInvestmentMode
+                          ? `Ask followup about ${investmentAction?.label?.replace('Invest in ', '').toLowerCase() || 'this deal'}`
+                          : selectedPills.length > 0
+                            ? "Add more context..."
+                            : "Ask anything... (type / or @ for commands)"
+                    }
+                    className={cn(
+                      "flex-1 min-w-[200px] text-[16px] leading-normal text-[#29272a] placeholder:text-[#7f7582] bg-transparent outline-none font-light tracking-[-0.3125px]",
+                      showRecordingOverlay && "opacity-50 cursor-not-allowed"
+                    )}
+                  />
+                </div>
+              </>
             )}
 
-            {/* Input Area */}
-            <div className={cn(
-              "flex items-center gap-2 flex-wrap",
-              (isInvestmentMode || hasCallout) ? "flex-1 min-h-[24px]" : "h-[24px] overflow-hidden"
-            )}>
-              {/* Selected Pills - hidden in investment mode or callout */}
-              {!isInvestmentMode && !hasCallout && selectedPills.map((pill) => (
-                <PillTag
-                  key={pill.id}
-                  pill={pill}
-                  onRemove={() => handleRemovePill(pill.id)}
-                />
-              ))}
-
-              {/* Input - disabled when recording/processing/transcribed */}
-              <input
-                ref={inputRef}
-                type="text"
-                value={inputValue}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                disabled={showRecordingOverlay}
-                placeholder={
-                  hasCallout
-                    ? "Enter your response..."
-                    : isInvestmentMode
-                      ? `Ask followup about ${investmentAction?.label?.replace('Invest in ', '').toLowerCase() || 'this deal'}`
-                      : selectedPills.length > 0
-                        ? "Add more context..."
-                        : "Ask anything... (type / or @ for commands)"
-                }
-                className={cn(
-                  "flex-1 min-w-[200px] text-[16px] leading-normal text-[#29272a] placeholder:text-[#7f7582] bg-transparent outline-none font-light tracking-[-0.3125px]",
-                  showRecordingOverlay && "opacity-50 cursor-not-allowed"
-                )}
-              />
-            </div>
-
-            {/* Bottom Section - relative container for overlay */}
+            {/* Bottom Section - relative container for overlay - hidden in commit_confirm state */}
+            {formCallout?.state !== 'commit_confirm' && (
             <div className="relative">
               {/* Voice Recording Interface - overlayed at bottom */}
               {showRecordingOverlay && (
@@ -682,6 +760,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 </div>
               </div>
             </div>
+            )}
         </div>
         </div>
       </div>
