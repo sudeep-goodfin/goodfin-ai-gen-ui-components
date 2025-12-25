@@ -178,9 +178,10 @@ interface InputBarProps {
     formNudge?: string; // Shows a label above the input (e.g., "enter the investment amount")
     formCallout?: FormCallout; // Shows a callout header with deal info
     shake?: boolean; // Trigger shake animation (e.g., for invalid input)
+    placeholder?: string; // Custom placeholder text
 }
 
-export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChange, onSubmit, investmentAction, formNudge, formCallout, shake }: InputBarProps) {
+export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChange, onSubmit, investmentAction, formNudge, formCallout, shake, placeholder: customPlaceholder }: InputBarProps) {
   const [inputValue, setInputValue] = useState('');
   const [showCommandPanel, setShowCommandPanel] = useState(false);
   const [panelMode, setPanelMode] = useState<PanelMode>('recipes');
@@ -457,7 +458,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
     <div className="w-full max-w-3xl flex flex-col items-center gap-2">
       {/* Wrapper for callout + input */}
       <div className={cn(
-        "w-full relative",
+        "w-full relative overflow-hidden rounded-[16px]",
         shake && "animate-shake"
       )}>
         {/* Form Callout Header */}
@@ -729,9 +730,9 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                       hasCallout
                         ? formCallout?.state === 'awaiting_input'
                           ? "Enter investment amount..."
-                          : "Enter your response..."
+                          : customPlaceholder || "Ask a follow-up question..."
                         : isInvestmentMode
-                          ? `Ask followup about ${investmentAction?.label?.replace('Invest in ', '').toLowerCase() || 'this deal'}`
+                          ? customPlaceholder || `Ask followup about ${investmentAction?.label?.replace('Invest in ', '').toLowerCase() || 'this deal'}`
                           : selectedPills.length > 0
                             ? "Add more context..."
                             : "Ask anything... (type / or @ for commands)"

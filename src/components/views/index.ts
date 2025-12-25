@@ -153,4 +153,5 @@ export type {
   InvestmentDocument,
   DealInfo,
   Message as ZAIMessage,
+  ZAIUserState,
 } from './ZAIInvestmentFlow';
