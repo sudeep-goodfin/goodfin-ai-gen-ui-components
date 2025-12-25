@@ -51,6 +51,8 @@ import {
   InputBarV02,
   DealProductPage,
   InvestmentFlow,
+  ZAIInvestmentFlow,
+  zaiInvestmentFlowVariants,
   type AIGreetingVariant,
   type InvestmentFlowStep,
   type OnboardingVariant,
@@ -636,6 +638,12 @@ export function App() {
           />
         );
       }}
+      renderZAIInvestmentFlowView={(onDismiss) => (
+        <ZAIInvestmentFlow
+          onDismiss={onDismiss}
+          onComplete={() => {}}
+        />
+      )}
       onboardingVariants={onboardingVariants}
       welcomeVariants={welcomeScreenVariants}
       welcome02Variants={welcome02Variants}

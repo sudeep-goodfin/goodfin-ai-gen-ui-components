@@ -139,3 +139,19 @@ export {
   FAQ_ITEMS,
 } from './InvestmentFlow';
 export type { InvestmentFlowStep, TransferMethod, CompanyData } from './InvestmentFlow';
+
+// Z AI Investment Flow (Chat-based investment experience)
+export {
+  ZAIInvestmentFlow,
+  ZAIInvestmentFlowView,
+  zaiInvestmentFlowVariants,
+  INVESTMENT_DOCUMENTS,
+  MOCK_BANK_ACCOUNTS,
+  DEFAULT_DEAL,
+} from './ZAIInvestmentFlow';
+export type {
+  FlowStep as ZAIFlowStep,
+  InvestmentDocument,
+  DealInfo,
+  Message as ZAIMessage,
+} from './ZAIInvestmentFlow';
