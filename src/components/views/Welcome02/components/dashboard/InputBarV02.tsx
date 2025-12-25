@@ -578,7 +578,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
 
             {/* Checkboxes for commit confirmation */}
             {formCallout.state === 'commit_confirm' && formCallout.checkboxes && (
-              <div className="flex flex-col gap-4 mt-2 pt-3 border-t border-black/10">
+              <div className="flex flex-col gap-5 mt-2 pt-3 border-t border-black/10">
                 {formCallout.checkboxes.map((checkbox) => (
                   <label
                     key={checkbox.id}
@@ -595,12 +595,12 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                         "w-5 h-5 rounded border-2 flex items-center justify-center transition-colors",
                         checkbox.checked
                           ? "bg-[#373338] border-[#373338]"
-                          : "bg-white border-[#c0bcc0] group-hover:border-[#9a909a]"
+                          : "bg-white border-[#beb9c0] group-hover:border-[#8a7f91]"
                       )}>
                         {checkbox.checked && (
-                          <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                             <path
-                              d="M1 5L4.5 8.5L11 1"
+                              d="M2 6L5 9L10 3"
                               stroke="white"
                               strokeWidth="2"
                               strokeLinecap="round"
@@ -611,7 +611,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                       </div>
                     </div>
                     <span
-                      className="text-[14px] leading-[20px] text-[#48424a]"
+                      className="text-[14px] leading-[22px] text-[#373338]"
                       style={{ fontFamily: 'Soehne, sans-serif' }}
                     >
                       {checkbox.text}
