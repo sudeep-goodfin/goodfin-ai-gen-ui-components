@@ -1,6 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, ArrowLeft } from 'lucide-react';
+import { X, ArrowLeft, ChevronDown, Check, Maximize2 } from 'lucide-react';
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
+
+// Import PDF documents
+import ppmPdf from '../InvestmentFlow/assets/Goodfin Venture PPM Dec 11 2025.pdf';
+import llcPdf from '../InvestmentFlow/assets/Goodfin Venture LLOA Dec 11 2025.pdf';
+import subscriptionPdf from '../InvestmentFlow/assets/Goodfin Venture LXXIV Dec 11 2025.pdf';
+
+// PDF file mapping by document ID
+const DOCUMENT_PDFS: Record<string, string> = {
+  'ppm': ppmPdf,
+  'subscription': subscriptionPdf,
+  'suitability': llcPdf,
+};
 import { cn } from '@/lib/utils';
 import { Header } from '../Welcome02/components/layout/Header';
 import { Sidebar } from '../Welcome02/components/layout/Sidebar';
@@ -73,6 +85,21 @@ export function ZAIInvestmentFlow({
   const [userMessage, setUserMessage] = useState<string>('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Document accordion state
+  const [expandedDocId, setExpandedDocId] = useState<string | null>(null);
+  const [fullscreenDocId, setFullscreenDocId] = useState<string | null>(null);
+
+  // Auto-expand first unsigned document when on signing step
+  useEffect(() => {
+    if (hasCommitted && signedDocuments.length < INVESTMENT_DOCUMENTS.length) {
+      // Find first unsigned document
+      const firstUnsignedDoc = INVESTMENT_DOCUMENTS.find(doc => !signedDocuments.includes(doc.id));
+      if (firstUnsignedDoc && expandedDocId !== firstUnsignedDoc.id) {
+        setExpandedDocId(firstUnsignedDoc.id);
+      }
+    }
+  }, [hasCommitted, signedDocuments, expandedDocId]);
 
   // Commit confirmation state
   const [showCommitConfirm, setShowCommitConfirm] = useState(false);
@@ -214,13 +241,11 @@ export function ZAIInvestmentFlow({
 
   // Get signing step description based on current document
   const getSigningDescription = () => {
-    const currentDoc = getCurrentDocument();
-    if (!currentDoc) {
+    if (signedDocuments.length === INVESTMENT_DOCUMENTS.length) {
       return 'All documents have been signed.';
     }
     const docsRemaining = INVESTMENT_DOCUMENTS.length - signedDocuments.length;
-    const docNumber = signedDocuments.length + 1;
-    return `Document ${docNumber} of ${INVESTMENT_DOCUMENTS.length}: ${currentDoc.title}. ${currentDoc.fullSummary}`;
+    return `Review and sign ${docsRemaining} document${docsRemaining > 1 ? 's' : ''} to continue.`;
   };
 
   // Get signing CTA label based on current document
@@ -469,14 +494,94 @@ export function ZAIInvestmentFlow({
                 <div className="flex flex-col items-center p-6 pb-80 gap-6 w-full">
                   {flowState === 'home' && (
                     /* Home State - Greeting */
-                    <div className="w-full max-w-2xl mt-16">
-                      <Greeting
-                        title="Good afternoon, Alex"
-                        portfolioGain="$154k"
-                        portfolioPercentage="+12.4%"
-                        priorityAllocations="3 priority allocations expiring soon"
-                      />
-                    </div>
+                    <>
+                      <div className="w-full max-w-2xl mt-16">
+                        <Greeting
+                          title="Good afternoon, Alex"
+                          portfolioGain="$154k"
+                          portfolioPercentage="+12.4%"
+                          priorityAllocations="3 priority allocations expiring soon"
+                        />
+                      </div>
+
+                      {/* Action Needed Card */}
+                      <div className="w-full max-w-2xl mt-6">
+                        {/* Header */}
+                        <div className="flex items-center gap-2 mb-3">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#F87171" stroke="#F87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          <span
+                            className="text-[15px] text-[#373338]"
+                            style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                          >
+                            Action Needed (3)
+                          </span>
+                        </div>
+
+                        {/* Action Items Card */}
+                        <div className="bg-white rounded-xl border border-[#e0dce0] overflow-hidden">
+                          {/* Item 1 - Anthropic (High Priority) */}
+                          <div
+                            onClick={() => {
+                              setUserMessage('Continue my investment in Anthropic');
+                              setFlowState('loading');
+                            }}
+                            className="flex items-center gap-3 px-5 py-4 border-b border-[#e0dce0]/60 bg-[#FEF2F2] hover:bg-[#FEE2E2] transition-colors cursor-pointer"
+                          >
+                            <img
+                              src="/icons/products/anthropic.png"
+                              alt="Anthropic"
+                              className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
+                            />
+                            <div className="flex-1 flex items-center justify-between gap-3">
+                              <p
+                                className="text-[15px] text-[#373338]"
+                                style={{ fontFamily: 'Soehne, sans-serif' }}
+                              >
+                                Anthropic closes in 2 days - Complete wire transfer
+                              </p>
+                              <span
+                                className="text-[11px] font-medium text-[#DC2626] bg-[#FEE2E2] px-2 py-1 rounded-full flex-shrink-0"
+                                style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                              >
+                                Continue Investment
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Item 2 - SpaceX */}
+                          <div className="flex items-center gap-3 px-5 py-4 border-b border-[#e0dce0]/60 hover:bg-[#f7f7f8]/50 transition-colors cursor-pointer">
+                            <img
+                              src="/icons/products/spaceX.png"
+                              alt="SpaceX"
+                              className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
+                            />
+                            <p
+                              className="text-[15px] text-[#373338]"
+                              style={{ fontFamily: 'Soehne, sans-serif' }}
+                            >
+                              SpaceX - Sign subscription docs
+                            </p>
+                          </div>
+
+                          {/* Item 3 - Coffee chat */}
+                          <div className="flex items-center gap-3 px-5 py-4 hover:bg-[#f7f7f8]/50 transition-colors cursor-pointer">
+                            <img
+                              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face"
+                              alt="Sarah M."
+                              className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                            />
+                            <p
+                              className="text-[15px] text-[#373338]"
+                              style={{ fontFamily: 'Soehne, sans-serif' }}
+                            >
+                              Coffee chat with Sarah M. tomorrow at 2pm
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </>
                   )}
 
                   {/* Show user message when in investment flow */}
@@ -614,7 +719,7 @@ export function ZAIInvestmentFlow({
                       </p>
 
                       {/* Investment Card with Horizontal Stepper */}
-                      <div className="bg-[#e8e5e8]/50 rounded-xl overflow-hidden">
+                      <div className="bg-white rounded-xl overflow-hidden border border-[#e0dce0]">
                         {/* Card Header - Deal Info */}
                         <div className="flex items-center gap-4 px-5 py-4 border-b border-[#e0dce0]/50">
                           <img
@@ -642,9 +747,135 @@ export function ZAIInvestmentFlow({
                         {(() => {
                           const currentStep = steps.find(s => s.status === 'current');
                           if (!currentStep) return null;
+
+                          // Special rendering for Signing step - show documents accordion
+                          if (currentStep.id === 'signing') {
+                            return (
+                              <div className="px-5 pb-5 pt-4">
+                                <div className="bg-[#f7f7f8] rounded-xl p-4">
+                                  <h3
+                                    className="text-[16px] font-medium text-[#373338] mb-4"
+                                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                  >
+                                    {currentStep.label}
+                                  </h3>
+
+                                  {/* Documents Accordion */}
+                                  <div className="space-y-2">
+                                    {INVESTMENT_DOCUMENTS.map((doc, index) => {
+                                      const isSigned = signedDocuments.includes(doc.id);
+                                      const isExpanded = expandedDocId === doc.id;
+                                      const pdfUrl = DOCUMENT_PDFS[doc.id];
+
+                                      return (
+                                        <div
+                                          key={doc.id}
+                                          className="bg-white rounded-lg border border-[#e0dce0] overflow-hidden"
+                                        >
+                                          {/* Accordion Header */}
+                                          <button
+                                            onClick={() => setExpandedDocId(isExpanded ? null : doc.id)}
+                                            className="w-full flex items-center justify-between p-4 hover:bg-[#f7f7f8]/50 transition-colors"
+                                          >
+                                            <div className="flex items-center gap-3">
+                                              {/* Status indicator */}
+                                              <div
+                                                className={cn(
+                                                  'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
+                                                  isSigned
+                                                    ? 'bg-[#373338] text-white'
+                                                    : 'bg-[#e8e5e8] text-[#7f7582]'
+                                                )}
+                                              >
+                                                {isSigned ? (
+                                                  <Check className="w-3.5 h-3.5" />
+                                                ) : (
+                                                  index + 1
+                                                )}
+                                              </div>
+                                              <div className="text-left">
+                                                <p
+                                                  className={cn(
+                                                    'text-[14px] font-medium',
+                                                    isSigned ? 'text-[#7f7582]' : 'text-[#373338]'
+                                                  )}
+                                                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                                >
+                                                  {doc.title}
+                                                </p>
+                                                {isSigned && (
+                                                  <p className="text-[12px] text-[#5a8a5a]">
+                                                    {doc.id === 'ppm' ? 'Reviewed' : 'Reviewed & Signed'}
+                                                  </p>
+                                                )}
+                                              </div>
+                                            </div>
+                                            <ChevronDown
+                                              className={cn(
+                                                'w-5 h-5 text-[#7f7582] transition-transform',
+                                                isExpanded && 'rotate-180'
+                                              )}
+                                            />
+                                          </button>
+
+                                          {/* Accordion Content */}
+                                          {isExpanded && (
+                                            <div className="px-4 pb-4 border-t border-[#e0dce0]">
+                                              {/* Description */}
+                                              <p
+                                                className="text-[13px] text-[#7f7582] leading-relaxed mt-3 mb-4"
+                                                style={{ fontFamily: 'Soehne, sans-serif' }}
+                                              >
+                                                {doc.fullSummary}
+                                              </p>
+
+                                              {/* PDF Preview */}
+                                              {pdfUrl && (
+                                                <div className="w-full bg-[#f7f7f8] rounded-lg border border-[#e0dce0] overflow-hidden mb-4 relative group">
+                                                  <iframe
+                                                    src={`${pdfUrl}#toolbar=0&navpanes=0&view=FitH`}
+                                                    className="w-full h-[200px] border-none"
+                                                    title={doc.title}
+                                                  />
+                                                  {/* Fullscreen button */}
+                                                  <button
+                                                    onClick={() => setFullscreenDocId(doc.id)}
+                                                    className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-white border border-[#d9d5db] rounded-lg shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    title="View fullscreen"
+                                                  >
+                                                    <Maximize2 className="w-4 h-4 text-[#685f6a]" />
+                                                  </button>
+                                                </div>
+                                              )}
+
+                                              {/* Review & Sign Button */}
+                                              {!isSigned && (
+                                                <button
+                                                  onClick={() => {
+                                                    setSigningDocument(doc);
+                                                    setExpandedDocId(null);
+                                                  }}
+                                                  className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#373338] text-white text-sm font-medium rounded-lg hover:bg-[#29272a] transition-colors"
+                                                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                                >
+                                                  {doc.id === 'ppm' ? 'Review document' : 'Review & Sign'}
+                                                </button>
+                                              )}
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          // Default rendering for other steps
                           return (
                             <div className="px-5 pb-5 pt-4">
-                              <div className="bg-white rounded-xl p-4 border border-[#e0dce0]/50">
+                              <div className="bg-[#f7f7f8] rounded-xl p-4">
                                 <h3
                                   className="text-[16px] font-medium text-[#373338] mb-2"
                                   style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
@@ -707,8 +938,28 @@ export function ZAIInvestmentFlow({
               <ScrollAreaPrimitive.Corner />
             </ScrollAreaPrimitive.Root>
 
+            {/* Blur Overlay when callout is expanded */}
+            {(showCommitConfirm || showInvestorTypeSelection || flowState === 'askAmount') && (
+              <div
+                className="absolute inset-0 z-15 bg-black/20 backdrop-blur-sm transition-all duration-300"
+                onClick={() => {
+                  if (showCommitConfirm) setShowCommitConfirm(false);
+                  if (showInvestorTypeSelection) {
+                    setShowInvestorTypeSelection(false);
+                    setSelectedInvestorType(null);
+                  }
+                  // Don't dismiss on askAmount - user needs to enter amount
+                }}
+              />
+            )}
+
             {/* Sticky Bottom Input Bar */}
-            <div className="absolute bottom-0 left-0 right-0 z-20 flex justify-center p-6 bg-gradient-to-t from-[#f7f7f8] via-[#f7f7f8]/80 to-transparent pointer-events-none">
+            <div className={cn(
+              "absolute bottom-0 left-0 right-0 z-20 flex justify-center p-6 pointer-events-none transition-all duration-300",
+              (showCommitConfirm || showInvestorTypeSelection || flowState === 'askAmount')
+                ? "bg-transparent"
+                : "bg-gradient-to-t from-[#f7f7f8] via-[#f7f7f8]/80 to-transparent"
+            )}>
               <div className="w-full max-w-2xl pointer-events-auto">
                 <InputBarV02
                   currentMode={(flowState === 'loading' || flowState === 'askAmount' || flowState === 'processingAmount' || flowState === 'investing') ? 'investment' : 'default'}
@@ -774,6 +1025,35 @@ export function ZAIInvestmentFlow({
         onClose={() => setSigningDocument(null)}
         onSign={handleDocumentSigned}
       />
+
+      {/* Fullscreen PDF Modal */}
+      {fullscreenDocId && (
+        <div className="fixed inset-0 z-[110] bg-black/80 flex items-center justify-center p-8">
+          <div className="relative w-full h-full max-w-6xl bg-white rounded-xl overflow-hidden shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#e6e4e7] bg-[#f7f7f8]">
+              <h3
+                className="text-[18px] leading-[24px] text-[#373338]"
+                style={{ fontFamily: 'Test Signifier, serif' }}
+              >
+                {INVESTMENT_DOCUMENTS.find(d => d.id === fullscreenDocId)?.title}
+              </h3>
+              <button
+                onClick={() => setFullscreenDocId(null)}
+                className="p-2 hover:bg-[#eae8eb] rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-[#685f6a]" />
+              </button>
+            </div>
+            {/* PDF Content */}
+            <iframe
+              src={`${DOCUMENT_PDFS[fullscreenDocId]}#toolbar=1&navpanes=1&view=FitH`}
+              className="w-full h-[calc(100%-64px)] border-none"
+              title={INVESTMENT_DOCUMENTS.find(d => d.id === fullscreenDocId)?.title}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Exit Confirmation Modal */}
       {showExitModal && (

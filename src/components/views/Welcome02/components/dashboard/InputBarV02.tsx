@@ -406,7 +406,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
               formCallout.state === 'confirmed' && "bg-[#e8e5e8]",
               formCallout.state === 'error' && "bg-[#e8a8a8]",
               formCallout.state === 'commit_confirm' && "bg-[#e8e5e8]",
-              formCallout.state === 'investor_type' && "bg-[#f7f7f8]"
+              formCallout.state === 'investor_type' && "bg-[#e8e5e8]"
             )}
             style={formCallout.state === 'awaiting_input' ? { animationDuration: '3s' } : undefined}
           >
