@@ -149,6 +149,12 @@ export interface InvestorTypeOption {
   subtitle: string;
 }
 
+// Saved investor profile for returning users
+export interface SavedInvestorProfile {
+  id: string;
+  label: string; // Short label like "U.S. Entity"
+}
+
 interface FormCallout {
   state: CalloutState;
   dealLogo?: string;
@@ -167,6 +173,9 @@ interface FormCallout {
   investorTypeOptions?: InvestorTypeOption[];
   selectedInvestorType?: string;
   onInvestorTypeSelect?: (id: string) => void;
+  // Saved profile for returning investors
+  savedInvestorProfile?: SavedInvestorProfile;
+  onChangeProfile?: () => void; // Click handler to change saved profile
 }
 
 interface InputBarProps {
@@ -507,15 +516,29 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                     className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
                   />
                 )}
-                <span
-                  className={cn(
-                    "text-[14px] md:text-[15px] font-medium text-[#29272a] truncate",
-                    formCallout.state === 'error' && "text-[#8a2929]"
+                <div className="flex flex-col gap-1 min-w-0">
+                  <span
+                    className={cn(
+                      "text-[14px] md:text-[15px] font-medium text-[#29272a] truncate",
+                      formCallout.state === 'error' && "text-[#8a2929]"
+                    )}
+                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                  >
+                    {formCallout.headerText}
+                  </span>
+                  {/* Saved investor profile badge for returning users */}
+                  {formCallout.savedInvestorProfile && (
+                    <button
+                      onClick={formCallout.onChangeProfile}
+                      className="self-start flex items-center gap-1 px-2 py-0.5 text-[10px] text-[#685f6a] bg-white/60 hover:bg-white/80 border border-[#d0cdd2] rounded-md transition-colors"
+                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                    >
+                      <span className="text-[#7f7582]">Investing as</span>
+                      <span className="font-medium">{formCallout.savedInvestorProfile.label}</span>
+                      <Pencil className="w-2.5 h-2.5 text-[#a09a9f]" />
+                    </button>
                   )}
-                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                >
-                  {formCallout.headerText}
-                </span>
+                </div>
               </div>
               <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
                 {formCallout.onClose && (

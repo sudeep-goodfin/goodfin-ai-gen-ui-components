@@ -256,8 +256,17 @@ export function ZAIInvestmentFlow({
     },
   ];
 
+  // Saved investor profile for returning users
+  const [savedInvestorProfile, setSavedInvestorProfile] = useState<{id: string; label: string} | null>(
+    isFirstTimeInvestor ? null : { id: 'us-entity', label: 'U.S. Entity' }
+  );
+
   // Minimum investment amount
   const MIN_INVESTMENT = 10000;
+
+  // Credit state
+  const [availableCredit] = useState(500);
+  const [appliedCredit, setAppliedCredit] = useState(500);
 
   // Handle click outside menu to close
   useEffect(() => {
@@ -447,8 +456,13 @@ export function ZAIInvestmentFlow({
         setSigningDocument(currentDoc);
       }
     } else if (stepId === 'kyc' && getKYCStatus() === 'current') {
-      // Show investor type selection first
-      setShowInvestorTypeSelection(true);
+      // For returning users with saved profile, skip selection
+      if (savedInvestorProfile) {
+        setShowIdentityModal(true);
+      } else {
+        // First-time users need to select investor type
+        setShowInvestorTypeSelection(true);
+      }
     } else if (stepId === 'wire' && getWireStatus() === 'current') {
       setShowTransferModal(true);
     }
@@ -457,9 +471,20 @@ export function ZAIInvestmentFlow({
   // Handle investor type selection continue
   const handleInvestorTypeContinue = () => {
     if (selectedInvestorType) {
+      // Save the profile
+      const selectedOption = investorTypeOptions.find(opt => opt.id === selectedInvestorType);
+      if (selectedOption) {
+        const profileLabel = selectedInvestorType === 'us-entity' ? 'U.S. Entity' : 'Non-U.S. Entity';
+        setSavedInvestorProfile({ id: selectedInvestorType, label: profileLabel });
+      }
       setShowInvestorTypeSelection(false);
       setShowIdentityModal(true);
     }
+  };
+
+  // Handle change profile - allow user to re-select investor type
+  const handleChangeProfile = () => {
+    setShowInvestorTypeSelection(true);
   };
 
   // Handle checkbox change for commit confirmation
@@ -953,16 +978,34 @@ export function ZAIInvestmentFlow({
                                       const isSigned = signedDocuments.includes(doc.id);
                                       const isExpanded = expandedDocId === doc.id;
                                       const pdfUrl = DOCUMENT_PDFS[doc.id];
+                                      // Check if all previous documents are signed (unlocks this one)
+                                      const previousDocsSigned = INVESTMENT_DOCUMENTS.slice(0, index).every(
+                                        (prevDoc) => signedDocuments.includes(prevDoc.id)
+                                      );
+                                      const isLocked = !isSigned && !previousDocsSigned;
 
                                       return (
                                         <div
                                           key={doc.id}
-                                          className="bg-white rounded-lg border border-[#e0dce0] overflow-hidden"
+                                          className={cn(
+                                            "bg-white rounded-lg border border-[#e0dce0] overflow-hidden transition-opacity",
+                                            isLocked && "opacity-50"
+                                          )}
                                         >
                                           {/* Accordion Header */}
                                           <button
-                                            onClick={() => setExpandedDocId(isExpanded ? null : doc.id)}
-                                            className="w-full flex items-center justify-between p-4 hover:bg-[#f7f7f8]/50 transition-colors"
+                                            onClick={() => {
+                                              if (!isLocked) {
+                                                setExpandedDocId(isExpanded ? null : doc.id);
+                                              }
+                                            }}
+                                            disabled={isLocked}
+                                            className={cn(
+                                              "w-full flex items-center justify-between p-4 transition-colors",
+                                              isLocked
+                                                ? "cursor-not-allowed"
+                                                : "hover:bg-[#f7f7f8]/50"
+                                            )}
                                           >
                                             <div className="flex items-center gap-3">
                                               {/* Status indicator */}
@@ -971,7 +1014,9 @@ export function ZAIInvestmentFlow({
                                                   'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
                                                   isSigned
                                                     ? 'bg-[#373338] text-white'
-                                                    : 'bg-[#e8e5e8] text-[#7f7582]'
+                                                    : isLocked
+                                                      ? 'bg-[#d0cdd2] text-[#a09a9f]'
+                                                      : 'bg-[#e8e5e8] text-[#7f7582]'
                                                 )}
                                               >
                                                 {isSigned ? (
@@ -984,7 +1029,11 @@ export function ZAIInvestmentFlow({
                                                 <p
                                                   className={cn(
                                                     'text-[14px] font-medium',
-                                                    isSigned ? 'text-[#7f7582]' : 'text-[#373338]'
+                                                    isSigned
+                                                      ? 'text-[#7f7582]'
+                                                      : isLocked
+                                                        ? 'text-[#a09a9f]'
+                                                        : 'text-[#373338]'
                                                   )}
                                                   style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                                                 >
@@ -997,16 +1046,18 @@ export function ZAIInvestmentFlow({
                                                 )}
                                               </div>
                                             </div>
-                                            <ChevronDown
-                                              className={cn(
-                                                'w-5 h-5 text-[#7f7582] transition-transform',
-                                                isExpanded && 'rotate-180'
-                                              )}
-                                            />
+                                            {!isLocked && (
+                                              <ChevronDown
+                                                className={cn(
+                                                  'w-5 h-5 text-[#7f7582] transition-transform',
+                                                  isExpanded && 'rotate-180'
+                                                )}
+                                              />
+                                            )}
                                           </button>
 
                                           {/* Accordion Content */}
-                                          {isExpanded && (
+                                          {isExpanded && !isLocked && (
                                             <div className="px-4 pb-4 border-t border-[#e0dce0] pt-3">
                                               {!isSigned ? (
                                                 <DocumentSigningInline
@@ -1164,6 +1215,79 @@ export function ZAIInvestmentFlow({
                                       </div>
                                     </div>
                                   </div>
+
+                                  {/* Apply Credit */}
+                                  {!isViewingCompleted && (
+                                    <div className="border-t border-[#e0dce0] pt-3 mt-3">
+                                      <div className="flex items-center justify-between mb-1.5">
+                                        <label
+                                          className="text-[12px] text-[#7f7582]"
+                                          style={{ fontFamily: 'Soehne, sans-serif' }}
+                                        >
+                                          Apply Credit
+                                        </label>
+                                        <span
+                                          className="text-[11px] text-[#5a8a5a] bg-[#5a8a5a]/10 px-2 py-0.5 rounded-full"
+                                          style={{ fontFamily: 'Soehne, sans-serif' }}
+                                        >
+                                          ${availableCredit.toLocaleString()} available
+                                        </span>
+                                      </div>
+                                      <div className="relative">
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-[#7f7582]">$</span>
+                                        <input
+                                          type="text"
+                                          value={appliedCredit}
+                                          onChange={(e) => {
+                                            const val = parseInt(e.target.value.replace(/[^0-9]/g, '')) || 0;
+                                            setAppliedCredit(Math.min(val, availableCredit));
+                                          }}
+                                          className="w-full pl-7 pr-3 py-2.5 bg-white border border-[#d9dde9] rounded-lg text-[13px] text-[#373338] placeholder:text-[#a9a4ab] outline-none focus:border-[#7f7582] transition-colors"
+                                          style={{ fontFamily: 'Soehne, sans-serif' }}
+                                        />
+                                      </div>
+                                      <p
+                                        className="text-[11px] text-[#7f7582] mt-1.5"
+                                        style={{ fontFamily: 'Soehne, sans-serif' }}
+                                      >
+                                        Credit from referrals and promotions. Adjust the amount you'd like to apply to this investment.
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  {/* Total Due Summary */}
+                                  {!isViewingCompleted && appliedCredit > 0 && (
+                                    <div className="border-t border-[#e0dce0] pt-3 mt-3 space-y-2">
+                                      <div className="flex items-center justify-between">
+                                        <span
+                                          className="text-[13px] text-[#5a8a5a]"
+                                          style={{ fontFamily: 'Soehne, sans-serif' }}
+                                        >
+                                          Credit Applied
+                                        </span>
+                                        <span
+                                          className="text-[13px] text-[#5a8a5a]"
+                                          style={{ fontFamily: 'Soehne, sans-serif' }}
+                                        >
+                                          -${appliedCredit.toLocaleString()}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center justify-between">
+                                        <span
+                                          className="text-[14px] font-medium text-[#373338]"
+                                          style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                        >
+                                          Total Due
+                                        </span>
+                                        <span
+                                          className="text-[14px] font-medium text-[#373338]"
+                                          style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                        >
+                                          ${(amount - appliedCredit).toLocaleString()}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
 
                                   {/* CTA Button - only show if not viewing completed */}
                                   {!isViewingCompleted && (
@@ -1484,6 +1608,9 @@ export function ZAIInvestmentFlow({
                     investorTypeOptions: showInvestorTypeSelection ? investorTypeOptions : undefined,
                     selectedInvestorType: showInvestorTypeSelection ? selectedInvestorType ?? undefined : undefined,
                     onInvestorTypeSelect: showInvestorTypeSelection ? setSelectedInvestorType : undefined,
+                    // Saved profile for returning investors (show when not in selection mode and not awaiting input)
+                    savedInvestorProfile: (!showInvestorTypeSelection && !showCommitConfirm && flowState !== 'askAmount' && savedInvestorProfile) ? savedInvestorProfile : undefined,
+                    onChangeProfile: handleChangeProfile,
                   } : undefined}
                 />
               </div>

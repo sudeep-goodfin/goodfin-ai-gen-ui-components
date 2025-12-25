@@ -73,12 +73,12 @@ export const INVESTMENT_DOCUMENTS: InvestmentDocument[] = [
   },
   {
     id: 'suitability',
-    title: 'Investor Suitability Questionnaire',
-    summary: 'A form to verify your eligibility and suitability for this investment opportunity.',
-    fullSummary: 'A form to verify your eligibility and suitability for this investment opportunity. This questionnaire helps ensure you meet the accreditation requirements and that this investment aligns with your financial situation, investment goals, and risk tolerance.',
+    title: 'Limited Liability Company Agreement',
+    summary: 'The operating agreement that governs the LLC structure of this investment vehicle.',
+    fullSummary: 'The operating agreement that governs the LLC structure of this investment vehicle. This document outlines the rights and responsibilities of members, distribution policies, management structure, and the terms under which you participate in the fund as a limited partner.',
     chips: [
-      { label: 'Requirements', prompt: 'What are the eligibility requirements?' },
-      { label: 'Why needed', prompt: 'Why do I need to complete this questionnaire?' },
+      { label: 'Member rights', prompt: 'What are my rights as a member?' },
+      { label: 'Distributions', prompt: 'How are distributions handled?' },
     ],
   },
 ];
