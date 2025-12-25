@@ -1,0 +1,70 @@
+import { Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+export type StepStatus = 'completed' | 'current' | 'upcoming';
+
+export interface Step {
+  id: string;
+  label: string;
+  status: StepStatus;
+}
+
+interface HorizontalStepperProps {
+  steps: Step[];
+  className?: string;
+}
+
+export function HorizontalStepper({ steps, className }: HorizontalStepperProps) {
+  return (
+    <div className={cn('flex items-center justify-center gap-0', className)}>
+      {steps.map((step, index) => {
+        const isLast = index === steps.length - 1;
+
+        return (
+          <div key={step.id} className="flex items-center">
+            {/* Step */}
+            <div className="flex flex-col items-center">
+              {/* Circle */}
+              <div
+                className={cn(
+                  'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all',
+                  step.status === 'completed' && 'bg-[#373338] text-white',
+                  step.status === 'current' && 'bg-[#373338] text-white',
+                  step.status === 'upcoming' && 'bg-[#e8e5e8] text-[#a09a9f]'
+                )}
+                style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+              >
+                {step.status === 'completed' ? (
+                  <Check className="w-4 h-4" />
+                ) : (
+                  index + 1
+                )}
+              </div>
+
+              {/* Label */}
+              <span
+                className={cn(
+                  'text-[12px] mt-2 whitespace-nowrap',
+                  step.status === 'upcoming' ? 'text-[#a09a9f]' : 'text-[#373338]'
+                )}
+                style={{ fontFamily: 'Soehne, sans-serif' }}
+              >
+                {step.label}
+              </span>
+            </div>
+
+            {/* Connecting line */}
+            {!isLast && (
+              <div
+                className={cn(
+                  'w-16 h-0.5 mx-2 -mt-5',
+                  step.status === 'completed' ? 'bg-[#373338]' : 'bg-[#e8e5e8]'
+                )}
+              />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}

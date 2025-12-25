@@ -6,11 +6,9 @@ import { Header } from '../Welcome02/components/layout/Header';
 import { Sidebar } from '../Welcome02/components/layout/Sidebar';
 import { InputBarV02 } from '../Welcome02/components/dashboard/InputBar';
 import { Greeting } from '../Welcome02/components/dashboard/Greeting';
-import { TabNavigation } from '../DealProductPage/components/TabNavigation';
 import { ThinkingText } from '../AIGreeting/ThinkingText';
 import { VerticalStepper, type Step, type StepStatus } from './components/VerticalStepper';
 import { svgPaths } from '../Welcome02/svgPaths';
-import { DocumentCard } from './components/DocumentCard';
 import { IdentityVerificationModal } from './components/IdentityVerificationModal';
 import { TransferModal } from './components/TransferModal';
 import { DocumentSigningModal } from './components/DocumentSigningModal';
@@ -20,13 +18,12 @@ import {
   type InvestmentDocument,
   type DealInfo,
   INVESTMENT_DOCUMENTS,
-  MOCK_BANK_ACCOUNTS,
   DEFAULT_DEAL,
 } from './types';
 
 // Re-export types
 export type { FlowStep, InvestmentDocument, DealInfo, Message } from './types';
-export { INVESTMENT_DOCUMENTS, MOCK_BANK_ACCOUNTS, DEFAULT_DEAL } from './types';
+export { INVESTMENT_DOCUMENTS, DEFAULT_DEAL } from './types';
 
 // Flow state type
 type FlowState = 'home' | 'loading' | 'askAmount' | 'processingAmount' | 'investing';
@@ -47,20 +44,6 @@ const PROCESSING_AMOUNT_TEXTS = [
   'ready!',
 ];
 
-// Tab types for this flow
-type ZAITabId = 'progress' | 'documents';
-
-interface ZAITab {
-  id: ZAITabId;
-  label: string;
-  isNew?: boolean;
-}
-
-const FLOW_TABS: ZAITab[] = [
-  { id: 'progress', label: 'Progress' },
-  { id: 'documents', label: 'Documents' },
-];
-
 interface ZAIInvestmentFlowProps {
   deal?: DealInfo;
   onDismiss?: () => void;
@@ -76,7 +59,6 @@ export function ZAIInvestmentFlow({
   const [flowState, setFlowState] = useState<FlowState>('home');
 
   // Investment state
-  const [activeTab, setActiveTab] = useState<ZAITabId>('progress');
   const [signedDocuments, setSignedDocuments] = useState<string[]>([]);
   const [isIdentityVerified, setIsIdentityVerified] = useState(false);
   const [isTransferComplete, setIsTransferComplete] = useState(false);
@@ -111,6 +93,22 @@ export function ZAIInvestmentFlow({
       checked: false,
     },
   ]);
+
+  // Investor type selection state
+  const [showInvestorTypeSelection, setShowInvestorTypeSelection] = useState(false);
+  const [selectedInvestorType, setSelectedInvestorType] = useState<string | null>(null);
+  const investorTypeOptions = [
+    {
+      id: 'us-entity',
+      title: 'U.S. entity, trust, or joint account',
+      subtitle: 'Business, trust, or shared account registered in the U.S.',
+    },
+    {
+      id: 'non-us-entity',
+      title: 'Non-U.S. entity, trust, or joint account',
+      subtitle: 'Registered outside the U.S.',
+    },
+  ];
 
   // Minimum investment amount
   const MIN_INVESTMENT = 10000;
@@ -209,6 +207,29 @@ export function ZAIInvestmentFlow({
     return 'upcoming';
   };
 
+  // Get the current document to sign (first unsigned document)
+  const getCurrentDocument = () => {
+    return INVESTMENT_DOCUMENTS.find(doc => !signedDocuments.includes(doc.id));
+  };
+
+  // Get signing step description based on current document
+  const getSigningDescription = () => {
+    const currentDoc = getCurrentDocument();
+    if (!currentDoc) {
+      return 'All documents have been signed.';
+    }
+    const docsRemaining = INVESTMENT_DOCUMENTS.length - signedDocuments.length;
+    const docNumber = signedDocuments.length + 1;
+    return `Document ${docNumber} of ${INVESTMENT_DOCUMENTS.length}: ${currentDoc.title}. ${currentDoc.fullSummary}`;
+  };
+
+  // Get signing CTA label based on current document
+  const getSigningCtaLabel = () => {
+    const currentDoc = getCurrentDocument();
+    if (!currentDoc) return 'All signed';
+    return currentDoc.id === 'ppm' ? 'Review document' : 'Review & Sign';
+  };
+
   // Build steps array for VerticalStepper
   const steps: Step[] = [
     {
@@ -222,8 +243,8 @@ export function ZAIInvestmentFlow({
       id: 'signing',
       label: 'Signing',
       status: getSigningStatus(),
-      description: `Review and sign ${INVESTMENT_DOCUMENTS.length} required documents including the PPM, Subscription Agreement, and Investor Suitability.`,
-      ctaLabel: 'Review documents',
+      description: getSigningDescription(),
+      ctaLabel: getSigningCtaLabel(),
     },
     {
       id: 'kyc',
@@ -261,7 +282,7 @@ export function ZAIInvestmentFlow({
   };
 
   // Handle transfer complete
-  const handleTransferComplete = (amount: number, bankId: string) => {
+  const handleTransferComplete = (amount: number) => {
     setIsTransferComplete(true);
     setShowTransferModal(false);
     onComplete?.();
@@ -272,12 +293,25 @@ export function ZAIInvestmentFlow({
     if (stepId === 'commit' && !hasCommitted) {
       // Show commit confirmation instead of immediately committing
       setShowCommitConfirm(true);
-    } else if (stepId === 'signing') {
-      setActiveTab('documents');
+    } else if (stepId === 'signing' && getSigningStatus() === 'current') {
+      // Open the current document to sign
+      const currentDoc = getCurrentDocument();
+      if (currentDoc) {
+        setSigningDocument(currentDoc);
+      }
     } else if (stepId === 'kyc' && getKYCStatus() === 'current') {
-      setShowIdentityModal(true);
+      // Show investor type selection first
+      setShowInvestorTypeSelection(true);
     } else if (stepId === 'wire' && getWireStatus() === 'current') {
       setShowTransferModal(true);
+    }
+  };
+
+  // Handle investor type selection continue
+  const handleInvestorTypeContinue = () => {
+    if (selectedInvestorType) {
+      setShowInvestorTypeSelection(false);
+      setShowIdentityModal(true);
     }
   };
 
@@ -303,6 +337,10 @@ export function ZAIInvestmentFlow({
     if (showCommitConfirm) {
       // Cancel commit confirmation and go back to regular flow
       setShowCommitConfirm(false);
+    } else if (showInvestorTypeSelection) {
+      // Cancel investor type selection
+      setShowInvestorTypeSelection(false);
+      setSelectedInvestorType(null);
     } else {
       setShowExitModal(true);
     }
@@ -322,6 +360,8 @@ export function ZAIInvestmentFlow({
     setUserMessage('');
     setShowCommitConfirm(false);
     setCommitCheckboxes(prev => prev.map(cb => ({ ...cb, checked: false })));
+    setShowInvestorTypeSelection(false);
+    setSelectedInvestorType(null);
   };
 
   // Handle cancel exit - close modal and continue
@@ -570,10 +610,10 @@ export function ZAIInvestmentFlow({
                         className="text-[16px] text-[#48424a] leading-relaxed mb-4"
                         style={{ fontFamily: 'Soehne, sans-serif' }}
                       >
-                        Great! I've prepared your investment of ${investmentAmount?.toLocaleString()} in {deal.companyName}. Here's your investment progress:
+                        Great! I've prepared your investment of ${investmentAmount?.toLocaleString()} in {deal.companyName}. Let's walk through the steps:
                       </p>
 
-                      {/* Investment Card with Tabs inside */}
+                      {/* Investment Card with Stepper */}
                       <div className="bg-[#e8e5e8]/50 rounded-xl overflow-hidden">
                         {/* Card Header - Deal Info */}
                         <div className="flex items-center gap-4 px-5 py-4 border-b border-[#e0dce0]/50">
@@ -593,33 +633,34 @@ export function ZAIInvestmentFlow({
                           </div>
                         </div>
 
-                        {/* Tabs inside card */}
-                        <div className="px-5 pt-4">
-                          <TabNavigation
-                            tabs={FLOW_TABS as any}
-                            activeTab={activeTab as any}
-                            onTabChange={(tabId) => setActiveTab(tabId as ZAITabId)}
-                            className="mb-4"
+                        {/* Stepper Content */}
+                        <div className="px-5 py-5">
+                          <VerticalStepper steps={steps} onStepClick={handleStepClick} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Investor Type Selection AI Message */}
+                  {flowState === 'investing' && showInvestorTypeSelection && (
+                    <div className="w-full max-w-2xl">
+                      <div className="flex items-start gap-3">
+                        {/* AI Avatar */}
+                        <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm border border-[#f0eef0] flex-shrink-0">
+                          <img
+                            src="/conciergeIcon.png"
+                            alt="Goodfin AI"
+                            className="w-full h-full object-cover"
                           />
                         </div>
-
-                        {/* Tab Content inside card */}
-                        <div className="px-5 pb-5">
-                          {activeTab === 'progress' ? (
-                            <VerticalStepper steps={steps} onStepClick={handleStepClick} />
-                          ) : (
-                            <div className="space-y-4">
-                              {INVESTMENT_DOCUMENTS.map((doc) => (
-                                <DocumentCard
-                                  key={doc.id}
-                                  document={doc}
-                                  isSigned={signedDocuments.includes(doc.id)}
-                                  onSign={() => handleSignDocument(doc.id)}
-                                  onAskQuestion={() => {}}
-                                />
-                              ))}
-                            </div>
-                          )}
+                        {/* AI Question */}
+                        <div className="pt-2">
+                          <p
+                            className="text-[16px] text-[#48424a] leading-relaxed"
+                            style={{ fontFamily: 'Soehne, sans-serif' }}
+                          >
+                            Before we verify your identity, please select your investor type. This helps us ensure compliance with regulations.
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -642,28 +683,36 @@ export function ZAIInvestmentFlow({
                   currentMode={(flowState === 'loading' || flowState === 'askAmount' || flowState === 'processingAmount' || flowState === 'investing') ? 'investment' : 'default'}
                   onSubmit={flowState === 'askAmount' ? handleAmountSubmit : handleInputSubmit}
                   formCallout={(flowState === 'askAmount' || flowState === 'processingAmount' || flowState === 'investing') ? {
-                    state: showCommitConfirm
-                      ? 'commit_confirm'
-                      : amountError
-                        ? 'error'
-                        : flowState === 'askAmount'
-                          ? 'awaiting_input'
-                          : 'confirmed',
+                    state: showInvestorTypeSelection
+                      ? 'investor_type'
+                      : showCommitConfirm
+                        ? 'commit_confirm'
+                        : amountError
+                          ? 'error'
+                          : flowState === 'askAmount'
+                            ? 'awaiting_input'
+                            : 'confirmed',
                     dealLogo: deal.logo,
                     headerText: amountError
                       ? amountError
-                      : showCommitConfirm
-                        ? 'Confirm your commitment'
-                        : flowState === 'askAmount'
-                          ? 'How much would you like to invest?'
-                          : `Invest in ${deal.companyName}`,
+                      : showInvestorTypeSelection
+                        ? 'Select your investor type'
+                        : showCommitConfirm
+                          ? 'Confirm your commitment'
+                          : flowState === 'askAmount'
+                            ? 'How much would you like to invest?'
+                            : `Invest in ${deal.companyName}`,
                     displayValue: investmentAmount ? `$${investmentAmount.toLocaleString()}` : undefined,
                     onClose: handleCloseClick,
                     // Commit confirmation props
                     checkboxes: showCommitConfirm ? commitCheckboxes : undefined,
                     onCheckboxChange: showCommitConfirm ? handleCommitCheckboxChange : undefined,
-                    ctaText: 'I agree and understand',
-                    onCtaClick: handleCommitConfirm,
+                    ctaText: showInvestorTypeSelection ? 'Continue' : 'I agree and understand',
+                    onCtaClick: showInvestorTypeSelection ? handleInvestorTypeContinue : handleCommitConfirm,
+                    // Investor type selection props
+                    investorTypeOptions: showInvestorTypeSelection ? investorTypeOptions : undefined,
+                    selectedInvestorType: showInvestorTypeSelection ? selectedInvestorType ?? undefined : undefined,
+                    onInvestorTypeSelect: showInvestorTypeSelection ? setSelectedInvestorType : undefined,
                   } : undefined}
                 />
               </div>
@@ -682,9 +731,13 @@ export function ZAIInvestmentFlow({
       <TransferModal
         isOpen={showTransferModal}
         deal={deal}
-        bankAccounts={MOCK_BANK_ACCOUNTS}
+        investmentAmount={investmentAmount || deal.minInvestment}
         onClose={() => setShowTransferModal(false)}
-        onComplete={handleTransferComplete}
+        onBack={() => setShowTransferModal(false)}
+        onComplete={(amount) => handleTransferComplete(amount)}
+        commitCompleted={hasCommitted}
+        signingCompleted={signedDocuments.length === INVESTMENT_DOCUMENTS.length}
+        kycCompleted={isIdentityVerified}
       />
 
       <DocumentSigningModal
