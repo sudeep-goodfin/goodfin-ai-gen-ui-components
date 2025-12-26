@@ -244,6 +244,8 @@ export function ZAIInvestmentFlow({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const investmentCardRef = useRef<HTMLDivElement>(null);
+  const scrollViewportRef = useRef<HTMLDivElement>(null);
+  const aiResponseRef = useRef<HTMLDivElement>(null);
 
   // Document accordion state
   const [expandedDocId, setExpandedDocId] = useState<string | null>(null);
@@ -266,6 +268,29 @@ export function ZAIInvestmentFlow({
       }
     }
   }, [hasCommitted, signedDocuments, expandedDocId]);
+
+  // Auto-scroll to AI response when new AI response is shown
+  useEffect(() => {
+    // States that trigger new AI responses
+    const aiResponseStates: FlowState[] = ['discoveringDeals', 'selectingDeal', 'askAmount', 'investing'];
+    if (aiResponseStates.includes(flowState) && aiResponseRef.current && scrollViewportRef.current) {
+      // Small delay to ensure content is rendered
+      setTimeout(() => {
+        if (aiResponseRef.current && scrollViewportRef.current) {
+          // Get the position of the AI response relative to the scroll container
+          const viewportRect = scrollViewportRef.current.getBoundingClientRect();
+          const elementRect = aiResponseRef.current.getBoundingClientRect();
+          const scrollTop = scrollViewportRef.current.scrollTop;
+          const offsetTop = elementRect.top - viewportRect.top + scrollTop - 24; // 24px padding from top
+
+          scrollViewportRef.current.scrollTo({
+            top: offsetTop,
+            behavior: 'smooth'
+          });
+        }
+      }, 150);
+    }
+  }, [flowState]);
 
   // Commit confirmation state
   const [showCommitConfirm, setShowCommitConfirm] = useState(false);
@@ -857,7 +882,7 @@ export function ZAIInvestmentFlow({
 
             {/* Main Scrollable Content */}
             <ScrollAreaPrimitive.Root className="flex-1 overflow-hidden">
-              <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-none [&>div]:!block overflow-y-auto">
+              <ScrollAreaPrimitive.Viewport ref={scrollViewportRef} className="h-full w-full rounded-none [&>div]:!block overflow-y-auto">
                 <div className="flex flex-col items-center p-6 pb-96 gap-6 w-full">
                   {flowState === 'home' && (
                     /* Home State - Greeting */
@@ -1290,7 +1315,7 @@ export function ZAIInvestmentFlow({
 
                   {flowState === 'investing' && (
                     /* Investing State - AI response with Investment Card */
-                    <div className="w-full max-w-2xl">
+                    <div ref={aiResponseRef} className="w-full max-w-2xl">
                       {/* AI Avatar */}
                       <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm border border-[#f0eef0] mb-4">
                         <img
