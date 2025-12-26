@@ -353,9 +353,9 @@ export function ZAIInvestmentFlow({
     },
   ];
 
-  // Saved investor profile for returning users
+  // Saved investor profile for returning users (default to individual for Footprint flow)
   const [savedInvestorProfile, setSavedInvestorProfile] = useState<{id: string; label: string} | null>(
-    isFirstTimeInvestor ? null : { id: 'us-entity', label: 'U.S. Entity' }
+    isFirstTimeInvestor ? null : { id: 'us-individual', label: 'U.S. Individual' }
   );
 
   // Business info form state
@@ -1649,14 +1649,14 @@ export function ZAIInvestmentFlow({
                                     </div>
                                   </div>
 
-                                  {/* Promo Code Input - always visible */}
+                                  {/* Promo Code Input - optional */}
                                   {!isViewingCompleted && (
                                     <div className="border-t border-[#e0dce0] pt-4 mt-4">
                                       <label
                                         className="text-[13px] text-[#7f7582] block mb-2"
                                         style={{ fontFamily: 'Soehne, sans-serif' }}
                                       >
-                                        Promo Code
+                                        Promo Code <span className="text-[#a9a4ab]">(optional)</span>
                                       </label>
                                       <div className="flex gap-2">
                                         <input
