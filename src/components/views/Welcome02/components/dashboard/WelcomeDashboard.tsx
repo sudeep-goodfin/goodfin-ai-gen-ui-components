@@ -713,10 +713,15 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
     setHasUnlockedPersonalization(true);
   };
 
-  // Skip personalization - remind me later
+  // Skip personalization - remind me later (go back to unlock preview)
   const handleSkipPersonalization = () => {
     setHasUnlockedPersonalization(false);
-    setPersonalizationComplete(true);
+    // Reset question state so user can start fresh when they return
+    setCurrentQuestionIndex(0);
+    setSelectedPersonalizationOptions({});
+    setAnimatingOptionId(null);
+    setCompletionFlowState('questions');
+    // Don't set personalizationComplete - keep showing the unlock preview
   };
 
   // Toggle personalization expand/collapse
@@ -937,7 +942,7 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
             ) : (
               /* Otherwise show standard Dashboard content */
               <>
-                {currentMode === 'default' && isFirstTimeUser ? (
+                {currentMode === 'default' && isFirstTimeUser && !personalizationComplete ? (
                   /* First-time user personalization flow with orchestrated animations */
                   <div className="flex flex-col gap-8 w-full mt-10 max-w-3xl">
                     {/* Greeting - visible from 'greeting' stage onwards */}
@@ -965,7 +970,7 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
                       )}
                     >
                       <PersonalizationPreview
-                        isVisible={!personalizationComplete}
+                        isVisible={true}
                         onUnlock={handleUnlockPersonalization}
                         isUnlocked={hasUnlockedPersonalization}
                       />
