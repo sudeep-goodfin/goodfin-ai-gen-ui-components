@@ -11,6 +11,7 @@ import { Icon, CustomIcon } from '../Icon';
 import { ArrowLeft } from 'lucide-react';
 import svgPaths from '../../imports/svg-191opiemcf';
 import { svgPaths as localSvgPaths } from '../../svgPaths';
+import { cn } from '../../../../../lib/utils';
 
 // Home Content Variant Types
 export type HomeVariant = 'v1' | 'v2-full' | 'v2-compact' | 'v2-action-focused';
@@ -168,15 +169,27 @@ const GREETING_DATA: Record<ChatMode, { title: string; description: string }> = 
   }
 };
 
+// Animation orchestration phases for first-time users
+type AnimationStage = 'idle' | 'greeting' | 'questions' | 'inputbar' | 'complete';
+
+// Animation timing constants
+const GREETING_COMPLETE_DELAY = 7000; // Time for greeting animation to complete
+const QUESTIONS_COMPLETE_DELAY = 1500; // Additional time after greeting for questions to animate in
+const INPUTBAR_DELAY = 500; // Delay after questions before input bar appears
+
 interface WelcomeDashboardProps {
   homeVariant?: HomeVariant;
   isFirstTimeUser?: boolean;
+  animationKey?: number;
 }
 
-export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false }: WelcomeDashboardProps) {
+export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, animationKey = 0 }: WelcomeDashboardProps) {
   const [currentMode, setCurrentMode] = useState<ChatMode>('default');
   const [extraSlotItem, setExtraSlotItem] = useState<MoreMode | null>(null);
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
+
+  // Animation orchestration state for first-time users
+  const [animationStage, setAnimationStage] = useState<AnimationStage>('idle');
 
   // Chat State
   const [chatState, setChatState] = useState<{
@@ -185,6 +198,35 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false }
     isThinking: boolean;
     streamingContent: string;
   }>({ isActive: false, messages: [], isThinking: false, streamingContent: "" });
+
+  // Animation orchestration effect
+  useEffect(() => {
+    if (!isFirstTimeUser) {
+      setAnimationStage('complete');
+      return;
+    }
+
+    // Reset animation when key changes
+    setAnimationStage('idle');
+
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    // Start with greeting animation immediately
+    timers.push(setTimeout(() => setAnimationStage('greeting'), 100));
+
+    // After greeting completes, show questions
+    timers.push(setTimeout(() => setAnimationStage('questions'), GREETING_COMPLETE_DELAY));
+
+    // After questions animate in, show input bar
+    timers.push(setTimeout(() => setAnimationStage('inputbar'), GREETING_COMPLETE_DELAY + QUESTIONS_COMPLETE_DELAY));
+
+    // Mark complete
+    timers.push(setTimeout(() => setAnimationStage('complete'), GREETING_COMPLETE_DELAY + QUESTIONS_COMPLETE_DELAY + INPUTBAR_DELAY));
+
+    return () => {
+      timers.forEach(timer => clearTimeout(timer));
+    };
+  }, [isFirstTimeUser, animationKey]);
 
   const handleModeChange = (mode: ChatMode) => {
     setCurrentMode(mode);
@@ -390,7 +432,42 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false }
             ) : (
               /* Otherwise show standard Dashboard content */
               <>
-                {currentMode === 'default' ? (
+                {currentMode === 'default' && isFirstTimeUser ? (
+                  /* First-time user personalization flow with orchestrated animations */
+                  <div className="flex flex-col gap-10 w-full mt-10 max-w-3xl">
+                    {/* Greeting - visible from 'greeting' stage onwards */}
+                    <div
+                      className={cn(
+                        'transition-all duration-700 ease-out',
+                        animationStage === 'idle'
+                          ? 'opacity-0 blur-md translate-y-4'
+                          : 'opacity-100 blur-0 translate-y-0'
+                      )}
+                    >
+                      <Greeting
+                        isFirstTimeUser={true}
+                        animationKey={animationKey}
+                      />
+                    </div>
+
+                    {/* Questions - visible from 'questions' stage onwards */}
+                    <div
+                      className={cn(
+                        'transition-all duration-700 ease-out',
+                        ['idle', 'greeting'].includes(animationStage)
+                          ? 'opacity-0 blur-md translate-y-4'
+                          : 'opacity-100 blur-0 translate-y-0'
+                      )}
+                    >
+                      <DashboardContent
+                        mode={currentMode}
+                        onSuggestionClick={handleStartChat}
+                        isFirstTimeUser={true}
+                        animationStage={animationStage}
+                      />
+                    </div>
+                  </div>
+                ) : currentMode === 'default' ? (
                   <div className="w-full max-w-3xl mt-6">
                     {homeVariant === 'v1' ? (
                       <HomeContent
@@ -421,6 +498,7 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false }
                     <DashboardContent
                       mode={currentMode}
                       onSuggestionClick={handleStartChat}
+                      isFirstTimeUser={isFirstTimeUser}
                     />
                   </div>
                 )}
@@ -437,8 +515,16 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false }
         <ScrollAreaPrimitive.Corner />
       </ScrollAreaPrimitive.Root>
 
-      {/* Sticky Bottom Input Bar */}
-      <div className="relative z-20 w-full flex justify-center p-6 bg-gradient-to-t from-[#f7f7f8] via-[#f7f7f8]/80 to-transparent">
+      {/* Sticky Bottom Input Bar - with blur animation for first-time users */}
+      <div
+        className={cn(
+          "relative z-20 w-full flex justify-center p-6 bg-gradient-to-t from-[#f7f7f8] via-[#f7f7f8]/80 to-transparent",
+          isFirstTimeUser && "transition-all duration-700 ease-out",
+          isFirstTimeUser && ['idle', 'greeting', 'questions'].includes(animationStage)
+            ? 'opacity-0 blur-sm translate-y-4'
+            : 'opacity-100 blur-0 translate-y-0'
+        )}
+      >
         <div className="w-full max-w-3xl">
           <InputBar
             currentMode={currentMode}

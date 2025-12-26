@@ -148,7 +148,7 @@ type DocsLayoutProps = {
   groups: ComponentGroup[];
   renderConversationView?: (flow: string) => React.ReactNode;
   renderOnboardingView?: (variant: string, key: number) => React.ReactNode;
-  renderPersonalizationView?: (variant: string) => React.ReactNode;
+  renderPersonalizationView?: (variant: string, animationKey: number) => React.ReactNode;
   renderWelcomeView?: (variant: string) => React.ReactNode;
   renderWelcome02View?: (variant: string, showChrome: boolean, homeVariant: string) => React.ReactNode;
   renderInvestmentFlowView?: (step: string, onDismiss: () => void) => React.ReactNode;
@@ -314,6 +314,9 @@ export function DocsLayout({
 
   // Onboarding reset key
   const [onboardingKey, setOnboardingKey] = useState(0);
+
+  // Personalization animation key
+  const [personalizationKey, setPersonalizationKey] = useState(0);
 
   // Global release version state (persisted to URL)
   const [selectedRelease, setSelectedRelease] = useState(() => {
@@ -787,7 +790,7 @@ export function DocsLayout({
           {viewMode === 'component' && activeComponent}
           {viewMode === 'conversation' && renderConversationView?.(activeConversationFlow)}
           {viewMode === 'onboarding' && renderOnboardingView?.(activeOnboardingVariant, onboardingKey)}
-          {viewMode === 'personalization' && renderPersonalizationView?.(activePersonalizationVariant)}
+          {viewMode === 'personalization' && renderPersonalizationView?.(activePersonalizationVariant, personalizationKey)}
           {viewMode === 'welcome' && renderWelcomeView?.(activeWelcomeVariant)}
           {viewMode === 'welcome02' && renderWelcome02View?.(activeWelcome02Variant, false, activeWelcome02HomeVariant)}
           {viewMode === 'investment-flow' && renderInvestmentFlowView?.(activeInvestmentFlowStep, () => {
@@ -1117,32 +1120,43 @@ export function DocsLayout({
           {viewMode === 'personalization' && (
             <div className="flex flex-col flex-1 min-h-0">
               {/* Options Bar */}
-              <div className="flex flex-wrap items-center gap-3 px-4 md:px-8 py-3 border-b border-border bg-background/50">
-                {/* Variant Selector Dropdown */}
-                {personalizationVariants.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground hidden sm:inline">User State:</span>
-                    <div className="relative">
-                      <select
-                        value={activePersonalizationVariant}
-                        onChange={(e) => setActivePersonalizationVariant(e.target.value)}
-                        className="appearance-none bg-white border border-border rounded-lg px-3 py-1.5 pr-8 text-sm font-medium text-foreground cursor-pointer hover:border-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-foreground/20"
-                      >
-                        {personalizationVariants.map((variant) => (
-                          <option key={variant.id} value={variant.id}>
-                            {variant.label}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <div className="flex flex-wrap items-center justify-between gap-3 px-4 md:px-8 py-3 border-b border-border bg-background/50">
+                <div className="flex flex-wrap items-center gap-3">
+                  {/* Variant Selector Dropdown */}
+                  {personalizationVariants.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground hidden sm:inline">User State:</span>
+                      <div className="relative">
+                        <select
+                          value={activePersonalizationVariant}
+                          onChange={(e) => setActivePersonalizationVariant(e.target.value)}
+                          className="appearance-none bg-white border border-border rounded-lg px-3 py-1.5 pr-8 text-sm font-medium text-foreground cursor-pointer hover:border-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-foreground/20"
+                        >
+                          {personalizationVariants.map((variant) => (
+                            <option key={variant.id} value={variant.id}>
+                              {variant.label}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
+
+                {/* Replay Animation Button */}
+                <button
+                  onClick={() => setPersonalizationKey(prev => prev + 1)}
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-all"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  <span className="hidden sm:inline">Replay Animation</span>
+                </button>
               </div>
 
               {/* Direct render - no container */}
               <div className="flex-1 min-h-0 overflow-hidden">
-                {renderPersonalizationView?.(activePersonalizationVariant)}
+                {renderPersonalizationView?.(activePersonalizationVariant, personalizationKey)}
               </div>
             </div>
           )}

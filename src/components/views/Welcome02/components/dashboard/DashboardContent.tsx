@@ -5,6 +5,7 @@ import { EventsContent } from './EventsContent';
 import { ChatMode } from './InputBar';
 import PortfolioSummary from '../../imports/Frame2147228782';
 import { DealsCardsGrid } from './DealsCardsGrid';
+import { cn } from '../../../../../lib/utils';
 import {
     Search,
     TrendingUp,
@@ -16,7 +17,12 @@ import {
     Building2,
     Zap,
     Globe,
-    ExternalLink
+    ExternalLink,
+    Target,
+    DollarSign,
+    Clock,
+    Sparkles,
+    Heart
 } from 'lucide-react';
 
 export interface SuggestionItemProps {
@@ -249,6 +255,32 @@ function PortfolioContent({ onSuggestionClick }: { onSuggestionClick?: (text: st
 }
 
 export const SUGGESTIONS_DATA: Record<string, Omit<SuggestionItemProps, 'onClick'>[]> = {
+    personalization: [
+        {
+            icon: <Target className="w-5 h-5" />,
+            title: "What are your investment goals?",
+            subtitle: "Growth, income, diversification, or specific sectors",
+            action: "Tell me"
+        },
+        {
+            icon: <DollarSign className="w-5 h-5" />,
+            title: "What's your typical investment size?",
+            subtitle: "Help me find deals that match your allocation preferences",
+            action: "Set range"
+        },
+        {
+            icon: <Heart className="w-5 h-5" />,
+            title: "Any sectors you're particularly excited about?",
+            subtitle: "AI, fintech, healthcare, climate tech, and more",
+            action: "Explore"
+        },
+        {
+            icon: <Clock className="w-5 h-5" />,
+            title: "What's your investment horizon?",
+            subtitle: "Short-term liquidity vs. long-term growth",
+            action: "Select"
+        }
+    ],
     research: [
         {
             icon: <Search className="w-5 h-5" />,
@@ -371,7 +403,54 @@ export const SUGGESTIONS_DATA: Record<string, Omit<SuggestionItemProps, 'onClick
     ]
 };
 
-export function DashboardContent({ mode, onSuggestionClick }: { mode: ChatMode, onSuggestionClick?: (text: string) => void }) {
+// Animation stage type from WelcomeDashboard
+type AnimationStage = 'idle' | 'greeting' | 'questions' | 'inputbar' | 'complete';
+
+interface DashboardContentProps {
+    mode: ChatMode;
+    onSuggestionClick?: (text: string) => void;
+    isFirstTimeUser?: boolean;
+    animationStage?: AnimationStage;
+}
+
+export function DashboardContent({ mode, onSuggestionClick, isFirstTimeUser = false, animationStage = 'complete' }: DashboardContentProps) {
+    // Determine if questions should be visible based on animation stage
+    const showPersonalization = ['questions', 'inputbar', 'complete'].includes(animationStage);
+
+    // First-time users see personalization questions in default mode
+    if (mode === 'default' && isFirstTimeUser) {
+        const suggestions = SUGGESTIONS_DATA['personalization'] || [];
+        return (
+            <div className="w-full max-w-3xl flex flex-col gap-3">
+                <div
+                    className={cn(
+                        "text-sm font-medium text-[#7f7582] uppercase tracking-wider mb-1 px-1 transition-all duration-500",
+                        showPersonalization ? 'opacity-100' : 'opacity-0'
+                    )}
+                >
+                    Let's personalize your experience
+                </div>
+                {suggestions.map((item, index) => (
+                    <div
+                        key={index}
+                        className={cn(
+                            'transition-all duration-500 ease-out',
+                            showPersonalization ? 'opacity-100 blur-0 translate-y-0' : 'opacity-0 blur-sm translate-y-2'
+                        )}
+                        style={{
+                            transitionDelay: showPersonalization ? `${index * 120}ms` : '0ms'
+                        }}
+                    >
+                        <SuggestionCard
+                            {...item}
+                            onClick={() => onSuggestionClick?.(item.title)}
+                        />
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
     if (mode === 'default') {
         return <ProgressWidget />;
     }

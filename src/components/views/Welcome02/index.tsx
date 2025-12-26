@@ -9,15 +9,16 @@ type Welcome02Props = {
   showChrome?: boolean;
   homeVariant?: HomeVariant;
   isFirstTimeUser?: boolean;
+  animationKey?: number;
 };
 
-export function Welcome02({ showChrome = true, homeVariant = 'v1', isFirstTimeUser = false }: Welcome02Props) {
+export function Welcome02({ showChrome = true, homeVariant = 'v1', isFirstTimeUser = false, animationKey = 0 }: Welcome02Props) {
   return (
     <div className="flex flex-col h-full w-full bg-[#f0eef0] overflow-hidden font-sans text-[#373338]">
       {showChrome && <Header />}
       <div className="flex flex-1 overflow-hidden">
         {showChrome && <Sidebar />}
-        <WelcomeDashboard homeVariant={homeVariant} isFirstTimeUser={isFirstTimeUser} />
+        <WelcomeDashboard homeVariant={homeVariant} isFirstTimeUser={isFirstTimeUser} animationKey={animationKey} />
       </div>
     </div>
   );

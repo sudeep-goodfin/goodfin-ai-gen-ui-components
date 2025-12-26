@@ -627,11 +627,13 @@ export function App() {
       renderOnboardingView={(variant, key) => (
         <OnboardingView key={key} variant={variant as OnboardingVariant} />
       )}
-      renderPersonalizationView={(variant) => (
+      renderPersonalizationView={(variant, animationKey) => (
         <Welcome02
+          key={animationKey}
           showChrome={false}
           homeVariant="v2-full"
           isFirstTimeUser={variant === 'accredited-first-time'}
+          animationKey={animationKey}
         />
       )}
       renderWelcomeView={(variant) => (
