@@ -127,7 +127,7 @@ interface InvestmentAction {
 }
 
 // Callout states
-export type CalloutState = 'default' | 'awaiting_input' | 'confirmed' | 'error' | 'commit_confirm' | 'investor_type' | 'business_info';
+export type CalloutState = 'default' | 'awaiting_input' | 'confirmed' | 'error' | 'commit_confirm' | 'investor_type' | 'business_info' | 'personalization';
 
 interface CalloutResponse {
   id: string;
@@ -180,6 +180,37 @@ export interface BusinessInfoData {
   documents: string[];
 }
 
+// Personalization option for first-time users
+export interface PersonalizationOption {
+  id: string;
+  icon?: React.ReactNode;
+  title: string;
+  subtitle?: string;
+}
+
+// Question input types
+export type PersonalizationInputType = 'options' | 'multi-select' | 'text' | 'scale';
+
+// Condition for showing a question based on previous answers
+export interface PersonalizationCondition {
+  questionId: string;
+  values: string[]; // Show if any of these values are selected
+}
+
+// Personalization question for the callout
+export interface PersonalizationQuestion {
+  id: string;
+  question: string;
+  inputType: PersonalizationInputType;
+  options?: PersonalizationOption[];
+  placeholder?: string; // For text inputs
+  scaleMin?: number; // For scale inputs
+  scaleMax?: number;
+  scaleLabels?: { min: string; max: string };
+  condition?: PersonalizationCondition; // Conditional display
+  optional?: boolean;
+}
+
 interface FormCallout {
   state: CalloutState;
   dealLogo?: string;
@@ -208,6 +239,16 @@ interface FormCallout {
   onOwnerEmailChange?: (index: number, email: string) => void;
   onAddDocument?: () => void;
   primaryOwnerName?: string; // Current user's name for display
+  // Personalization callout props
+  personalizationQuestions?: PersonalizationQuestion[];
+  currentQuestionIndex?: number;
+  selectedPersonalizationOptions?: Record<string, string[]>; // questionId -> selected option ids or text values
+  onPersonalizationOptionSelect?: (questionId: string, optionId: string, isMultiSelect?: boolean) => void;
+  onPersonalizationTextChange?: (questionId: string, value: string) => void;
+  onPersonalizationScaleChange?: (questionId: string, value: number) => void;
+  isPersonalizationExpanded?: boolean;
+  onTogglePersonalizationExpand?: () => void;
+  onSkipQuestion?: () => void; // For optional questions
 }
 
 interface InputBarProps {
@@ -513,7 +554,8 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
               formCallout.state === 'error' && "bg-[#e8a8a8]",
               formCallout.state === 'commit_confirm' && "bg-[#e8e5e8]",
               formCallout.state === 'investor_type' && "bg-[#e8e5e8]",
-              formCallout.state === 'business_info' && "bg-[#e8e5e8]"
+              formCallout.state === 'business_info' && "bg-[#e8e5e8]",
+              formCallout.state === 'personalization' && "bg-gradient-to-b from-[#f5f0e8] to-[#e8e5e8]"
             )}
             style={formCallout.state === 'awaiting_input' ? { animationDuration: '3s' } : undefined}
           >
@@ -574,6 +616,19 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 </div>
               </div>
               <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+                {/* Personalization collapse button */}
+                {formCallout.state === 'personalization' && formCallout.isPersonalizationExpanded && formCallout.onTogglePersonalizationExpand && (
+                  <button
+                    onClick={formCallout.onTogglePersonalizationExpand}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-medium text-[#685f6a] bg-white/60 hover:bg-white/80 border border-[#d0cdd2] rounded-lg transition-colors"
+                    style={{ fontFamily: 'Soehne, sans-serif' }}
+                  >
+                    <span>Minimize</span>
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="text-[#685f6a]">
+                      <path d="M4 10L8 6L12 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                )}
                 {formCallout.onClose && (
                   <>
                     {/* Investment progress button - hidden on mobile */}
@@ -845,6 +900,284 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 </div>
               </div>
             )}
+
+            {/* Personalization Questions - Progressive Disclosure (One at a time) */}
+            {formCallout.state === 'personalization' && formCallout.personalizationQuestions && formCallout.isPersonalizationExpanded && (
+              <div className="flex flex-col gap-3 mt-2">
+                {/* Previously answered questions - playful stacked summary */}
+                {(() => {
+                  const currentIndex = formCallout.currentQuestionIndex ?? 0;
+                  const totalQuestions = formCallout.personalizationQuestions.length;
+                  const answeredQuestions = formCallout.personalizationQuestions.filter((q, idx) => {
+                    const selectedValues = formCallout.selectedPersonalizationOptions?.[q.id] || [];
+                    return selectedValues.length > 0 && idx < currentIndex;
+                  });
+
+                  if (answeredQuestions.length === 0) return null;
+
+                  const progress = Math.round((answeredQuestions.length / totalQuestions) * 100);
+
+                  // Playful messages based on progress
+                  const getPlayfulMessage = () => {
+                    if (progress < 20) return "Great start! 🚀";
+                    if (progress < 40) return "You're on a roll! ✨";
+                    if (progress < 60) return "Halfway there! 🎯";
+                    if (progress < 80) return "Almost done! 💪";
+                    if (progress < 95) return "Final stretch! 🏁";
+                    return "Just one more! 🎉";
+                  };
+
+                  return (
+                    <div className="relative mb-1">
+                      {/* Stacked cards visual */}
+                      <div className="relative">
+                        {/* Background stack layers */}
+                        {answeredQuestions.length > 1 && (
+                          <div className="absolute inset-x-1 top-1 h-full bg-white/30 rounded-lg border border-[#e8e5e8]/50" />
+                        )}
+                        {answeredQuestions.length > 2 && (
+                          <div className="absolute inset-x-2 top-2 h-full bg-white/20 rounded-lg border border-[#e8e5e8]/30" />
+                        )}
+                        {/* Top card showing progress */}
+                        <div className="relative flex flex-col gap-2 px-3 py-2.5 bg-white/60 rounded-lg border border-[#e8e5e8]">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className="text-[13px] text-[#373338] font-medium"
+                                style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                              >
+                                {getPlayfulMessage()}
+                              </span>
+                            </div>
+                            <span
+                              className="text-[12px] text-[#7f7582]"
+                              style={{ fontFamily: 'Soehne, sans-serif' }}
+                            >
+                              {answeredQuestions.length}/{totalQuestions}
+                            </span>
+                          </div>
+                          {/* Progress bar */}
+                          <div className="w-full h-1.5 bg-[#e8e5e8] rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-[#373338] to-[#685f6a] rounded-full transition-all duration-500 ease-out"
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Current question - expanded with appropriate input type */}
+                {formCallout.personalizationQuestions.map((question, qIndex) => {
+                  const isCurrentQuestion = qIndex === (formCallout.currentQuestionIndex ?? 0);
+
+                  if (!isCurrentQuestion) return null;
+
+                  const isMultiSelect = question.inputType === 'multi-select';
+                  const selectedValues = formCallout.selectedPersonalizationOptions?.[question.id] || [];
+
+                  return (
+                    <div
+                      key={question.id}
+                      className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300"
+                    >
+                      {/* Question Text */}
+                      <div className="flex items-center justify-between">
+                        <p
+                          className="text-[15px] text-[#373338]"
+                          style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                        >
+                          {question.question}
+                          {question.optional && (
+                            <span className="text-[12px] text-[#a09a9f] ml-2">(optional)</span>
+                          )}
+                        </p>
+                        {isMultiSelect && (
+                          <span
+                            className="text-[11px] text-[#7f7582] bg-[#f0eef0] px-2 py-0.5 rounded-full"
+                            style={{ fontFamily: 'Soehne, sans-serif' }}
+                          >
+                            Select multiple
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Options Grid (for 'options' and 'multi-select' types) */}
+                      {(question.inputType === 'options' || question.inputType === 'multi-select') && question.options && (
+                        <div className={cn(
+                          "grid gap-2",
+                          question.options.length <= 4 ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3"
+                        )}>
+                          {question.options.map((option) => {
+                            const isSelected = selectedValues.includes(option.id);
+                            return (
+                              <button
+                                key={option.id}
+                                onClick={() => formCallout.onPersonalizationOptionSelect?.(question.id, option.id, isMultiSelect)}
+                                className={cn(
+                                  "flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all text-left",
+                                  isSelected
+                                    ? "border-[#373338] bg-white shadow-sm"
+                                    : "border-[#e0dce0] bg-white hover:border-[#c0bcc0]"
+                                )}
+                              >
+                                {isMultiSelect && (
+                                  <div className={cn(
+                                    "w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors",
+                                    isSelected ? "bg-[#373338] border-[#373338]" : "border-[#beb9c0]"
+                                  )}>
+                                    {isSelected && (
+                                      <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                                        <path d="M2 6L5 9L10 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                      </svg>
+                                    )}
+                                  </div>
+                                )}
+                                {option.icon && (
+                                  <span className="text-[16px] flex-shrink-0">{option.icon}</span>
+                                )}
+                                <span
+                                  className="text-[13px] text-[#373338]"
+                                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                >
+                                  {option.title}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Text Input */}
+                      {question.inputType === 'text' && (
+                        <input
+                          type="text"
+                          value={selectedValues[0] || ''}
+                          onChange={(e) => formCallout.onPersonalizationTextChange?.(question.id, e.target.value)}
+                          placeholder={question.placeholder || 'Enter your answer...'}
+                          className="w-full px-4 py-3 bg-white border-2 border-[#e0dce0] rounded-xl text-[14px] text-[#373338] placeholder:text-[#a9a4ab] outline-none focus:border-[#373338] transition-colors"
+                          style={{ fontFamily: 'Soehne, sans-serif' }}
+                        />
+                      )}
+
+                      {/* Scale Input */}
+                      {question.inputType === 'scale' && (
+                        <div className="flex flex-col gap-2">
+                          <div className="flex gap-1.5">
+                            {Array.from({ length: (question.scaleMax || 10) - (question.scaleMin || 1) + 1 }, (_, i) => {
+                              const value = (question.scaleMin || 1) + i;
+                              const isSelected = selectedValues[0] === String(value);
+                              return (
+                                <button
+                                  key={value}
+                                  onClick={() => formCallout.onPersonalizationScaleChange?.(question.id, value)}
+                                  className={cn(
+                                    "flex-1 py-2.5 rounded-lg border-2 text-[13px] font-medium transition-all",
+                                    isSelected
+                                      ? "border-[#373338] bg-[#373338] text-white"
+                                      : "border-[#e0dce0] bg-white text-[#373338] hover:border-[#c0bcc0]"
+                                  )}
+                                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                >
+                                  {value}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {question.scaleLabels && (
+                            <div className="flex justify-between px-1">
+                              <span className="text-[11px] text-[#7f7582]" style={{ fontFamily: 'Soehne, sans-serif' }}>
+                                {question.scaleLabels.min}
+                              </span>
+                              <span className="text-[11px] text-[#7f7582]" style={{ fontFamily: 'Soehne, sans-serif' }}>
+                                {question.scaleLabels.max}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Skip button for optional questions */}
+                      {question.optional && formCallout.onSkipQuestion && (
+                        <button
+                          onClick={formCallout.onSkipQuestion}
+                          className="self-start text-[12px] text-[#7f7582] hover:text-[#373338] transition-colors"
+                          style={{ fontFamily: 'Soehne, sans-serif' }}
+                        >
+                          Skip this question →
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Minimized Personalization Summary with Progress */}
+            {formCallout.state === 'personalization' && !formCallout.isPersonalizationExpanded && (
+              <button
+                onClick={formCallout.onTogglePersonalizationExpand}
+                className="flex items-center justify-between w-full px-4 py-3 mt-1 rounded-xl bg-white/70 hover:bg-white/90 border border-[#e0dce0] transition-all group"
+              >
+                <div className="flex items-center gap-3">
+                  {/* Progress indicator */}
+                  <div className="flex items-center gap-1">
+                    {formCallout.personalizationQuestions?.map((q, idx) => {
+                      const isAnswered = (formCallout.selectedPersonalizationOptions?.[q.id]?.length ?? 0) > 0;
+                      const isCurrent = idx === (formCallout.currentQuestionIndex ?? 0);
+                      return (
+                        <div
+                          key={q.id}
+                          className={cn(
+                            "w-2 h-2 rounded-full transition-all",
+                            isAnswered
+                              ? "bg-[#373338]"
+                              : isCurrent
+                                ? "bg-[#a09a9f] ring-2 ring-[#a09a9f]/30"
+                                : "bg-[#e0dce0]"
+                          )}
+                        />
+                      );
+                    })}
+                  </div>
+                  <div className="flex flex-col items-start">
+                    <span
+                      className="text-[14px] text-[#373338] font-medium"
+                      style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                    >
+                      Personalizing your experience
+                    </span>
+                    <span
+                      className="text-[12px] text-[#7f7582]"
+                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                    >
+                      {Object.keys(formCallout.selectedPersonalizationOptions || {}).filter(k =>
+                        (formCallout.selectedPersonalizationOptions?.[k]?.length ?? 0) > 0
+                      ).length} of {formCallout.personalizationQuestions?.length || 0} questions answered
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className="text-[12px] text-[#7f7582] group-hover:text-[#373338] transition-colors"
+                    style={{ fontFamily: 'Soehne, sans-serif' }}
+                  >
+                    Continue
+                  </span>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    className="text-[#7f7582] group-hover:text-[#373338] transition-colors transform group-hover:translate-y-0.5"
+                  >
+                    <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              </button>
+            )}
           </div>
         )}
 
@@ -852,7 +1185,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
         <div className={cn(
           "bg-white relative shrink-0 w-full",
           hasCallout ? "rounded-b-[16px]" : "rounded-[16px]",
-          (formCallout?.state === 'commit_confirm' || formCallout?.state === 'investor_type' || formCallout?.state === 'business_info') ? "h-auto" : hasNudge ? "min-h-[140px]" : isInvestmentMode ? "min-h-[140px]" : "h-[108px]"
+          (formCallout?.state === 'commit_confirm' || formCallout?.state === 'investor_type' || formCallout?.state === 'business_info' || formCallout?.state === 'personalization') ? "h-auto" : hasNudge ? "min-h-[140px]" : isInvestmentMode ? "min-h-[140px]" : "h-[108px]"
         )}>
           {/* Border & Shadow Layer */}
           <div aria-hidden="true" className={cn(
@@ -914,6 +1247,20 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
               >
                 {formCallout.ctaText || 'Submit Business Information'}
+              </button>
+            ) : formCallout?.state === 'personalization' ? (
+              <button
+                onClick={formCallout.onCtaClick}
+                disabled={!formCallout.selectedPersonalizationOptions || Object.keys(formCallout.selectedPersonalizationOptions).length === 0}
+                className={cn(
+                  "w-full py-3.5 rounded-xl text-[16px] font-medium transition-all",
+                  formCallout.selectedPersonalizationOptions && Object.keys(formCallout.selectedPersonalizationOptions).length > 0
+                    ? "bg-[#373338] text-white hover:bg-[#29272a] cursor-pointer"
+                    : "bg-[#e8e5e8] text-[#9a909a] cursor-not-allowed"
+                )}
+                style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+              >
+                {formCallout.ctaText || 'Continue'}
               </button>
             ) : (
               <>
@@ -977,8 +1324,8 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
               </>
             )}
 
-            {/* Bottom Section - relative container for overlay - hidden in commit_confirm, investor_type, and business_info states */}
-            {formCallout?.state !== 'commit_confirm' && formCallout?.state !== 'investor_type' && formCallout?.state !== 'business_info' && (
+            {/* Bottom Section - relative container for overlay - hidden in commit_confirm, investor_type, business_info, and personalization states */}
+            {formCallout?.state !== 'commit_confirm' && formCallout?.state !== 'investor_type' && formCallout?.state !== 'business_info' && formCallout?.state !== 'personalization' && (
             <div className="relative">
               {/* Voice Recording Interface - overlayed at bottom */}
               {showRecordingOverlay && (

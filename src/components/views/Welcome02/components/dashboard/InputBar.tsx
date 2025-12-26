@@ -4,7 +4,7 @@ import { InputBarV02 } from './InputBarV02';
 import { ChevronDown } from 'lucide-react';
 
 // Re-export types from V02 (the latest version)
-export type { MoreMode, ChatMode, CalloutState, CommitCheckbox, InvestorTypeOption } from './InputBarV02';
+export type { MoreMode, ChatMode, CalloutState, CommitCheckbox, InvestorTypeOption, PersonalizationOption, PersonalizationQuestion, PersonalizationInputType, PersonalizationCondition } from './InputBarV02';
 
 export type InputBarVersion = 'v0.1' | 'v0.2';
 

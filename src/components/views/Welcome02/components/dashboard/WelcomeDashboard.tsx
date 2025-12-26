@@ -6,6 +6,8 @@ import { HomeContent } from './HomeContent';
 import { HomeContentV2 } from './HomeContentV2';
 import { ChatInterface, ChatMessage } from './ChatInterface';
 import { InputBar, ChatMode, MoreMode } from './InputBar';
+import { InputBarV02 } from './InputBarV02';
+import type { PersonalizationQuestion } from './InputBarV02';
 import { ChatHistoryDrawer } from './ChatHistoryDrawer';
 import { Icon, CustomIcon } from '../Icon';
 import { ArrowLeft } from 'lucide-react';
@@ -170,12 +172,238 @@ const GREETING_DATA: Record<ChatMode, { title: string; description: string }> = 
 };
 
 // Animation orchestration phases for first-time users
-type AnimationStage = 'idle' | 'greeting' | 'questions' | 'inputbar' | 'complete';
+type AnimationStage = 'idle' | 'greeting' | 'inputbar' | 'complete';
 
 // Animation timing constants
 const GREETING_COMPLETE_DELAY = 7000; // Time for greeting animation to complete
-const QUESTIONS_COMPLETE_DELAY = 1500; // Additional time after greeting for questions to animate in
-const INPUTBAR_DELAY = 500; // Delay after questions before input bar appears
+const INPUTBAR_DELAY = 800; // Delay after greeting before input bar with callout appears
+
+// Personalization questions for the callout
+const PERSONALIZATION_QUESTIONS: PersonalizationQuestion[] = [
+  // 1. Age Group
+  {
+    id: 'age_group',
+    question: "What age bracket are you in?",
+    inputType: 'options',
+    options: [
+      { id: 'under_30', title: 'Under 30' },
+      { id: '30_39', title: '30-39' },
+      { id: '40_49', title: '40-49' },
+      { id: '50_plus', title: '50 or over' },
+    ],
+  },
+  // 2. Education Level
+  {
+    id: 'education',
+    question: "What's your highest education level?",
+    inputType: 'options',
+    options: [
+      { id: 'high_school', title: 'High School' },
+      { id: 'associate', title: 'Associate Degree' },
+      { id: 'bachelors', title: "Bachelor's Degree" },
+      { id: 'graduate', title: 'Graduate Degree' },
+    ],
+  },
+  // 3. Employment Status
+  {
+    id: 'employment',
+    question: "What's your current employment status?",
+    inputType: 'options',
+    options: [
+      { id: 'founder', title: 'Founder' },
+      { id: 'employed', title: 'Employed' },
+      { id: 'retired', title: 'Retired' },
+      { id: 'self_employed', title: 'Self-employed' },
+      { id: 'student', title: 'Student' },
+      { id: 'other', title: 'Other' },
+    ],
+  },
+  // 4. Employer (conditional: Employed or Founder)
+  {
+    id: 'employer',
+    question: "What's the name of the company?",
+    inputType: 'text',
+    placeholder: 'Enter company name...',
+    condition: { questionId: 'employment', values: ['employed', 'founder'] },
+  },
+  // 5. Job Title (conditional: Employed)
+  {
+    id: 'job_title',
+    question: "What's your role or title at the company?",
+    inputType: 'text',
+    placeholder: 'Enter your job title...',
+    condition: { questionId: 'employment', values: ['employed'] },
+  },
+  // 6. Industry (conditional: Employed)
+  {
+    id: 'industry',
+    question: "What industry or sector is your company in?",
+    inputType: 'text',
+    placeholder: 'Enter industry...',
+    condition: { questionId: 'employment', values: ['employed'] },
+  },
+  // 7. Company Stage (conditional: Founder)
+  {
+    id: 'company_stage',
+    question: "What stage is your company at currently?",
+    inputType: 'options',
+    options: [
+      { id: 'pre_seed', title: 'Idea or Pre-seed' },
+      { id: 'seed', title: 'Seed' },
+      { id: 'series_a', title: 'Series A' },
+      { id: 'series_b', title: 'Series B' },
+      { id: 'series_c_plus', title: 'Series C or later' },
+    ],
+    condition: { questionId: 'employment', values: ['founder'] },
+  },
+  // 8. Net Worth
+  {
+    id: 'net_worth',
+    question: "Where would you place yourself today?",
+    inputType: 'options',
+    options: [
+      { id: '500k_1m', title: '$500K - $1M' },
+      { id: '1m_5m', title: '$1M - $5M' },
+      { id: '5m_10m', title: '$5M - $10M' },
+      { id: '10m_plus', title: '$10M+' },
+    ],
+  },
+  // 9. Investment Familiarity
+  {
+    id: 'familiarity',
+    question: "How familiar are you with investing beyond public equities?",
+    inputType: 'scale',
+    scaleMin: 1,
+    scaleMax: 10,
+    scaleLabels: { min: 'Novice', max: 'Expert' },
+  },
+  // 10. Investable Assets
+  {
+    id: 'investable_assets',
+    question: "What size pool feels right for alternative investments?",
+    inputType: 'options',
+    options: [
+      { id: 'under_100k', title: '<$100K' },
+      { id: '100k_500k', title: '$100K - $500K' },
+      { id: '500k_1m', title: '$500K - $1M' },
+      { id: '1m_5m', title: '$1M - $5M' },
+      { id: '5m_plus', title: '$5M+' },
+    ],
+  },
+  // 11. Investment Goals (multi-select)
+  {
+    id: 'investment_goals',
+    question: "What are your primary investment objectives?",
+    inputType: 'multi-select',
+    options: [
+      { id: 'appreciation', title: 'Capital appreciation' },
+      { id: 'diversification', title: 'Diversification' },
+      { id: 'income', title: 'Income generation' },
+      { id: 'tax', title: 'Tax optimization' },
+      { id: 'hedging', title: 'Portfolio hedging' },
+      { id: 'expertise', title: 'Sector expertise' },
+    ],
+  },
+  // 12. Risk Tolerance
+  {
+    id: 'risk_tolerance',
+    question: "What's your comfort level with investment risk?",
+    inputType: 'options',
+    options: [
+      { id: 'conservative', title: 'Conservative' },
+      { id: 'moderate', title: 'Moderate' },
+      { id: 'aggressive', title: 'Aggressive' },
+      { id: 'very_aggressive', title: 'Very aggressive' },
+    ],
+  },
+  // 13. Investment Time Horizon
+  {
+    id: 'time_horizon',
+    question: "What's your expected holding period?",
+    inputType: 'options',
+    options: [
+      { id: '1_3_years', title: '1-3 years' },
+      { id: '3_7_years', title: '3-7 years' },
+      { id: '7_plus_years', title: '7+ years' },
+      { id: 'no_timeline', title: 'No specific timeline' },
+    ],
+  },
+  // 14. Sector Interests (multi-select)
+  {
+    id: 'sector_interests',
+    question: "Which investment sectors interest you most?",
+    inputType: 'multi-select',
+    options: [
+      { id: 'early_stage', title: 'Early stage startups' },
+      { id: 'growth_stage', title: 'Growth stage companies' },
+      { id: 'private_equity', title: 'Private equity' },
+      { id: 'private_credit', title: 'Private credit' },
+      { id: 'real_estate', title: 'Real estate' },
+      { id: 'venture_funds', title: 'Venture funds' },
+    ],
+  },
+  // 15. Coffee Chat Interest
+  {
+    id: 'coffee_chat',
+    question: "Would you be open to meet other community members for coffee chats?",
+    inputType: 'options',
+    options: [
+      { id: 'yes', title: 'Yes, I\'d love to!' },
+      { id: 'no', title: 'Not right now' },
+    ],
+  },
+  // 16. Location (conditional: coffee chat = yes)
+  {
+    id: 'location',
+    question: "Where are you located?",
+    inputType: 'text',
+    placeholder: 'Enter your city...',
+    condition: { questionId: 'coffee_chat', values: ['yes'] },
+  },
+  // 17-19 are conditional text fields for coffee chat
+  // 20. Discussion Topics (conditional: coffee chat = yes, multi-select)
+  {
+    id: 'discussion_topics',
+    question: "What are you interested in discussing?",
+    inputType: 'multi-select',
+    options: [
+      { id: 'strategies', title: 'Investing strategies' },
+      { id: 'angel', title: 'Angel investing' },
+      { id: 'deal_sourcing', title: 'Deal sourcing' },
+      { id: 'portfolio', title: 'Portfolio construction' },
+      { id: 'tax', title: 'Tax optimization' },
+      { id: 'sectors', title: 'Learning new sectors' },
+    ],
+    condition: { questionId: 'coffee_chat', values: ['yes'] },
+  },
+  // 21. Engagement Type (conditional: coffee chat = yes, multi-select)
+  {
+    id: 'engagement_type',
+    question: "How would you like to engage?",
+    inputType: 'multi-select',
+    options: [
+      { id: 'social', title: 'Social' },
+      { id: 'mentoring', title: 'Mentoring / Advising' },
+      { id: 'collaborating', title: 'Collaborating on a project' },
+      { id: 'co_investing', title: 'Co-investing' },
+      { id: 'sharing', title: 'Sharing resources' },
+    ],
+    condition: { questionId: 'coffee_chat', values: ['yes'] },
+  },
+  // 22. Chat Frequency (conditional: coffee chat = yes)
+  {
+    id: 'chat_frequency',
+    question: "What is your preferred frequency for coffee chats?",
+    inputType: 'options',
+    options: [
+      { id: 'weekly', title: 'Once a week' },
+      { id: 'biweekly', title: 'Once every two weeks' },
+      { id: 'monthly', title: 'Once a month' },
+      { id: 'quarterly', title: 'Once a quarter' },
+    ],
+    condition: { questionId: 'coffee_chat', values: ['yes'] },
+  },
+];
 
 interface WelcomeDashboardProps {
   homeVariant?: HomeVariant;
@@ -190,6 +418,12 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
 
   // Animation orchestration state for first-time users
   const [animationStage, setAnimationStage] = useState<AnimationStage>('idle');
+
+  // Personalization state
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedPersonalizationOptions, setSelectedPersonalizationOptions] = useState<Record<string, string[]>>({});
+  const [isPersonalizationExpanded, setIsPersonalizationExpanded] = useState(true);
+  const [personalizationComplete, setPersonalizationComplete] = useState(false);
 
   // Chat State
   const [chatState, setChatState] = useState<{
@@ -206,27 +440,131 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
       return;
     }
 
-    // Reset animation when key changes
+    // Reset animation and personalization state when key changes
     setAnimationStage('idle');
+    setCurrentQuestionIndex(0);
+    setSelectedPersonalizationOptions({});
+    setIsPersonalizationExpanded(true);
+    setPersonalizationComplete(false);
 
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     // Start with greeting animation immediately
     timers.push(setTimeout(() => setAnimationStage('greeting'), 100));
 
-    // After greeting completes, show questions
-    timers.push(setTimeout(() => setAnimationStage('questions'), GREETING_COMPLETE_DELAY));
+    // After greeting completes, show input bar with callout
+    timers.push(setTimeout(() => setAnimationStage('inputbar'), GREETING_COMPLETE_DELAY));
 
-    // After questions animate in, show input bar
-    timers.push(setTimeout(() => setAnimationStage('inputbar'), GREETING_COMPLETE_DELAY + QUESTIONS_COMPLETE_DELAY));
-
-    // Mark complete
-    timers.push(setTimeout(() => setAnimationStage('complete'), GREETING_COMPLETE_DELAY + QUESTIONS_COMPLETE_DELAY + INPUTBAR_DELAY));
+    // Mark complete shortly after inputbar appears
+    timers.push(setTimeout(() => setAnimationStage('complete'), GREETING_COMPLETE_DELAY + INPUTBAR_DELAY));
 
     return () => {
       timers.forEach(timer => clearTimeout(timer));
     };
   }, [isFirstTimeUser, animationKey]);
+
+  // Get visible questions (filtering out conditionals that don't apply)
+  const getVisibleQuestions = () => {
+    return PERSONALIZATION_QUESTIONS.filter(q => {
+      if (!q.condition) return true;
+      const conditionAnswers = selectedPersonalizationOptions[q.condition.questionId] || [];
+      return q.condition.values.some(v => conditionAnswers.includes(v));
+    });
+  };
+
+  const visibleQuestions = getVisibleQuestions();
+
+  // Find next visible question index
+  const findNextVisibleQuestionIndex = (currentIdx: number) => {
+    const currentQuestion = visibleQuestions[currentIdx];
+    if (!currentQuestion) return currentIdx;
+
+    const currentGlobalIdx = PERSONALIZATION_QUESTIONS.findIndex(q => q.id === currentQuestion.id);
+    let nextIdx = currentIdx + 1;
+
+    // If we're at the end of visible questions
+    if (nextIdx >= visibleQuestions.length) {
+      return currentIdx; // Stay at current (will trigger complete)
+    }
+
+    return nextIdx;
+  };
+
+  // Personalization option selection handler
+  const handlePersonalizationOptionSelect = (questionId: string, optionId: string, isMultiSelect?: boolean) => {
+    setSelectedPersonalizationOptions(prev => {
+      const current = prev[questionId] || [];
+
+      if (isMultiSelect) {
+        // Toggle for multi-select
+        if (current.includes(optionId)) {
+          return { ...prev, [questionId]: current.filter(id => id !== optionId) };
+        }
+        return { ...prev, [questionId]: [...current, optionId] };
+      } else {
+        // Single select - replace (don't toggle off, user must select something)
+        return { ...prev, [questionId]: [optionId] };
+      }
+    });
+    // No auto-advance - user must click Continue button
+  };
+
+  // Text input change handler
+  const handlePersonalizationTextChange = (questionId: string, value: string) => {
+    setSelectedPersonalizationOptions(prev => ({
+      ...prev,
+      [questionId]: value ? [value] : []
+    }));
+  };
+
+  // Scale input change handler
+  const handlePersonalizationScaleChange = (questionId: string, value: number) => {
+    setSelectedPersonalizationOptions(prev => ({
+      ...prev,
+      [questionId]: [String(value)]
+    }));
+    // No auto-advance - user must click Continue button
+  };
+
+  // Continue/Next button handler (for multi-select and text inputs)
+  const handlePersonalizationContinue = () => {
+    const nextIdx = findNextVisibleQuestionIndex(currentQuestionIndex);
+    if (nextIdx > currentQuestionIndex) {
+      setCurrentQuestionIndex(nextIdx);
+    } else {
+      // We're at the end
+      handlePersonalizationComplete();
+    }
+  };
+
+  // Skip optional question
+  const handleSkipQuestion = () => {
+    const nextIdx = findNextVisibleQuestionIndex(currentQuestionIndex);
+    if (nextIdx > currentQuestionIndex) {
+      setCurrentQuestionIndex(nextIdx);
+    }
+  };
+
+  // Personalization completion handler
+  const handlePersonalizationComplete = () => {
+    setPersonalizationComplete(true);
+    setIsPersonalizationExpanded(false);
+    // Could trigger navigation or save preferences here
+  };
+
+  // Toggle personalization expand/collapse
+  const handleTogglePersonalizationExpand = () => {
+    setIsPersonalizationExpanded(prev => !prev);
+  };
+
+  // Check if current question has a valid answer
+  const currentQuestion = visibleQuestions[currentQuestionIndex];
+  const currentQuestionAnswered = currentQuestion
+    ? (selectedPersonalizationOptions[currentQuestion.id]?.length ?? 0) > 0
+    : false;
+
+  // Check if we're on the last question
+  const isLastQuestion = currentQuestionIndex >= visibleQuestions.length - 1;
 
   const handleModeChange = (mode: ChatMode) => {
     setCurrentMode(mode);
@@ -449,23 +787,7 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
                         animationKey={animationKey}
                       />
                     </div>
-
-                    {/* Questions - visible from 'questions' stage onwards */}
-                    <div
-                      className={cn(
-                        'transition-all duration-700 ease-out',
-                        ['idle', 'greeting'].includes(animationStage)
-                          ? 'opacity-0 blur-md translate-y-4'
-                          : 'opacity-100 blur-0 translate-y-0'
-                      )}
-                    >
-                      <DashboardContent
-                        mode={currentMode}
-                        onSuggestionClick={handleStartChat}
-                        isFirstTimeUser={true}
-                        animationStage={animationStage}
-                      />
-                    </div>
+                    {/* Personalization questions are now shown in the InputBar callout below */}
                   </div>
                 ) : currentMode === 'default' ? (
                   <div className="w-full max-w-3xl mt-6">
@@ -520,17 +842,47 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
         className={cn(
           "relative z-20 w-full flex justify-center p-6 bg-gradient-to-t from-[#f7f7f8] via-[#f7f7f8]/80 to-transparent",
           isFirstTimeUser && "transition-all duration-700 ease-out",
-          isFirstTimeUser && ['idle', 'greeting', 'questions'].includes(animationStage)
+          isFirstTimeUser && ['idle', 'greeting'].includes(animationStage)
             ? 'opacity-0 blur-sm translate-y-4'
             : 'opacity-100 blur-0 translate-y-0'
         )}
       >
         <div className="w-full max-w-3xl">
-          <InputBar
-            currentMode={currentMode}
-            extraSlotItem={extraSlotItem}
-            onModeChange={handleModeChange}
-          />
+          {/* Use InputBarV02 with personalization callout for first-time users */}
+          {isFirstTimeUser && !personalizationComplete ? (
+            <InputBarV02
+              currentMode={currentMode}
+              onModeChange={handleModeChange}
+              placeholder="Tell me more about your investment preferences..."
+              formCallout={{
+                state: 'personalization',
+                headerText: "Let's personalize your experience",
+                personalizationQuestions: visibleQuestions,
+                currentQuestionIndex,
+                selectedPersonalizationOptions,
+                onPersonalizationOptionSelect: handlePersonalizationOptionSelect,
+                onPersonalizationTextChange: handlePersonalizationTextChange,
+                onPersonalizationScaleChange: handlePersonalizationScaleChange,
+                isPersonalizationExpanded,
+                onTogglePersonalizationExpand: handleTogglePersonalizationExpand,
+                onSkipQuestion: handleSkipQuestion,
+                ctaText: isLastQuestion && currentQuestionAnswered
+                  ? "Complete Setup"
+                  : currentQuestionAnswered
+                    ? "Continue"
+                    : "Select an option",
+                onCtaClick: isLastQuestion && currentQuestionAnswered
+                  ? handlePersonalizationComplete
+                  : handlePersonalizationContinue,
+              }}
+            />
+          ) : (
+            <InputBar
+              currentMode={currentMode}
+              extraSlotItem={extraSlotItem}
+              onModeChange={handleModeChange}
+            />
+          )}
         </div>
       </div>
     </div>
