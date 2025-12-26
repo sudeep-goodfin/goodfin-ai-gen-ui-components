@@ -371,9 +371,11 @@ export function ZAIInvestmentFlow({
   // Minimum investment amount
   const MIN_INVESTMENT = 10000;
 
-  // Credit state
-  const [availableCredit] = useState(500);
-  const [appliedCredit, setAppliedCredit] = useState(500);
+  // Promo code and credit state
+  const [promoCode, setPromoCode] = useState('');
+  const [promoApplied, setPromoApplied] = useState(false);
+  const [availableCredit] = useState(500); // Default 500 credit from referrals/promotions
+  const [appliedCredit, setAppliedCredit] = useState(500); // Auto-populate with available credit
 
   // Handle click outside menu to close
   useEffect(() => {
@@ -1646,6 +1648,47 @@ export function ZAIInvestmentFlow({
                                       </div>
                                     </div>
                                   </div>
+
+                                  {/* Promo Code Input - always visible */}
+                                  {!isViewingCompleted && (
+                                    <div className="border-t border-[#e0dce0] pt-4 mt-4">
+                                      <label
+                                        className="text-[13px] text-[#7f7582] block mb-2"
+                                        style={{ fontFamily: 'Soehne, sans-serif' }}
+                                      >
+                                        Promo Code
+                                      </label>
+                                      <div className="flex gap-2">
+                                        <input
+                                          type="text"
+                                          value={promoCode}
+                                          onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                                          placeholder="Enter promo code"
+                                          className="flex-1 px-4 py-3 bg-white border border-[#e0dce0] rounded-lg text-[15px] text-[#373338] placeholder:text-[#a9a4ab] outline-none focus:border-[#7f7582] transition-colors uppercase"
+                                          style={{ fontFamily: 'Soehne, sans-serif' }}
+                                        />
+                                        <button
+                                          onClick={() => {
+                                            if (promoCode.trim()) {
+                                              setPromoApplied(true);
+                                            }
+                                          }}
+                                          disabled={!promoCode.trim() || promoApplied}
+                                          className={cn(
+                                            "px-4 py-3 rounded-lg text-[14px] font-medium transition-colors",
+                                            promoApplied
+                                              ? "bg-[#5a8a5a]/10 text-[#5a8a5a]"
+                                              : promoCode.trim()
+                                                ? "bg-[#373338] text-white hover:bg-[#29272a]"
+                                                : "bg-[#e8e5e8] text-[#9a909a] cursor-not-allowed"
+                                          )}
+                                          style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                        >
+                                          {promoApplied ? 'Applied' : 'Apply'}
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
 
                                   {/* Apply Credit - editable when active, read-only when completed */}
                                   {!isViewingCompleted ? (
