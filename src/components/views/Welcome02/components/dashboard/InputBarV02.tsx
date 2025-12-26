@@ -549,16 +549,10 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
     <div className="w-full max-w-3xl flex flex-col items-center gap-2">
       {/* Wrapper for callout + input with rainbow border for personalization */}
       <div className={cn(
-        "w-full relative overflow-hidden rounded-[16px]",
+        "w-full relative rounded-[16px]",
+        !showRainbowBorder && "overflow-hidden",
         shake && "animate-shake",
-        showRainbowBorder && [
-          "animate-rainbow",
-          "bg-[length:200%]",
-          "[background-clip:padding-box,border-box,border-box]",
-          "[background-origin:border-box]",
-          "[border:2px_solid_transparent]",
-          "bg-[linear-gradient(#f7f7f8,#f7f7f8),linear-gradient(#f7f7f8_50%,rgba(247,247,248,0.6)_80%,rgba(247,247,248,0)),linear-gradient(90deg,var(--color-1),var(--color-5),var(--color-3),var(--color-4),var(--color-2))]"
-        ]
+        showRainbowBorder && "rainbow-border-hover"
       )}>
         {/* Form Callout Header */}
         {hasCallout && (
