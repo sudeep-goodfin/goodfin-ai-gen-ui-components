@@ -599,10 +599,9 @@ export function App() {
 
   // Welcome02 home layout variants
   const welcome02HomeVariants = [
-    { id: 'v1', label: 'V1 - Simple' },
-    { id: 'v2-full', label: 'V2 - Full' },
-    { id: 'v2-compact', label: 'V2 - Compact' },
-    { id: 'v2-action-focused', label: 'V2 - Action' },
+    { id: 'v2-full', label: 'Full' },
+    { id: 'v2-compact', label: 'Compact' },
+    { id: 'v2-action-focused', label: 'Action' },
   ];
 
   // Investment Flow user states

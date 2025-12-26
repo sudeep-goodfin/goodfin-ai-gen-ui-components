@@ -35,6 +35,7 @@ import {
   Wallet,
   Lightbulb,
   Gauge,
+  ChevronDown,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Sidebar, type SidebarSection } from './Sidebar';
@@ -258,7 +259,7 @@ export function DocsLayout({
   });
   const [activeWelcome02HomeVariant, setActiveWelcome02HomeVariant] = useState(() => {
     const params = getUrlParams();
-    return params.get('homeVariant') || welcome02HomeVariants[0]?.id || 'v1';
+    return params.get('homeVariant') || welcome02HomeVariants[0]?.id || 'v2-full';
   });
   const [activeConversationFlow, setActiveConversationFlow] = useState(() => {
     const params = getUrlParams();
@@ -432,14 +433,6 @@ export function DocsLayout({
             : undefined,
         },
         {
-          id: 'investment-flow',
-          label: 'Investment Flow',
-          icon: viewModeIcons['investment-flow'],
-          children: investmentFlowSteps.length > 0
-            ? investmentFlowSteps.map(s => ({ id: s.id, label: s.label }))
-            : undefined,
-        },
-        {
           id: 'z-ai-investment-flow',
           label: 'Z AI Investment Flow',
           icon: viewModeIcons['z-ai-investment-flow'],
@@ -474,6 +467,14 @@ export function DocsLayout({
       label: 'Archive',
       items: [
         {
+          id: 'investment-flow',
+          label: 'Investment Flow',
+          icon: viewModeIcons['investment-flow'],
+          children: investmentFlowSteps.length > 0
+            ? investmentFlowSteps.map(s => ({ id: s.id, label: s.label }))
+            : undefined,
+        },
+        {
           id: 'welcome',
           label: 'Welcome Screen Flow 0.1',
           icon: viewModeIcons.welcome,
@@ -501,8 +502,6 @@ export function DocsLayout({
         setViewMode('onboarding');
       } else if (itemId === 'welcome02') {
         setViewMode('welcome02');
-      } else if (itemId === 'investment-flow') {
-        setViewMode('investment-flow');
       } else if (itemId === 'z-ai-investment-flow') {
         setViewMode('z-ai-investment-flow');
       }
@@ -510,6 +509,8 @@ export function DocsLayout({
       // Archive items
       if (itemId === 'welcome') {
         setViewMode('welcome');
+      } else if (itemId === 'investment-flow') {
+        setViewMode('investment-flow');
       }
     } else {
       // Component items - sectionId is the group id
@@ -533,9 +534,6 @@ export function DocsLayout({
       } else if (itemId === 'welcome02') {
         setViewMode('welcome02');
         setActiveWelcome02Variant(subItemId);
-      } else if (itemId === 'investment-flow') {
-        setViewMode('investment-flow');
-        setActiveInvestmentFlowStep(subItemId);
       } else if (itemId === 'z-ai-investment-flow') {
         setViewMode('z-ai-investment-flow');
         setActiveZAIInvestmentFlowVariant(subItemId);
@@ -545,6 +543,9 @@ export function DocsLayout({
       if (itemId === 'welcome') {
         setViewMode('welcome');
         setActiveWelcomeVariant(subItemId);
+      } else if (itemId === 'investment-flow') {
+        setViewMode('investment-flow');
+        setActiveInvestmentFlowStep(subItemId);
       }
     } else {
       // Component variant selection - sectionId is the group id
@@ -1065,64 +1066,49 @@ export function DocsLayout({
           {viewMode === 'welcome02' && (
             <div className="flex flex-col flex-1 min-h-0">
               {/* Options Bar */}
-              <div className="flex flex-wrap items-center gap-4 px-4 md:px-8 py-3 border-b border-border bg-background/50">
-                {/* Variant Selector Pills */}
+              <div className="flex flex-wrap items-center gap-3 px-4 md:px-8 py-3 border-b border-border bg-background/50">
+                {/* Variant Selector Dropdown */}
                 {welcome02Variants.length > 0 && (
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Variant:</span>
-                    <div
-                      className="inline-flex gap-1 p-1 rounded-lg"
-                      style={{ backgroundColor: 'var(--grey-100)' }}
-                    >
-                      {welcome02Variants.map((variant) => (
-                        <button
-                          key={variant.id}
-                          onClick={() => !variant.comingSoon && setActiveWelcome02Variant(variant.id)}
-                          disabled={variant.comingSoon}
-                          className={cn(
-                            'px-2.5 py-1 text-sm font-medium rounded-md transition-all flex items-center gap-1.5',
-                            variant.comingSoon && 'cursor-not-allowed opacity-60'
-                          )}
-                          style={{
-                            backgroundColor: activeWelcome02Variant === variant.id ? '#FFFFFF' : 'transparent',
-                            color: activeWelcome02Variant === variant.id ? 'var(--grey-950)' : 'var(--grey-500)',
-                            boxShadow: activeWelcome02Variant === variant.id ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
-                          }}
-                        >
-                          {variant.label}
-                          {variant.comingSoon && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-medium">
-                              Soon
-                            </span>
-                          )}
-                        </button>
-                      ))}
+                    <span className="text-sm text-muted-foreground hidden sm:inline">Variant:</span>
+                    <div className="relative">
+                      <select
+                        value={activeWelcome02Variant}
+                        onChange={(e) => setActiveWelcome02Variant(e.target.value)}
+                        className="appearance-none bg-white border border-border rounded-lg px-3 py-1.5 pr-8 text-sm font-medium text-foreground cursor-pointer hover:border-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-foreground/20"
+                      >
+                        {welcome02Variants.map((variant) => (
+                          <option
+                            key={variant.id}
+                            value={variant.id}
+                            disabled={variant.comingSoon}
+                          >
+                            {variant.label}{variant.comingSoon ? ' (Soon)' : ''}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                     </div>
                   </div>
                 )}
 
-                {/* Home Layout Selector Pills */}
+                {/* Home Layout Selector Dropdown */}
                 {welcome02HomeVariants.length > 0 && (
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Home Layout:</span>
-                    <div
-                      className="inline-flex gap-1 p-1 rounded-lg"
-                      style={{ backgroundColor: 'var(--grey-100)' }}
-                    >
-                      {welcome02HomeVariants.map((variant) => (
-                        <button
-                          key={variant.id}
-                          onClick={() => setActiveWelcome02HomeVariant(variant.id)}
-                          className={cn('px-2.5 py-1 text-sm font-medium rounded-md transition-all')}
-                          style={{
-                            backgroundColor: activeWelcome02HomeVariant === variant.id ? '#FFFFFF' : 'transparent',
-                            color: activeWelcome02HomeVariant === variant.id ? 'var(--grey-950)' : 'var(--grey-500)',
-                            boxShadow: activeWelcome02HomeVariant === variant.id ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
-                          }}
-                        >
-                          {variant.label}
-                        </button>
-                      ))}
+                    <span className="text-sm text-muted-foreground hidden sm:inline">Layout:</span>
+                    <div className="relative">
+                      <select
+                        value={activeWelcome02HomeVariant}
+                        onChange={(e) => setActiveWelcome02HomeVariant(e.target.value)}
+                        className="appearance-none bg-white border border-border rounded-lg px-3 py-1.5 pr-8 text-sm font-medium text-foreground cursor-pointer hover:border-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-foreground/20"
+                      >
+                        {welcome02HomeVariants.map((variant) => (
+                          <option key={variant.id} value={variant.id}>
+                            {variant.label}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                     </div>
                   </div>
                 )}
@@ -1131,21 +1117,21 @@ export function DocsLayout({
                 <button
                   onClick={() => setShowWelcome02Chrome(prev => !prev)}
                   className={cn(
-                    'flex items-center gap-2 px-2.5 py-1 text-sm font-medium rounded-md border transition-all',
+                    'flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg border transition-all',
                     showWelcome02Chrome
-                      ? 'border-border bg-background text-muted-foreground hover:text-foreground'
-                      : 'border-foreground bg-foreground/10 text-foreground'
+                      ? 'border-border bg-white text-muted-foreground hover:text-foreground'
+                      : 'border-foreground bg-foreground text-background'
                   )}
                 >
                   {showWelcome02Chrome ? (
                     <>
                       <PanelLeft className="w-4 h-4" />
-                      <span>With Chrome</span>
+                      <span className="hidden sm:inline">With Chrome</span>
                     </>
                   ) : (
                     <>
                       <PanelLeftClose className="w-4 h-4" />
-                      <span>App Only</span>
+                      <span className="hidden sm:inline">App Only</span>
                     </>
                   )}
                 </button>
