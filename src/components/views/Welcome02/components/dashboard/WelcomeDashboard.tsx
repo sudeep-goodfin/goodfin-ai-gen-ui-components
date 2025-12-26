@@ -534,6 +534,7 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
   const [isPersonalizationExpanded, setIsPersonalizationExpanded] = useState(true);
   const [personalizationComplete, setPersonalizationComplete] = useState(false);
   const [hasUnlockedPersonalization, setHasUnlockedPersonalization] = useState(false);
+  const [animatingOptionId, setAnimatingOptionId] = useState<string | null>(null);
 
   // Completion flow state: 'questions' | 'processing' | 'gratification' | 'done'
   const [completionFlowState, setCompletionFlowState] = useState<'questions' | 'processing' | 'gratification' | 'done'>('questions');
@@ -607,6 +608,11 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
 
   // Personalization option selection handler
   const handlePersonalizationOptionSelect = (questionId: string, optionId: string, isMultiSelect?: boolean) => {
+    // For single-select, start the selection animation
+    if (!isMultiSelect) {
+      setAnimatingOptionId(optionId);
+    }
+
     setSelectedPersonalizationOptions(prev => {
       const current = prev[questionId] || [];
 
@@ -622,9 +628,14 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
       }
     });
 
-    // Auto-advance for single-select questions
+    // Auto-advance for single-select questions after animation completes
     if (!isMultiSelect) {
+      // Wait for animation to complete (400ms pulse + 100ms buffer)
       setTimeout(() => {
+        // Clear animation state
+        setAnimatingOptionId(null);
+
+        // Then advance to next question
         const nextIdx = findNextVisibleQuestionIndex(currentQuestionIndex);
         if (nextIdx > currentQuestionIndex) {
           setCurrentQuestionIndex(nextIdx);
@@ -632,7 +643,7 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
           // Last question - trigger completion
           handlePersonalizationComplete();
         }
-      }, 300); // Small delay for visual feedback
+      }, 500);
     }
   };
 
@@ -1036,6 +1047,7 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
                 personalizationQuestions: visibleQuestions,
                 currentQuestionIndex,
                 selectedPersonalizationOptions,
+                animatingOptionId: animatingOptionId || undefined,
                 onPersonalizationOptionSelect: handlePersonalizationOptionSelect,
                 onPersonalizationTextChange: handlePersonalizationTextChange,
                 onPersonalizationScaleChange: handlePersonalizationScaleChange,

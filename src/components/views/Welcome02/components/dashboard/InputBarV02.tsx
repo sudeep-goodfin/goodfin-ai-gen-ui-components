@@ -5,6 +5,7 @@ import { FileText, Calendar, Briefcase, Home, X, Pencil, Plus, Info } from "luci
 import { CommandPanel, Recipe, Context, Pill, PanelMode } from './command-panel';
 import { useRecording } from './hooks/useRecording';
 import { VoiceRecordingInterface } from './VoiceRecordingInterface';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 
 interface ChipProps {
@@ -252,6 +253,7 @@ interface FormCallout {
   onSkipQuestion?: () => void; // For optional questions
   onSkipPersonalization?: () => void; // Skip entire personalization flow
   onBack?: () => void; // Go back to previous question
+  animatingOptionId?: string; // Currently animating option (for selection animation)
   // Completion flow props
   gratificationTitle?: string;
   gratificationSubtitle?: string;
@@ -637,26 +639,42 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
               <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
                 {/* Skip personalization button */}
                 {formCallout.state === 'personalization' && formCallout.isPersonalizationExpanded && formCallout.onSkipPersonalization && (
-                  <button
-                    onClick={formCallout.onSkipPersonalization}
-                    className="flex items-center justify-center px-2.5 py-1.5 text-[11px] font-medium text-[#685f6a] bg-white/60 hover:bg-white/80 border border-[#d0cdd2] rounded-lg transition-colors"
-                    title="Remind me later"
-                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                  >
-                    Skip
-                  </button>
+                  <TooltipProvider delayDuration={300}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={formCallout.onSkipPersonalization}
+                          className="flex items-center justify-center px-2.5 py-1.5 text-[11px] font-medium text-[#685f6a] bg-white/60 hover:bg-white/80 border border-[#d0cdd2] rounded-lg transition-colors"
+                          style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                        >
+                          Skip
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Remind me later</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
                 {/* Personalization collapse button - icon only */}
                 {formCallout.state === 'personalization' && formCallout.isPersonalizationExpanded && formCallout.onTogglePersonalizationExpand && (
-                  <button
-                    onClick={formCallout.onTogglePersonalizationExpand}
-                    className="flex items-center justify-center w-7 h-7 text-[#685f6a] bg-white/60 hover:bg-white/80 border border-[#d0cdd2] rounded-lg transition-colors"
-                    title="Minimize"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-[#685f6a]">
-                      <path d="M4 10L8 6L12 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </button>
+                  <TooltipProvider delayDuration={300}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={formCallout.onTogglePersonalizationExpand}
+                          className="flex items-center justify-center w-7 h-7 text-[#685f6a] bg-white/60 hover:bg-white/80 border border-[#d0cdd2] rounded-lg transition-colors"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-[#685f6a]">
+                            <path d="M4 10L8 6L12 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Minimize</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
                 {formCallout.onClose && (
                   <>
@@ -1018,15 +1036,23 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                         <div className="flex items-center gap-2">
                           {/* Back button - only show if not on first question */}
                           {(formCallout.currentQuestionIndex ?? 0) > 0 && formCallout.onBack && (
-                            <button
-                              onClick={formCallout.onBack}
-                              className="flex items-center justify-center w-7 h-7 text-[#685f6a] hover:text-[#373338] hover:bg-[#f0eef0] rounded-lg transition-colors"
-                              title="Go back"
-                            >
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M19 12H5M12 19l-7-7 7-7"/>
-                              </svg>
-                            </button>
+                            <TooltipProvider delayDuration={300}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    onClick={formCallout.onBack}
+                                    className="flex items-center justify-center w-7 h-7 text-[#685f6a] hover:text-[#373338] hover:bg-[#f0eef0] rounded-lg transition-colors"
+                                  >
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M19 12H5M12 19l-7-7 7-7"/>
+                                    </svg>
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Go back</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           )}
                           <p
                             className="text-[15px] text-[#373338]"
@@ -1056,17 +1082,32 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                         )}>
                           {question.options.map((option) => {
                             const isSelected = selectedValues.includes(option.id);
+                            const isAnimating = formCallout.animatingOptionId === option.id;
                             return (
                               <button
                                 key={option.id}
                                 onClick={() => formCallout.onPersonalizationOptionSelect?.(question.id, option.id, isMultiSelect)}
+                                disabled={!!formCallout.animatingOptionId}
                                 className={cn(
                                   "flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all text-left",
                                   isSelected
                                     ? "border-[#373338] bg-white shadow-sm"
-                                    : "border-[#e0dce0] bg-white hover:border-[#c0bcc0]"
+                                    : "border-[#e0dce0] bg-white hover:border-[#c0bcc0]",
+                                  isAnimating && "animate-selection-pulse",
+                                  formCallout.animatingOptionId && !isAnimating && "opacity-50 pointer-events-none"
                                 )}
                               >
+                                {/* Single-select checkmark indicator */}
+                                {!isMultiSelect && isSelected && (
+                                  <div className={cn(
+                                    "w-4 h-4 rounded-full bg-[#373338] flex items-center justify-center flex-shrink-0",
+                                    isAnimating && "animate-selection-check"
+                                  )}>
+                                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                                      <path d="M2 6L5 9L10 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                  </div>
+                                )}
                                 {isMultiSelect && (
                                   <div className={cn(
                                     "w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors",
