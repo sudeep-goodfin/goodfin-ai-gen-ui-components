@@ -429,6 +429,25 @@
     animation: shimmer 1.2s ease-in-out infinite;
   }
 
+  /* Text Shimmer Effect - rainbow gradient moving across text */
+  .text-shimmer {
+    background: linear-gradient(
+      90deg,
+      #a09a9f 0%,
+      #a09a9f 40%,
+      var(--color-1) 45%,
+      var(--color-5) 50%,
+      var(--color-3) 55%,
+      #a09a9f 60%,
+      #a09a9f 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
   /* Subtle pulse animation for AI avatar */
   @keyframes pulse-subtle {
     0%, 100% {

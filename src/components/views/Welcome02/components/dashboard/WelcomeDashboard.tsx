@@ -52,7 +52,10 @@ function PersonalizationPreview({ isVisible, onUnlock, isUnlocked }: { isVisible
       {/* Section Header */}
       <div className="flex items-center gap-2 mb-4">
         <Sparkles className="w-4 h-4 text-[#a09a9f]" />
-        <span className="text-[13px] text-[#a09a9f] font-['Soehne_Kraftig',sans-serif]">
+        <span className={cn(
+          "text-[13px] font-['Soehne_Kraftig',sans-serif]",
+          isUnlocked ? "text-[#a09a9f]" : "text-shimmer"
+        )}>
           Unlock your personalized experience
         </span>
       </div>
