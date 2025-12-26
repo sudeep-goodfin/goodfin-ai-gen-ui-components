@@ -170,9 +170,10 @@ const GREETING_DATA: Record<ChatMode, { title: string; description: string }> = 
 
 interface WelcomeDashboardProps {
   homeVariant?: HomeVariant;
+  isFirstTimeUser?: boolean;
 }
 
-export function WelcomeDashboard({ homeVariant = 'v1' }: WelcomeDashboardProps) {
+export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false }: WelcomeDashboardProps) {
   const [currentMode, setCurrentMode] = useState<ChatMode>('default');
   const [extraSlotItem, setExtraSlotItem] = useState<MoreMode | null>(null);
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
@@ -414,6 +415,7 @@ export function WelcomeDashboard({ homeVariant = 'v1' }: WelcomeDashboardProps) 
                       <Greeting
                         title={content.title}
                         description={content.description}
+                        isFirstTimeUser={isFirstTimeUser}
                       />
                     )}
                     <DashboardContent

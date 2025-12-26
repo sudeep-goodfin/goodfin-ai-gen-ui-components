@@ -610,6 +610,11 @@ export function App() {
     { id: 'already-invested', label: 'Already Invested' },
   ];
 
+  // Personalization variants (post-account creation onboarding questions)
+  const personalizationVariants = [
+    { id: 'accredited-first-time', label: 'Accredited First Time' },
+  ];
+
   return (
     <DocsLayout
       groups={componentGroups}
@@ -621,6 +626,13 @@ export function App() {
       )}
       renderOnboardingView={(variant, key) => (
         <OnboardingView key={key} variant={variant as OnboardingVariant} />
+      )}
+      renderPersonalizationView={(variant) => (
+        <Welcome02
+          showChrome={false}
+          homeVariant="v2-full"
+          isFirstTimeUser={variant === 'accredited-first-time'}
+        />
       )}
       renderWelcomeView={(variant) => (
         <WelcomeScreenView variant={variant as WelcomeScreenVariant} />
@@ -647,6 +659,7 @@ export function App() {
       )}
       zaiInvestmentFlowVariants={zaiInvestmentFlowVariants}
       onboardingVariants={onboardingVariants}
+      personalizationVariants={personalizationVariants}
       welcomeVariants={welcomeScreenVariants}
       welcome02Variants={welcome02Variants}
       welcome02HomeVariants={welcome02HomeVariants}

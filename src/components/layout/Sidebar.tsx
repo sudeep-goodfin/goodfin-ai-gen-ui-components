@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react';
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
-import { ChevronRight, X } from 'lucide-react';
+import { ChevronRight, X, Sun, Moon } from 'lucide-react';
 import { cn } from '../../lib/utils';
+
+export type Theme = 'light' | 'dark';
 
 // Types
 export type SidebarSection = {
@@ -31,6 +33,8 @@ type SidebarProps = {
   expandedItems?: string[];
   isOpen?: boolean;
   isCollapsed?: boolean;
+  theme?: Theme;
+  onThemeChange?: (theme: Theme) => void;
   onClose?: () => void;
   onToggleCollapse?: () => void;
   onSectionClick?: (sectionId: string) => void;
@@ -47,6 +51,8 @@ export function Sidebar({
   expandedItems = [],
   isOpen = false,
   isCollapsed = false,
+  theme = 'light',
+  onThemeChange,
   onClose,
   onToggleCollapse,
   onSectionClick,
@@ -54,6 +60,20 @@ export function Sidebar({
   onSubItemClick,
   onToggleExpand,
 }: SidebarProps) {
+  // Apply theme to document
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    onThemeChange?.(theme === 'light' ? 'dark' : 'light');
+  };
+
   // Close sidebar on escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -76,6 +96,42 @@ export function Sidebar({
       document.body.style.overflow = '';
     };
   }, [isOpen]);
+
+  // Settings footer component
+  const settingsFooter = (
+    <div className="border-t border-border p-4 bg-background">
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-muted-foreground">Theme</span>
+        <button
+          onClick={toggleTheme}
+          className={cn(
+            'relative flex items-center w-16 h-8 rounded-full p-1 transition-colors',
+            theme === 'dark' ? 'bg-foreground' : 'bg-muted'
+          )}
+          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+        >
+          {/* Icons on both sides */}
+          <Sun className={cn(
+            'absolute left-1.5 w-4 h-4 transition-opacity',
+            theme === 'light' ? 'text-amber-500 opacity-100' : 'text-muted-foreground opacity-50'
+          )} />
+          <Moon className={cn(
+            'absolute right-1.5 w-4 h-4 transition-opacity',
+            theme === 'dark' ? 'text-blue-300 opacity-100' : 'text-muted-foreground opacity-50'
+          )} />
+          {/* Sliding dot */}
+          <span
+            className={cn(
+              'w-6 h-6 rounded-full shadow-sm transition-transform duration-200',
+              theme === 'dark'
+                ? 'translate-x-8 bg-background'
+                : 'translate-x-0 bg-white'
+            )}
+          />
+        </button>
+      </div>
+    </div>
+  );
 
   const sidebarContent = (
     <div className="py-6 pr-4">
@@ -100,6 +156,8 @@ export function Sidebar({
                 const isExpanded = expandedItems.includes(item.id);
                 const isActive = activeItem === item.id;
                 const hasChildren = item.children && item.children.length > 0;
+                // Check if any child of this item is active
+                const hasActiveChild = hasChildren && isActive && activeSubItem;
 
                 return (
                   <div key={item.id}>
@@ -115,8 +173,10 @@ export function Sidebar({
                       }}
                       className={cn(
                         'w-full flex items-center justify-between gap-2 px-3 py-2 text-sm rounded-md transition-colors',
-                        isActive && !activeSubItem
-                          ? 'bg-muted text-foreground font-medium'
+                        isActive
+                          ? hasActiveChild
+                            ? 'text-foreground font-medium' // Parent with active child - highlighted text only
+                            : 'bg-muted text-foreground font-medium' // Active item without sub-item
                           : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                       )}
                     >
@@ -146,23 +206,26 @@ export function Sidebar({
                     {/* Sub Items (Variants/Children) */}
                     {hasChildren && isExpanded && (
                       <div className="ml-4 mt-0.5 border-l border-border pl-3 space-y-0.5">
-                        {item.children!.map((subItem) => (
-                          <button
-                            key={subItem.id}
-                            onClick={() => {
-                              onSubItemClick?.(section.id, item.id, subItem.id);
-                              onClose?.(); // Close mobile sidebar on selection
-                            }}
-                            className={cn(
-                              'w-full text-left px-2 py-1.5 text-sm rounded-md transition-colors',
-                              activeSubItem === subItem.id
-                                ? 'text-foreground font-medium bg-muted/50'
-                                : 'text-muted-foreground hover:text-foreground hover:bg-muted/30'
-                            )}
-                          >
-                            {subItem.label}
-                          </button>
-                        ))}
+                        {item.children!.map((subItem) => {
+                          const isSubItemActive = activeSubItem === subItem.id && isActive;
+                          return (
+                            <button
+                              key={subItem.id}
+                              onClick={() => {
+                                onSubItemClick?.(section.id, item.id, subItem.id);
+                                onClose?.(); // Close mobile sidebar on selection
+                              }}
+                              className={cn(
+                                'w-full text-left px-2 py-1.5 text-sm rounded-md transition-colors',
+                                isSubItemActive
+                                  ? 'text-foreground font-medium bg-muted'
+                                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/30'
+                              )}
+                            >
+                              {subItem.label}
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -179,11 +242,11 @@ export function Sidebar({
       {/* Desktop Sidebar - collapsible on lg+ */}
       <aside
         className={cn(
-          "hidden lg:flex flex-shrink-0 border-r border-border h-full bg-background transition-all duration-200",
+          "hidden lg:flex flex-col flex-shrink-0 border-r border-border h-full bg-background transition-all duration-200",
           isCollapsed ? "w-0 overflow-hidden border-r-0" : "w-[280px]"
         )}
       >
-        <ScrollAreaPrimitive.Root className="relative overflow-hidden w-full h-full">
+        <ScrollAreaPrimitive.Root className="relative overflow-hidden w-full flex-1">
           <ScrollAreaPrimitive.Viewport className="w-full h-full">
             {sidebarContent}
           </ScrollAreaPrimitive.Viewport>
@@ -195,6 +258,8 @@ export function Sidebar({
           </ScrollAreaPrimitive.Scrollbar>
           <ScrollAreaPrimitive.Corner />
         </ScrollAreaPrimitive.Root>
+        {/* Sticky Settings Footer */}
+        {settingsFooter}
       </aside>
 
       {/* Mobile Sidebar - overlay */}
@@ -239,6 +304,8 @@ export function Sidebar({
           </ScrollAreaPrimitive.Scrollbar>
           <ScrollAreaPrimitive.Corner />
         </ScrollAreaPrimitive.Root>
+        {/* Sticky Settings Footer */}
+        {settingsFooter}
       </aside>
     </>
   );

@@ -38,7 +38,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { Sidebar, type SidebarSection } from './Sidebar';
+import { Sidebar, type SidebarSection, type Theme } from './Sidebar';
 import { Header, PageHeader } from './Header';
 import { Checkbox } from '../ui';
 import { releases, getLatestRelease, getReleaseById, getComponentVersionForRelease } from '../../config/versions';
@@ -72,6 +72,7 @@ const viewModeIcons: Record<string, React.ReactNode> = {
   component: <Layers className="w-4 h-4" />,
   conversation: <MessageSquare className="w-4 h-4" />,
   onboarding: <UserPlus className="w-4 h-4" />,
+  personalization: <UserCheck className="w-4 h-4" />,
   welcome: <Home className="w-4 h-4" />,
   welcome02: <Home className="w-4 h-4" />,
   'investment-flow': <DollarSign className="w-4 h-4" />,
@@ -141,17 +142,19 @@ type ComponentGroup = {
   components: ComponentOption[];
 };
 
-type ViewMode = 'landing' | 'component' | 'conversation' | 'onboarding' | 'welcome' | 'welcome02' | 'investment-flow' | 'z-ai-investment-flow';
+type ViewMode = 'landing' | 'component' | 'conversation' | 'onboarding' | 'personalization' | 'welcome' | 'welcome02' | 'investment-flow' | 'z-ai-investment-flow';
 
 type DocsLayoutProps = {
   groups: ComponentGroup[];
   renderConversationView?: (flow: string) => React.ReactNode;
   renderOnboardingView?: (variant: string, key: number) => React.ReactNode;
+  renderPersonalizationView?: (variant: string) => React.ReactNode;
   renderWelcomeView?: (variant: string) => React.ReactNode;
   renderWelcome02View?: (variant: string, showChrome: boolean, homeVariant: string) => React.ReactNode;
   renderInvestmentFlowView?: (step: string, onDismiss: () => void) => React.ReactNode;
   renderZAIInvestmentFlowView?: (userState: string, onDismiss: () => void) => React.ReactNode;
   onboardingVariants?: VariantOption[];
+  personalizationVariants?: VariantOption[];
   welcomeVariants?: VariantOption[];
   welcome02Variants?: VariantOption[];
   welcome02HomeVariants?: VariantOption[];
@@ -164,11 +167,13 @@ export function DocsLayout({
   groups,
   renderConversationView,
   renderOnboardingView,
+  renderPersonalizationView,
   renderWelcomeView,
   renderWelcome02View,
   renderInvestmentFlowView,
   renderZAIInvestmentFlowView,
   onboardingVariants = [],
+  personalizationVariants = [],
   welcomeVariants = [],
   welcome02Variants = [],
   welcome02HomeVariants = [],
@@ -185,6 +190,7 @@ export function DocsLayout({
     const mode = params.get('view');
     if (mode === 'conversation') return 'conversation';
     if (mode === 'onboarding') return 'onboarding';
+    if (mode === 'personalization') return 'personalization';
     if (mode === 'welcome') return 'welcome';
     if (mode === 'welcome02') return 'welcome02';
     if (mode === 'investment-flow') return 'investment-flow';
@@ -249,6 +255,10 @@ export function DocsLayout({
     const params = getUrlParams();
     return params.get('onboardingVariant') || onboardingVariants[0]?.id || 'signup';
   });
+  const [activePersonalizationVariant, setActivePersonalizationVariant] = useState(() => {
+    const params = getUrlParams();
+    return params.get('personalizationVariant') || personalizationVariants[0]?.id || 'accredited-first-time';
+  });
   const [activeWelcomeVariant, setActiveWelcomeVariant] = useState(() => {
     const params = getUrlParams();
     return params.get('welcomeVariant') || welcomeVariants[0]?.id || 'first-time';
@@ -290,6 +300,16 @@ export function DocsLayout({
   // Desktop sidebar collapsed state (persisted to URL)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     return getBoolParam(getUrlParams(), 'collapsed', false);
+  });
+
+  // Theme state (persisted to URL, default to light)
+  const [theme, setTheme] = useState<Theme>(() => {
+    const params = getUrlParams();
+    const urlTheme = params.get('theme');
+    if (urlTheme === 'dark' || urlTheme === 'light') {
+      return urlTheme;
+    }
+    return 'light';
   });
 
   // Onboarding reset key
@@ -385,6 +405,7 @@ export function DocsLayout({
       [`variant_${activeId}`]: viewMode === 'component' ? variantStates[activeId] : undefined,
       flow: viewMode === 'conversation' ? activeConversationFlow : undefined,
       onboardingVariant: viewMode === 'onboarding' ? activeOnboardingVariant : undefined,
+      personalizationVariant: viewMode === 'personalization' ? activePersonalizationVariant : undefined,
       welcomeVariant: viewMode === 'welcome' ? activeWelcomeVariant : undefined,
       welcome02Variant: viewMode === 'welcome02' ? activeWelcome02Variant : undefined,
       homeVariant: viewMode === 'welcome02' ? activeWelcome02HomeVariant : undefined,
@@ -398,6 +419,8 @@ export function DocsLayout({
       collapsed: isSidebarCollapsed ? true : undefined,
       // Release version (only store if not latest to keep URLs cleaner)
       release: selectedRelease !== getLatestRelease().id ? selectedRelease : undefined,
+      // Theme (only store if dark to keep URLs cleaner, light is default)
+      theme: theme === 'dark' ? 'dark' : undefined,
     };
 
     // Add block-04 specific params
@@ -409,7 +432,7 @@ export function DocsLayout({
     }
 
     updateUrlParams(params);
-  }, [viewMode, activeId, activeGroupId, variantStates, activeConversationFlow, activeOnboardingVariant, activeWelcomeVariant, activeWelcome02Variant, activeWelcome02HomeVariant, activeInvestmentFlowStep, activeZAIInvestmentFlowVariant, isFullscreen, showWelcome02Chrome, isSidebarCollapsed, selectedRelease, showPresets, showStepper, showSuggestions, presetCount]);
+  }, [viewMode, activeId, activeGroupId, variantStates, activeConversationFlow, activeOnboardingVariant, activePersonalizationVariant, activeWelcomeVariant, activeWelcome02Variant, activeWelcome02HomeVariant, activeInvestmentFlowStep, activeZAIInvestmentFlowVariant, isFullscreen, showWelcome02Chrome, isSidebarCollapsed, selectedRelease, theme, showPresets, showStepper, showSuggestions, presetCount]);
 
   // Build sidebar sections based on view mode
   const buildSidebarSections = (): SidebarSection[] => {
@@ -420,9 +443,17 @@ export function DocsLayout({
       items: [
         {
           id: 'onboarding',
-          label: 'Onboarding',
+          label: 'Account Creation',
           icon: viewModeIcons.onboarding,
           children: onboardingVariants.map(v => ({ id: v.id, label: v.label })),
+        },
+        {
+          id: 'personalization',
+          label: 'Personalization',
+          icon: viewModeIcons.personalization,
+          children: personalizationVariants.length > 0
+            ? personalizationVariants.map(v => ({ id: v.id, label: v.label }))
+            : undefined,
         },
         {
           id: 'welcome02',
@@ -500,6 +531,8 @@ export function DocsLayout({
         setViewMode('conversation');
       } else if (itemId === 'onboarding') {
         setViewMode('onboarding');
+      } else if (itemId === 'personalization') {
+        setViewMode('personalization');
       } else if (itemId === 'welcome02') {
         setViewMode('welcome02');
       } else if (itemId === 'z-ai-investment-flow') {
@@ -531,6 +564,9 @@ export function DocsLayout({
       } else if (itemId === 'onboarding') {
         setViewMode('onboarding');
         setActiveOnboardingVariant(subItemId);
+      } else if (itemId === 'personalization') {
+        setViewMode('personalization');
+        setActivePersonalizationVariant(subItemId);
       } else if (itemId === 'welcome02') {
         setViewMode('welcome02');
         setActiveWelcome02Variant(subItemId);
@@ -590,6 +626,7 @@ export function DocsLayout({
   const getActiveSubItem = () => {
     if (viewMode === 'conversation') return activeConversationFlow;
     if (viewMode === 'onboarding') return activeOnboardingVariant;
+    if (viewMode === 'personalization') return activePersonalizationVariant;
     if (viewMode === 'welcome') return activeWelcomeVariant;
     if (viewMode === 'welcome02') return activeWelcome02Variant;
     if (viewMode === 'investment-flow') return activeInvestmentFlowStep;
@@ -640,7 +677,7 @@ export function DocsLayout({
         });
       }
     } else if (viewMode === 'onboarding') {
-      crumbs.push({ label: 'Onboarding' });
+      crumbs.push({ label: 'Account Creation' });
       if (onboardingVariants.length > 0) {
         const currentLabel = onboardingVariants.find(v => v.id === activeOnboardingVariant)?.label || '';
         crumbs.push({
@@ -648,6 +685,17 @@ export function DocsLayout({
           dropdownOptions: onboardingVariants.map(v => ({ id: v.id, label: v.label })),
           selectedOptionId: activeOnboardingVariant,
           onOptionSelect: (id) => setActiveOnboardingVariant(id),
+        });
+      }
+    } else if (viewMode === 'personalization') {
+      crumbs.push({ label: 'Personalization' });
+      if (personalizationVariants.length > 0) {
+        const currentLabel = personalizationVariants.find(v => v.id === activePersonalizationVariant)?.label || '';
+        crumbs.push({
+          label: currentLabel,
+          dropdownOptions: personalizationVariants.map(v => ({ id: v.id, label: v.label })),
+          selectedOptionId: activePersonalizationVariant,
+          onOptionSelect: (id) => setActivePersonalizationVariant(id),
         });
       }
     } else if (viewMode === 'welcome02') {
@@ -739,6 +787,7 @@ export function DocsLayout({
           {viewMode === 'component' && activeComponent}
           {viewMode === 'conversation' && renderConversationView?.(activeConversationFlow)}
           {viewMode === 'onboarding' && renderOnboardingView?.(activeOnboardingVariant, onboardingKey)}
+          {viewMode === 'personalization' && renderPersonalizationView?.(activePersonalizationVariant)}
           {viewMode === 'welcome' && renderWelcomeView?.(activeWelcomeVariant)}
           {viewMode === 'welcome02' && renderWelcome02View?.(activeWelcome02Variant, false, activeWelcome02HomeVariant)}
           {viewMode === 'investment-flow' && renderInvestmentFlowView?.(activeInvestmentFlowStep, () => {
@@ -786,6 +835,8 @@ export function DocsLayout({
           expandedItems={expandedItems}
           isOpen={isSidebarOpen}
           isCollapsed={isSidebarCollapsed}
+          theme={theme}
+          onThemeChange={setTheme}
           onClose={() => setIsSidebarOpen(false)}
           onToggleCollapse={() => setIsSidebarCollapsed(prev => !prev)}
           onSectionClick={handleSectionClick}
@@ -795,9 +846,9 @@ export function DocsLayout({
         />
 
         {/* Main Content Area */}
-        <main className={cn("flex-1 overflow-hidden", (viewMode === 'welcome02' || viewMode === 'investment-flow' || viewMode === 'z-ai-investment-flow') && "flex flex-col")}>
+        <main className={cn("flex-1 overflow-hidden", (viewMode === 'personalization' || viewMode === 'welcome02' || viewMode === 'investment-flow' || viewMode === 'z-ai-investment-flow') && "flex flex-col")}>
           {/* Standard content wrapper with Radix ScrollArea - only shown for non-fullscreen views */}
-          {viewMode !== 'welcome02' && viewMode !== 'investment-flow' && viewMode !== 'z-ai-investment-flow' && (
+          {viewMode !== 'personalization' && viewMode !== 'welcome02' && viewMode !== 'investment-flow' && viewMode !== 'z-ai-investment-flow' && (
           <ScrollAreaPrimitive.Root className="h-full w-full">
             <ScrollAreaPrimitive.Viewport className="h-full w-full">
               <div className="p-4 md:p-8 max-w-5xl mx-auto">
@@ -941,12 +992,12 @@ export function DocsLayout({
               </>
             )}
 
-            {/* Onboarding View */}
+            {/* Account Creation View */}
             {viewMode === 'onboarding' && (
               <>
                 <PageHeader
-                  title="Onboarding Flow"
-                  description="Preview the onboarding experience for new users."
+                  title="Account Creation Flow"
+                  description="Preview the account creation experience for new users."
                 />
 
                 {/* Variant Selector Pills */}
@@ -1060,6 +1111,40 @@ export function DocsLayout({
             </ScrollAreaPrimitive.Scrollbar>
             <ScrollAreaPrimitive.Corner />
           </ScrollAreaPrimitive.Root>
+          )}
+
+          {/* Personalization View - renders outside the constrained container */}
+          {viewMode === 'personalization' && (
+            <div className="flex flex-col flex-1 min-h-0">
+              {/* Options Bar */}
+              <div className="flex flex-wrap items-center gap-3 px-4 md:px-8 py-3 border-b border-border bg-background/50">
+                {/* Variant Selector Dropdown */}
+                {personalizationVariants.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground hidden sm:inline">User State:</span>
+                    <div className="relative">
+                      <select
+                        value={activePersonalizationVariant}
+                        onChange={(e) => setActivePersonalizationVariant(e.target.value)}
+                        className="appearance-none bg-white border border-border rounded-lg px-3 py-1.5 pr-8 text-sm font-medium text-foreground cursor-pointer hover:border-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-foreground/20"
+                      >
+                        {personalizationVariants.map((variant) => (
+                          <option key={variant.id} value={variant.id}>
+                            {variant.label}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Direct render - no container */}
+              <div className="flex-1 min-h-0 overflow-hidden">
+                {renderPersonalizationView?.(activePersonalizationVariant)}
+              </div>
+            </div>
           )}
 
           {/* Welcome 0.2 View - renders outside the constrained container */}
