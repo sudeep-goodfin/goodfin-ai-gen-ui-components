@@ -28,7 +28,7 @@ export function Greeting({
   priorityAllocations = "3 priority allocations expiring soon",
   isFirstTimeUser = false,
   firstTimeTitle = "Welcome to Goodfin, Alex",
-  firstTimeDescription = "Congratulations on becoming an **accredited investor**! I'm your AI concierge, here to help you discover and invest in **exclusive private market opportunities**. To personalize your experience, I'd love to learn a bit more about your investment preferences.",
+  firstTimeDescription = "I'm your AI concierge, here to help you discover and invest in **exclusive private market opportunities**. To personalize your experience, I'd love to learn a bit more about your investment preferences.",
   animationKey = 0
 }: GreetingProps) {
   const [phase, setPhase] = useState<AnimationPhase>('idle');

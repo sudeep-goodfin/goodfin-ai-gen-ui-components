@@ -10,10 +10,111 @@ import { InputBarV02 } from './InputBarV02';
 import type { PersonalizationQuestion } from './InputBarV02';
 import { ChatHistoryDrawer } from './ChatHistoryDrawer';
 import { Icon, CustomIcon } from '../Icon';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Lock, Target, Zap, Calendar, Sparkles } from 'lucide-react';
 import svgPaths from '../../imports/svg-191opiemcf';
 import { svgPaths as localSvgPaths } from '../../svgPaths';
 import { cn } from '../../../../../lib/utils';
+
+// Preview cards data for personalization peek
+const PREVIEW_DEALS = [
+  {
+    id: 'anthropic',
+    title: 'Anthropic',
+    category: 'AI',
+    image: '/icons/products/anthropic.png',
+  },
+  {
+    id: 'perplexity',
+    title: 'Perplexity',
+    category: 'AI',
+    image: '/icons/products/perplexity.png',
+  },
+  {
+    id: 'spacex',
+    title: 'SpaceX',
+    category: 'SPACE',
+    image: '/icons/products/spaceX.png',
+  },
+];
+
+const PREVIEW_ACTIONS = [
+  { icon: '📊', text: 'Personalized deal recommendations' },
+  { icon: '☕', text: 'Coffee chat matches' },
+  { icon: '📈', text: 'Portfolio insights' },
+];
+
+// Personalization Preview Component - shows muted/locked cards
+function PersonalizationPreview({ isVisible }: { isVisible: boolean }) {
+  if (!isVisible) return null;
+
+  return (
+    <div className="w-full relative">
+      {/* Section Header */}
+      <div className="flex items-center gap-2 mb-4">
+        <Sparkles className="w-4 h-4 text-[#a09a9f]" />
+        <span className="text-[13px] text-[#a09a9f] font-['Soehne_Kraftig',sans-serif]">
+          Unlock your personalized experience
+        </span>
+      </div>
+
+      {/* Cards Container with dimmed overlay */}
+      <div className="relative">
+        {/* Gradient fade overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#f7f7f8] z-10 pointer-events-none" />
+
+        {/* Muted Cards Grid */}
+        <div className="opacity-40 blur-[1px] select-none pointer-events-none">
+          {/* Deal Cards Row */}
+          <div className="flex gap-3 overflow-hidden mb-4">
+            {PREVIEW_DEALS.map((deal) => (
+              <div
+                key={deal.id}
+                className="flex-shrink-0 w-[180px] bg-white rounded-[12px] border border-[#e6e4e7] p-3"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#f0eef0]">
+                    <img src={deal.image} alt={deal.title} className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-[#a09a9f] font-['Soehne_Kraftig',sans-serif] uppercase">{deal.category}</span>
+                    <p className="text-[13px] text-[#48424a] font-['Soehne_Kraftig',sans-serif]">{deal.title}</p>
+                  </div>
+                </div>
+                <div className="h-2 bg-[#e6e4e7] rounded-full w-3/4 mb-1" />
+                <div className="h-2 bg-[#e6e4e7] rounded-full w-1/2" />
+              </div>
+            ))}
+          </div>
+
+          {/* Action Items Preview */}
+          <div className="bg-white rounded-[12px] border border-[#e6e4e7] overflow-hidden">
+            {PREVIEW_ACTIONS.map((action, idx) => (
+              <div
+                key={idx}
+                className="flex items-center gap-3 py-3 px-4 border-b border-[#e6e4e7] last:border-b-0"
+              >
+                <span className="text-lg grayscale">{action.icon}</span>
+                <div className="flex-1">
+                  <div className="h-3 bg-[#e6e4e7] rounded w-2/3" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Lock indicator in center */}
+        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+          <div className="flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-sm rounded-full border border-[#e0dce0] shadow-sm">
+            <Lock className="w-3.5 h-3.5 text-[#7f7582]" />
+            <span className="text-[12px] text-[#7f7582] font-['Soehne_Kraftig',sans-serif]">
+              Complete setup to unlock
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // Home Content Variant Types
 export type HomeVariant = 'v1' | 'v2-full' | 'v2-compact' | 'v2-action-focused';
@@ -425,6 +526,9 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
   const [isPersonalizationExpanded, setIsPersonalizationExpanded] = useState(true);
   const [personalizationComplete, setPersonalizationComplete] = useState(false);
 
+  // Completion flow state: 'questions' | 'processing' | 'gratification' | 'done'
+  const [completionFlowState, setCompletionFlowState] = useState<'questions' | 'processing' | 'gratification' | 'done'>('questions');
+
   // Chat State
   const [chatState, setChatState] = useState<{
     isActive: boolean;
@@ -446,6 +550,7 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
     setSelectedPersonalizationOptions({});
     setIsPersonalizationExpanded(true);
     setPersonalizationComplete(false);
+    setCompletionFlowState('questions');
 
     const timers: ReturnType<typeof setTimeout>[] = [];
 
@@ -545,11 +650,22 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
     }
   };
 
-  // Personalization completion handler
+  // Personalization completion handler - triggers completion flow
   const handlePersonalizationComplete = () => {
+    // Start processing state
+    setCompletionFlowState('processing');
+
+    // After processing, show gratification
+    setTimeout(() => {
+      setCompletionFlowState('gratification');
+    }, 2000); // 2 seconds of processing animation
+  };
+
+  // Continue to home after gratification
+  const handleContinueToHome = () => {
+    setCompletionFlowState('done');
     setPersonalizationComplete(true);
     setIsPersonalizationExpanded(false);
-    // Could trigger navigation or save preferences here
   };
 
   // Toggle personalization expand/collapse
@@ -772,7 +888,7 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
               <>
                 {currentMode === 'default' && isFirstTimeUser ? (
                   /* First-time user personalization flow with orchestrated animations */
-                  <div className="flex flex-col gap-10 w-full mt-10 max-w-3xl">
+                  <div className="flex flex-col gap-8 w-full mt-10 max-w-3xl">
                     {/* Greeting - visible from 'greeting' stage onwards */}
                     <div
                       className={cn(
@@ -786,6 +902,18 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
                         isFirstTimeUser={true}
                         animationKey={animationKey}
                       />
+                    </div>
+
+                    {/* Personalization Preview - muted cards peek */}
+                    <div
+                      className={cn(
+                        'transition-all duration-700 ease-out delay-500',
+                        animationStage === 'idle' || animationStage === 'greeting'
+                          ? 'opacity-0 translate-y-4'
+                          : 'opacity-100 translate-y-0'
+                      )}
+                    >
+                      <PersonalizationPreview isVisible={!personalizationComplete} />
                     </div>
                     {/* Personalization questions are now shown in the InputBar callout below */}
                   </div>
@@ -855,8 +983,12 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
               onModeChange={handleModeChange}
               placeholder="Tell me more about your investment preferences..."
               formCallout={{
-                state: 'personalization',
-                headerText: "Let's personalize your experience",
+                state: completionFlowState === 'processing'
+                  ? 'personalization_processing'
+                  : completionFlowState === 'gratification'
+                    ? 'personalization_complete'
+                    : 'personalization',
+                headerText: completionFlowState === 'questions' ? "Let's personalize your experience" : undefined,
                 personalizationQuestions: visibleQuestions,
                 currentQuestionIndex,
                 selectedPersonalizationOptions,
@@ -874,6 +1006,10 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
                 onCtaClick: isLastQuestion && currentQuestionAnswered
                   ? handlePersonalizationComplete
                   : handlePersonalizationContinue,
+                // Gratification props
+                gratificationTitle: "You're all set!",
+                gratificationSubtitle: "We've personalized your Goodfin experience based on your preferences.",
+                onContinueToHome: handleContinueToHome,
               }}
             />
           ) : (

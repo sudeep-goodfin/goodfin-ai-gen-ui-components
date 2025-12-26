@@ -241,12 +241,17 @@ module.exports = {
           "0%": { backgroundPosition: "0%" },
           "100%": { backgroundPosition: "200%" },
         },
+        "shimmer": {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "caret-blink": "caret-blink 1.25s ease-out infinite",
         "rainbow": "rainbow 2s infinite linear",
+        "shimmer": "shimmer 2s infinite linear",
       },
     },
   },

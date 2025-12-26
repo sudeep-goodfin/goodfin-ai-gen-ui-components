@@ -127,7 +127,7 @@ interface InvestmentAction {
 }
 
 // Callout states
-export type CalloutState = 'default' | 'awaiting_input' | 'confirmed' | 'error' | 'commit_confirm' | 'investor_type' | 'business_info' | 'personalization';
+export type CalloutState = 'default' | 'awaiting_input' | 'confirmed' | 'error' | 'commit_confirm' | 'investor_type' | 'business_info' | 'personalization' | 'personalization_processing' | 'personalization_complete';
 
 interface CalloutResponse {
   id: string;
@@ -249,6 +249,10 @@ interface FormCallout {
   isPersonalizationExpanded?: boolean;
   onTogglePersonalizationExpand?: () => void;
   onSkipQuestion?: () => void; // For optional questions
+  // Completion flow props
+  gratificationTitle?: string;
+  gratificationSubtitle?: string;
+  onContinueToHome?: () => void;
 }
 
 interface InputBarProps {
@@ -536,12 +540,25 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
   const hasNudge = !!formNudge;
   const hasCallout = !!formCallout;
 
+  // Check if we should show rainbow border (for personalization states)
+  const showRainbowBorder = formCallout?.state === 'personalization' ||
+    formCallout?.state === 'personalization_processing' ||
+    formCallout?.state === 'personalization_complete';
+
   return (
     <div className="w-full max-w-3xl flex flex-col items-center gap-2">
-      {/* Wrapper for callout + input */}
+      {/* Wrapper for callout + input with rainbow border for personalization */}
       <div className={cn(
         "w-full relative overflow-hidden rounded-[16px]",
-        shake && "animate-shake"
+        shake && "animate-shake",
+        showRainbowBorder && [
+          "animate-rainbow",
+          "bg-[length:200%]",
+          "[background-clip:padding-box,border-box,border-box]",
+          "[background-origin:border-box]",
+          "[border:2px_solid_transparent]",
+          "bg-[linear-gradient(#f7f7f8,#f7f7f8),linear-gradient(#f7f7f8_50%,rgba(247,247,248,0.6)_80%,rgba(247,247,248,0)),linear-gradient(90deg,var(--color-1),var(--color-5),var(--color-3),var(--color-4),var(--color-2))]"
+        ]
       )}>
         {/* Form Callout Header */}
         {hasCallout && (
@@ -555,7 +572,9 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
               formCallout.state === 'commit_confirm' && "bg-[#e8e5e8]",
               formCallout.state === 'investor_type' && "bg-[#e8e5e8]",
               formCallout.state === 'business_info' && "bg-[#e8e5e8]",
-              formCallout.state === 'personalization' && "bg-gradient-to-b from-[#f5f0e8] to-[#e8e5e8]"
+              formCallout.state === 'personalization' && "bg-gradient-to-b from-[#f5f0e8] to-[#e8e5e8]",
+              formCallout.state === 'personalization_processing' && "bg-gradient-to-b from-[#f5f0e8] to-[#e8e5e8]",
+              formCallout.state === 'personalization_complete' && "bg-gradient-to-b from-[#e8f5e8] to-[#e8e5e8]"
             )}
             style={formCallout.state === 'awaiting_input' ? { animationDuration: '3s' } : undefined}
           >
@@ -581,7 +600,8 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
               </div>
             )}
 
-            {/* Main row with deal info and header text */}
+            {/* Main row with deal info and header text - hidden during processing/gratification */}
+            {formCallout.state !== 'personalization_processing' && formCallout.state !== 'personalization_complete' && (
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 {formCallout.dealLogo && (
@@ -592,6 +612,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                   />
                 )}
                 <div className="flex flex-col gap-1 min-w-0">
+                  {formCallout.headerText && (
                   <span
                     className={cn(
                       "text-[14px] md:text-[15px] font-medium text-[#29272a] truncate",
@@ -601,6 +622,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                   >
                     {formCallout.headerText}
                   </span>
+                  )}
                   {/* Saved investor profile badge for returning users */}
                   {formCallout.savedInvestorProfile && (
                     <button
@@ -616,15 +638,14 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 </div>
               </div>
               <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-                {/* Personalization collapse button */}
+                {/* Personalization collapse button - icon only */}
                 {formCallout.state === 'personalization' && formCallout.isPersonalizationExpanded && formCallout.onTogglePersonalizationExpand && (
                   <button
                     onClick={formCallout.onTogglePersonalizationExpand}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-medium text-[#685f6a] bg-white/60 hover:bg-white/80 border border-[#d0cdd2] rounded-lg transition-colors"
-                    style={{ fontFamily: 'Soehne, sans-serif' }}
+                    className="flex items-center justify-center w-7 h-7 text-[#685f6a] bg-white/60 hover:bg-white/80 border border-[#d0cdd2] rounded-lg transition-colors"
+                    title="Minimize"
                   >
-                    <span>Minimize</span>
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="text-[#685f6a]">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-[#685f6a]">
                       <path d="M4 10L8 6L12 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </button>
@@ -663,6 +684,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 )}
               </div>
             </div>
+            )}
 
             {/* Checkboxes for commit confirmation */}
             {formCallout.state === 'commit_confirm' && formCallout.checkboxes && (
@@ -1115,6 +1137,57 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
               </div>
             )}
 
+            {/* Processing State - Shimmer Animation */}
+            {formCallout.state === 'personalization_processing' && (
+              <div className="flex flex-col items-center justify-center py-8">
+                <div className="relative w-full max-w-xs">
+                  {/* Shimmer bars */}
+                  <div className="space-y-3">
+                    <div className="h-3 bg-gradient-to-r from-[#e8e5e8] via-[#f5f2f5] to-[#e8e5e8] rounded-full animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
+                    <div className="h-3 bg-gradient-to-r from-[#e8e5e8] via-[#f5f2f5] to-[#e8e5e8] rounded-full animate-shimmer w-4/5" style={{ backgroundSize: '200% 100%', animationDelay: '0.1s' }} />
+                    <div className="h-3 bg-gradient-to-r from-[#e8e5e8] via-[#f5f2f5] to-[#e8e5e8] rounded-full animate-shimmer w-3/5" style={{ backgroundSize: '200% 100%', animationDelay: '0.2s' }} />
+                  </div>
+                </div>
+                <p
+                  className="mt-4 text-[13px] text-[#7f7582]"
+                  style={{ fontFamily: 'Soehne, sans-serif' }}
+                >
+                  Personalizing your experience...
+                </p>
+              </div>
+            )}
+
+            {/* Gratification State - Completion Celebration */}
+            {formCallout.state === 'personalization_complete' && (
+              <div className="flex flex-col items-center justify-center py-6 animate-in fade-in duration-500">
+                {/* Celebration emoji */}
+                <div className="text-4xl mb-3 animate-bounce" style={{ animationDuration: '1s', animationIterationCount: '2' }}>
+                  🎉
+                </div>
+                {/* Gratification text */}
+                <h3
+                  className="text-[18px] text-[#373338] font-medium text-center mb-1 animate-in fade-in slide-in-from-bottom-2 duration-500"
+                  style={{ fontFamily: 'Soehne Kraftig, sans-serif', animationDelay: '0.2s', animationFillMode: 'backwards' }}
+                >
+                  {formCallout.gratificationTitle || "You're all set!"}
+                </h3>
+                <p
+                  className="text-[14px] text-[#7f7582] text-center max-w-xs mb-4 animate-in fade-in slide-in-from-bottom-2 duration-500"
+                  style={{ fontFamily: 'Soehne, sans-serif', animationDelay: '0.4s', animationFillMode: 'backwards' }}
+                >
+                  {formCallout.gratificationSubtitle || "We've personalized your Goodfin experience based on your preferences."}
+                </p>
+                {/* Continue CTA */}
+                <button
+                  onClick={formCallout.onContinueToHome}
+                  className="px-6 py-2.5 bg-[#373338] text-white text-[14px] font-medium rounded-xl hover:bg-[#29272a] transition-all animate-in fade-in slide-in-from-bottom-2 duration-500"
+                  style={{ fontFamily: 'Soehne Kraftig, sans-serif', animationDelay: '0.6s', animationFillMode: 'backwards' }}
+                >
+                  Continue to Home
+                </button>
+              </div>
+            )}
+
             {/* Minimized Personalization Summary with Progress */}
             {formCallout.state === 'personalization' && !formCallout.isPersonalizationExpanded && (
               <button
@@ -1181,7 +1254,8 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
           </div>
         )}
 
-        {/* Input Box Container */}
+        {/* Input Box Container - Hidden for processing/complete states */}
+        {formCallout?.state !== 'personalization_processing' && formCallout?.state !== 'personalization_complete' && (
         <div className={cn(
           "bg-white relative shrink-0 w-full",
           hasCallout ? "rounded-b-[16px]" : "rounded-[16px]",
@@ -1521,6 +1595,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
             )}
         </div>
         </div>
+        )}
       </div>
 
       {/* Footer Disclaimer */}
