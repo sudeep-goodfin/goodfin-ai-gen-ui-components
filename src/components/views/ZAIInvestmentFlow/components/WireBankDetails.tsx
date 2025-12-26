@@ -277,11 +277,10 @@ Reference ID: ${INTERNATIONAL_BANK_DETAILS.uniqueReferenceId}`;
               </div>
             ) : (
               <div className="flex flex-col gap-4">
-                {/* Step 1 */}
+                {/* Beneficiary Bank Information */}
                 <div className="flex flex-col gap-0">
                   <div className="py-1 mb-0.5">
-                    <p className="text-[12px] text-[#373338] uppercase font-medium" style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}>Step 1</p>
-                    <p className="text-[10px] text-[#685f6a]" style={{ fontFamily: 'Soehne, sans-serif' }}>Enter beneficiary bank information</p>
+                    <p className="text-[10px] text-[#685f6a]" style={{ fontFamily: 'Soehne, sans-serif' }}>Beneficiary bank information</p>
                   </div>
                   <CopyField label="SWIFT/BIC Code" value={INTERNATIONAL_BANK_DETAILS.swiftBicCode} fieldKey="swiftBicCode" />
                   <CopyField label="Routing Number (if asked)" value={INTERNATIONAL_BANK_DETAILS.routingNumber} fieldKey="intlRoutingNumber" />
@@ -289,22 +288,20 @@ Reference ID: ${INTERNATIONAL_BANK_DETAILS.uniqueReferenceId}`;
                   <CopyField label="Bank Address" value={INTERNATIONAL_BANK_DETAILS.bankAddress} fieldKey="bankAddress" />
                 </div>
 
-                {/* Step 2 */}
+                {/* Beneficiary Information */}
                 <div className="flex flex-col gap-0">
                   <div className="py-1 mb-0.5">
-                    <p className="text-[12px] text-[#373338] uppercase font-medium" style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}>Step 2</p>
-                    <p className="text-[10px] text-[#685f6a]" style={{ fontFamily: 'Soehne, sans-serif' }}>Enter beneficiary information</p>
+                    <p className="text-[10px] text-[#685f6a]" style={{ fontFamily: 'Soehne, sans-serif' }}>Beneficiary information</p>
                   </div>
                   <CopyField label="Beneficiary Name" value={INTERNATIONAL_BANK_DETAILS.beneficiaryName} fieldKey="beneficiaryName" />
                   <CopyField label="Account Number" value={INTERNATIONAL_BANK_DETAILS.beneficiaryAccountNumber} fieldKey="beneficiaryAccountNumber" />
                   <CopyField label="Beneficiary Address" value={INTERNATIONAL_BANK_DETAILS.beneficiaryAddress} fieldKey="beneficiaryAddress" />
                 </div>
 
-                {/* Step 3 */}
+                {/* Memo Content */}
                 <div className="flex flex-col gap-0">
                   <div className="py-1 mb-0.5">
-                    <p className="text-[12px] text-[#373338] uppercase font-medium" style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}>Step 3</p>
-                    <p className="text-[10px] text-[#685f6a]" style={{ fontFamily: 'Soehne, sans-serif' }}>Enter memo content</p>
+                    <p className="text-[10px] text-[#685f6a]" style={{ fontFamily: 'Soehne, sans-serif' }}>Memo content</p>
                   </div>
                   <CopyField label="Unique Reference ID" value={INTERNATIONAL_BANK_DETAILS.uniqueReferenceId} fieldKey="uniqueReferenceId" />
                 </div>
