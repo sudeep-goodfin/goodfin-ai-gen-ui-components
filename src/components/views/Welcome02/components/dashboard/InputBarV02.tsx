@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { chatSvgPaths } from './chat-icons';
 import { cn } from '@/lib/utils';
-import { FileText, Calendar, Briefcase, Home, X, Pencil } from "lucide-react";
+import { FileText, Calendar, Briefcase, Home, X, Pencil, Plus, Info } from "lucide-react";
 import { CommandPanel, Recipe, Context, Pill, PanelMode } from './command-panel';
 import { useRecording } from './hooks/useRecording';
 import { VoiceRecordingInterface } from './VoiceRecordingInterface';
@@ -127,7 +127,7 @@ interface InvestmentAction {
 }
 
 // Callout states
-export type CalloutState = 'default' | 'awaiting_input' | 'confirmed' | 'error' | 'commit_confirm' | 'investor_type';
+export type CalloutState = 'default' | 'awaiting_input' | 'confirmed' | 'error' | 'commit_confirm' | 'investor_type' | 'business_info';
 
 interface CalloutResponse {
   id: string;
@@ -162,6 +162,24 @@ export interface SavedInvestorProfile {
   label: string; // Short label like "U.S. Entity"
 }
 
+// Business owner for business info form
+export interface BusinessOwner {
+  id: string;
+  name: string;
+  email: string;
+  isVerified: boolean;
+  isPrimary: boolean;
+}
+
+// Business info form data
+export interface BusinessInfoData {
+  businessName: string;
+  businessEmail: string;
+  countryName: string;
+  owners: BusinessOwner[];
+  documents: string[];
+}
+
 interface FormCallout {
   state: CalloutState;
   dealLogo?: string;
@@ -183,6 +201,13 @@ interface FormCallout {
   // Saved profile for returning investors
   savedInvestorProfile?: SavedInvestorProfile;
   onChangeProfile?: () => void; // Click handler to change saved profile
+  // Business info form props
+  businessInfo?: BusinessInfoData;
+  onBusinessInfoChange?: (field: keyof BusinessInfoData, value: string) => void;
+  onAddBusinessOwner?: () => void;
+  onOwnerEmailChange?: (index: number, email: string) => void;
+  onAddDocument?: () => void;
+  primaryOwnerName?: string; // Current user's name for display
 }
 
 interface InputBarProps {
@@ -487,7 +512,8 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
               formCallout.state === 'confirmed' && "bg-[#e8e5e8]",
               formCallout.state === 'error' && "bg-[#e8a8a8]",
               formCallout.state === 'commit_confirm' && "bg-[#e8e5e8]",
-              formCallout.state === 'investor_type' && "bg-[#e8e5e8]"
+              formCallout.state === 'investor_type' && "bg-[#e8e5e8]",
+              formCallout.state === 'business_info' && "bg-[#e8e5e8]"
             )}
             style={formCallout.state === 'awaiting_input' ? { animationDuration: '3s' } : undefined}
           >
@@ -674,6 +700,151 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 ))}
               </div>
             )}
+
+            {/* Business Info Form */}
+            {formCallout.state === 'business_info' && formCallout.businessInfo && (
+              <div className="flex flex-col gap-5 mt-2">
+                {/* Business Information Section */}
+                <div className="flex flex-col gap-3">
+                  <h4
+                    className="text-[14px] font-medium text-[#373338]"
+                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                  >
+                    Business Information
+                  </h4>
+                  {/* Business Name */}
+                  <input
+                    type="text"
+                    value={formCallout.businessInfo.businessName}
+                    onChange={(e) => formCallout.onBusinessInfoChange?.('businessName', e.target.value)}
+                    placeholder="Business Name"
+                    className="w-full px-4 py-3 bg-white border border-[#e0dce0] rounded-xl text-[15px] text-[#373338] placeholder:text-[#a9a4ab] outline-none focus:border-[#7f7582] transition-colors"
+                    style={{ fontFamily: 'Soehne, sans-serif' }}
+                  />
+                  {/* Business Email & Country */}
+                  <div className="flex gap-3">
+                    <input
+                      type="email"
+                      value={formCallout.businessInfo.businessEmail}
+                      onChange={(e) => formCallout.onBusinessInfoChange?.('businessEmail', e.target.value)}
+                      placeholder="Business Email"
+                      className="flex-1 px-4 py-3 bg-white border border-[#e0dce0] rounded-xl text-[15px] text-[#373338] placeholder:text-[#a9a4ab] outline-none focus:border-[#7f7582] transition-colors"
+                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                    />
+                    <input
+                      type="text"
+                      value={formCallout.businessInfo.countryName}
+                      onChange={(e) => formCallout.onBusinessInfoChange?.('countryName', e.target.value)}
+                      placeholder="Country name"
+                      className="flex-1 px-4 py-3 bg-white border border-[#e0dce0] rounded-xl text-[15px] text-[#373338] placeholder:text-[#a9a4ab] outline-none focus:border-[#7f7582] transition-colors"
+                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                    />
+                  </div>
+                </div>
+
+                {/* Business Owners Section */}
+                <div className="flex flex-col gap-3">
+                  <h4
+                    className="text-[14px] font-medium text-[#373338]"
+                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                  >
+                    Business Owners
+                  </h4>
+
+                  {/* Primary Owner */}
+                  <div className="bg-[#f7f7f8] rounded-xl p-4">
+                    <p
+                      className="text-[13px] text-[#685f6a] mb-2"
+                      style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                    >
+                      Primary Owner (You)
+                    </p>
+                    <div className="bg-white border border-[#e0dce0] rounded-xl px-4 py-3">
+                      <p
+                        className="text-[15px] text-[#373338]"
+                        style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                      >
+                        {formCallout.primaryOwnerName || 'You'}
+                      </p>
+                      <p
+                        className="text-[13px] text-[#5a8a5a] flex items-center gap-1"
+                        style={{ fontFamily: 'Soehne, sans-serif' }}
+                      >
+                        • Verified
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Other Owners */}
+                  <div className="bg-[#f7f7f8] rounded-xl p-4">
+                    <p
+                      className="text-[13px] text-[#685f6a] mb-2"
+                      style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                    >
+                      Other Owners
+                    </p>
+                    {/* Existing other owners */}
+                    {formCallout.businessInfo.owners
+                      .filter(o => !o.isPrimary)
+                      .map((owner, index) => (
+                        <input
+                          key={owner.id}
+                          type="email"
+                          value={owner.email}
+                          onChange={(e) => formCallout.onOwnerEmailChange?.(index, e.target.value)}
+                          placeholder="Enter owner's email"
+                          className="w-full px-4 py-3 mb-2 bg-white border border-[#e0dce0] rounded-xl text-[15px] text-[#373338] placeholder:text-[#a9a4ab] outline-none focus:border-[#7f7582] transition-colors"
+                          style={{ fontFamily: 'Soehne, sans-serif' }}
+                        />
+                      ))}
+                    {/* Add new owner input */}
+                    <input
+                      type="email"
+                      placeholder="Enter owner's email"
+                      className="w-full px-4 py-3 mb-2 bg-white border border-[#e0dce0] rounded-xl text-[15px] text-[#373338] placeholder:text-[#a9a4ab] outline-none focus:border-[#7f7582] transition-colors"
+                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                    />
+                    {/* Add Business Owner button */}
+                    <button
+                      onClick={formCallout.onAddBusinessOwner}
+                      className="w-full px-4 py-3 bg-white border border-[#e0dce0] rounded-xl text-[15px] text-[#a9a4ab] hover:border-[#c0bcc0] hover:text-[#685f6a] transition-colors flex items-center justify-center gap-2"
+                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Business Owner
+                    </button>
+                    {/* Info text */}
+                    <div className="flex items-center gap-2 mt-3 justify-center">
+                      <Info className="w-4 h-4 text-[#373338]" />
+                      <p
+                        className="text-[13px] text-[#373338]"
+                        style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                      >
+                        Our team will contact other owners for verification
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Upload Documents Section */}
+                <div className="flex flex-col gap-3">
+                  <h4
+                    className="text-[14px] font-medium text-[#373338]"
+                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                  >
+                    Upload Business Required Documents
+                  </h4>
+                  <button
+                    onClick={formCallout.onAddDocument}
+                    className="w-full px-4 py-4 bg-white border border-[#e0dce0] rounded-xl text-[15px] text-[#373338] hover:border-[#c0bcc0] transition-colors flex items-center justify-center gap-2"
+                    style={{ fontFamily: 'Soehne, sans-serif' }}
+                  >
+                    <Plus className="w-4 h-4" />
+                    Document
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -681,7 +852,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
         <div className={cn(
           "bg-white relative shrink-0 w-full",
           hasCallout ? "rounded-b-[16px]" : "rounded-[16px]",
-          (formCallout?.state === 'commit_confirm' || formCallout?.state === 'investor_type') ? "h-auto" : hasNudge ? "min-h-[140px]" : isInvestmentMode ? "min-h-[140px]" : "h-[108px]"
+          (formCallout?.state === 'commit_confirm' || formCallout?.state === 'investor_type' || formCallout?.state === 'business_info') ? "h-auto" : hasNudge ? "min-h-[140px]" : isInvestmentMode ? "min-h-[140px]" : "h-[108px]"
         )}>
           {/* Border & Shadow Layer */}
           <div aria-hidden="true" className={cn(
@@ -729,6 +900,20 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
               >
                 {formCallout.ctaText || 'Continue'}
+              </button>
+            ) : formCallout?.state === 'business_info' ? (
+              <button
+                onClick={formCallout.onCtaClick}
+                disabled={!formCallout.businessInfo?.businessName || !formCallout.businessInfo?.businessEmail}
+                className={cn(
+                  "w-full py-3.5 rounded-xl text-[16px] font-medium transition-all",
+                  formCallout.businessInfo?.businessName && formCallout.businessInfo?.businessEmail
+                    ? "bg-[#373338] text-white hover:bg-[#29272a] cursor-pointer"
+                    : "bg-[#e8e5e8] text-[#9a909a] cursor-not-allowed"
+                )}
+                style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+              >
+                {formCallout.ctaText || 'Submit Business Information'}
               </button>
             ) : (
               <>
@@ -792,8 +977,8 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
               </>
             )}
 
-            {/* Bottom Section - relative container for overlay - hidden in commit_confirm and investor_type states */}
-            {formCallout?.state !== 'commit_confirm' && formCallout?.state !== 'investor_type' && (
+            {/* Bottom Section - relative container for overlay - hidden in commit_confirm, investor_type, and business_info states */}
+            {formCallout?.state !== 'commit_confirm' && formCallout?.state !== 'investor_type' && formCallout?.state !== 'business_info' && (
             <div className="relative">
               {/* Voice Recording Interface - overlayed at bottom */}
               {showRecordingOverlay && (

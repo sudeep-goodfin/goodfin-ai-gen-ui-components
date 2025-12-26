@@ -26,6 +26,7 @@ import { TransferModal } from './components/TransferModal';
 import { DocumentSigningModal } from './components/DocumentSigningModal';
 import { WireBankDetails } from './components/WireBankDetails';
 import { DocumentSigningInline } from './components/DocumentSigningInline';
+import { DealCard, type DealCardProps } from '@/components/ui/DealCard';
 import {
   type FlowStep,
   type Message,
@@ -40,10 +41,53 @@ export type { FlowStep, InvestmentDocument, DealInfo, Message } from './types';
 export { INVESTMENT_DOCUMENTS, DEFAULT_DEAL } from './types';
 
 // Flow state type
-type FlowState = 'home' | 'loading' | 'askAmount' | 'processingAmount' | 'investing';
+type FlowState = 'home' | 'loading' | 'discoveringDeals' | 'selectingDeal' | 'askAmount' | 'processingAmount' | 'investing';
 
 // User state type - distinguishes between returning and first-time accredited investors
 export type ZAIUserState = 'accredited-returning' | 'accredited-first-time';
+
+// Sample deals for first-time user discovery
+const SAMPLE_DEALS: DealCardProps[] = [
+  {
+    id: 'anthropic',
+    category: 'AI & Machine Learning',
+    status: 'live',
+    title: 'Anthropic',
+    description: 'AI safety company building reliable, interpretable AI systems',
+    image: '/icons/products/anthropic.png',
+    investors: ['/icons/products/anthropic.png', '/icons/products/spaceX.png'],
+    investorNames: ['Spark Capital', 'Google'],
+  },
+  {
+    id: 'spacex',
+    category: 'Aerospace',
+    status: 'premium',
+    title: 'SpaceX',
+    description: 'Space exploration and satellite internet technology',
+    image: '/icons/products/spaceX.png',
+    investors: ['/icons/products/spaceX.png'],
+    investorNames: ['Founders Fund'],
+  },
+  {
+    id: 'stripe',
+    category: 'Fintech',
+    status: 'closing',
+    title: 'Stripe',
+    description: 'Financial infrastructure for the internet economy',
+    image: '/icons/products/stripe.png',
+    investors: ['/icons/products/stripe.png'],
+    investorNames: ['Sequoia'],
+  },
+];
+
+// Deal categories for first-time users
+const DEAL_CATEGORIES = [
+  { id: 'ai', name: 'AI & Machine Learning', count: 12 },
+  { id: 'fintech', name: 'Fintech', count: 8 },
+  { id: 'aerospace', name: 'Aerospace', count: 5 },
+  { id: 'biotech', name: 'Biotech', count: 6 },
+  { id: 'consumer', name: 'Consumer', count: 4 },
+];
 
 // Suggestion chips data for each step
 const STEP_SUGGESTIONS: Record<string, string[]> = {
@@ -180,6 +224,9 @@ export function ZAIInvestmentFlow({
   // Flow state
   const [flowState, setFlowState] = useState<FlowState>('home');
 
+  // Selected deal for first-time users (starts with default, can be changed during discovery)
+  const [selectedDeal, setSelectedDeal] = useState<DealInfo>(deal);
+
   // Investment state
   const [signedDocuments, setSignedDocuments] = useState<string[]>([]);
   const [isIdentityVerified, setIsIdentityVerified] = useState(false);
@@ -243,6 +290,7 @@ export function ZAIInvestmentFlow({
   // Investor type selection state
   const [showInvestorTypeSelection, setShowInvestorTypeSelection] = useState(false);
   const [selectedInvestorType, setSelectedInvestorType] = useState<string | null>(null);
+  const [isInvestorTypeComplete, setIsInvestorTypeComplete] = useState(!isFirstTimeInvestor); // Returning users already have this done
 
   // All investor type options grouped by category
   const investorTypeGroups = [
@@ -284,6 +332,16 @@ export function ZAIInvestmentFlow({
   const [savedInvestorProfile, setSavedInvestorProfile] = useState<{id: string; label: string} | null>(
     isFirstTimeInvestor ? null : { id: 'us-entity', label: 'U.S. Entity' }
   );
+
+  // Business info form state
+  const [showBusinessInfoForm, setShowBusinessInfoForm] = useState(false);
+  const [businessInfo, setBusinessInfo] = useState({
+    businessName: '',
+    businessEmail: '',
+    countryName: '',
+    owners: [] as Array<{id: string; name: string; email: string; isVerified: boolean; isPrimary: boolean}>,
+    documents: [] as string[],
+  });
 
   // Minimum investment amount
   const MIN_INVESTMENT = 10000;
@@ -371,9 +429,20 @@ export function ZAIInvestmentFlow({
     return 'current';
   };
 
+  const getInvestorTypeStatus = (): StepStatus => {
+    if (isInvestorTypeComplete) return 'completed';
+    if (hasCommitted) return 'current';
+    return 'upcoming';
+  };
+
   const getSigningStatus = (): StepStatus => {
     if (signedDocuments.length === INVESTMENT_DOCUMENTS.length) return 'completed';
-    if (hasCommitted) return 'current';
+    // For first-time users, signing requires investor type to be complete
+    if (isFirstTimeInvestor) {
+      if (hasCommitted && isInvestorTypeComplete) return 'current';
+    } else {
+      if (hasCommitted) return 'current';
+    }
     return 'upcoming';
   };
 
@@ -411,14 +480,30 @@ export function ZAIInvestmentFlow({
   };
 
   // Build steps array for VerticalStepper
-  const steps: Step[] = [
+  const baseSteps: Step[] = [
     {
       id: 'commit',
       label: 'Commit',
       status: getCommitStatus(),
-      description: `Confirm your investment of $${(investmentAmount || deal.minInvestment).toLocaleString()} in ${deal.companyName}. This locks in your allocation.`,
+      description: `Confirm your investment of $${(investmentAmount || selectedDeal.minInvestment).toLocaleString()} in ${selectedDeal.companyName}. This locks in your allocation.`,
       ctaLabel: 'Confirm commitment',
     },
+  ];
+
+  // Add investor type step only for first-time users
+  if (isFirstTimeInvestor) {
+    baseSteps.push({
+      id: 'investor_type',
+      label: 'Investor Type',
+      status: getInvestorTypeStatus(),
+      description: 'Select your investor type to help us ensure compliance with regulations and provide the right investment experience.',
+      ctaLabel: 'Select investor type',
+    });
+  }
+
+  // Add remaining steps
+  const steps: Step[] = [
+    ...baseSteps,
     {
       id: 'signing',
       label: 'Signing',
@@ -437,7 +522,7 @@ export function ZAIInvestmentFlow({
       id: 'wire',
       label: 'Wire',
       status: getWireStatus(),
-      description: `Transfer funds via wire or ACH to complete your investment in ${deal.companyName}.`,
+      description: `Transfer funds via wire or ACH to complete your investment in ${selectedDeal.companyName}.`,
       ctaLabel: 'Initiate transfer',
     },
   ];
@@ -473,6 +558,9 @@ export function ZAIInvestmentFlow({
     if (stepId === 'commit' && !hasCommitted) {
       // Show commit confirmation instead of immediately committing
       setShowCommitConfirm(true);
+    } else if (stepId === 'investor_type' && getInvestorTypeStatus() === 'current') {
+      // Show investor type selection
+      setShowInvestorTypeSelection(true);
     } else if (stepId === 'signing' && getSigningStatus() === 'current') {
       // Open the current document to sign
       const currentDoc = getCurrentDocument();
@@ -480,16 +568,26 @@ export function ZAIInvestmentFlow({
         setSigningDocument(currentDoc);
       }
     } else if (stepId === 'kyc' && getKYCStatus() === 'current') {
-      // For returning users with saved profile, skip selection
+      // For returning users with saved profile, go directly to verification
       if (savedInvestorProfile) {
-        setShowIdentityModal(true);
+        // Check if business type - show business form, otherwise show Footprint
+        if (isBusinessType(savedInvestorProfile.id)) {
+          setShowBusinessInfoForm(true);
+        } else {
+          setShowIdentityModal(true);
+        }
       } else {
-        // First-time users need to select investor type
-        setShowInvestorTypeSelection(true);
+        // This shouldn't happen for first-time users as they have investor_type step
+        setShowIdentityModal(true);
       }
     } else if (stepId === 'wire' && getWireStatus() === 'current') {
       setShowTransferModal(true);
     }
+  };
+
+  // Check if selected type is a business type
+  const isBusinessType = (typeId: string) => {
+    return typeId === 'us-entity' || typeId === 'non-us-entity';
   };
 
   // Handle investor type selection continue
@@ -506,8 +604,49 @@ export function ZAIInvestmentFlow({
       }
       setSavedInvestorProfile({ id: selectedInvestorType, label: profileLabel });
       setShowInvestorTypeSelection(false);
-      setShowIdentityModal(true);
+      setIsInvestorTypeComplete(true); // Mark investor type step as complete
+
+      // For first-time users with explicit investor type step,
+      // don't auto-start KYC - let them proceed through the flow
+      // KYC will be triggered when they click on KYC step
     }
+  };
+
+  // Handle business info form field change
+  const handleBusinessInfoChange = (field: string, value: string) => {
+    setBusinessInfo(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Handle add business owner
+  const handleAddBusinessOwner = () => {
+    setBusinessInfo(prev => ({
+      ...prev,
+      owners: [...prev.owners, { id: `owner-${Date.now()}`, name: '', email: '', isVerified: false, isPrimary: false }]
+    }));
+  };
+
+  // Handle owner email change
+  const handleOwnerEmailChange = (index: number, email: string) => {
+    setBusinessInfo(prev => {
+      const newOwners = [...prev.owners];
+      if (newOwners[index]) {
+        newOwners[index].email = email;
+      }
+      return { ...prev, owners: newOwners };
+    });
+  };
+
+  // Handle add document
+  const handleAddDocument = () => {
+    // In a real implementation, this would open a file picker
+    console.log('Add document clicked');
+  };
+
+  // Handle business info submission
+  const handleBusinessInfoSubmit = () => {
+    // Mark identity as verified (business verification complete)
+    setIsIdentityVerified(true);
+    setShowBusinessInfoForm(false);
   };
 
   // Handle change profile - allow user to re-select investor type
@@ -541,6 +680,9 @@ export function ZAIInvestmentFlow({
       // Cancel investor type selection
       setShowInvestorTypeSelection(false);
       setSelectedInvestorType(null);
+    } else if (showBusinessInfoForm) {
+      // Cancel business info form
+      setShowBusinessInfoForm(false);
     } else {
       setShowExitModal(true);
     }
@@ -562,6 +704,16 @@ export function ZAIInvestmentFlow({
     setCommitCheckboxes(prev => prev.map(cb => ({ ...cb, checked: false })));
     setShowInvestorTypeSelection(false);
     setSelectedInvestorType(null);
+    setIsInvestorTypeComplete(!isFirstTimeInvestor);
+    setShowBusinessInfoForm(false);
+    setBusinessInfo({
+      businessName: '',
+      businessEmail: '',
+      countryName: '',
+      owners: [],
+      documents: [],
+    });
+    setSelectedDeal(deal); // Reset to default deal
   };
 
   // Handle cancel exit - close modal and continue
@@ -713,13 +865,14 @@ export function ZAIInvestmentFlow({
                       <div className="w-full max-w-2xl mt-16">
                         <Greeting
                           title="Good afternoon, Alex"
+                          isFirstTimeUser={isFirstTimeInvestor}
                           portfolioGain="$154k"
                           portfolioPercentage="+12.4%"
                           priorityAllocations="3 priority allocations expiring soon"
                         />
                       </div>
 
-                      {/* Action Needed Card */}
+                      {/* Action Needed Card - different content for first-time vs returning users */}
                       <div className="w-full max-w-2xl mt-6">
                         {/* Header */}
                         <div className="flex items-center gap-2 mb-3">
@@ -730,58 +883,100 @@ export function ZAIInvestmentFlow({
                             className="text-[15px] text-[#373338]"
                             style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                           >
-                            Action Needed (3)
+                            {isFirstTimeInvestor ? 'Get Started' : 'Action Needed (3)'}
                           </span>
                         </div>
 
                         {/* Action Items Card */}
                         <div className="bg-white rounded-xl border border-[#e0dce0] overflow-hidden">
-                          {/* Item 1 - Anthropic (High Priority) */}
-                          <div
-                            onClick={() => {
-                              setUserMessage('Continue my investment in Anthropic');
-                              setFlowState('loading');
-                            }}
-                            className="flex items-center gap-3 px-5 py-4 border-b border-[#e0dce0]/60 bg-[#FEF2F2] hover:bg-[#FEE2E2] transition-colors cursor-pointer"
-                          >
-                            <img
-                              src="/icons/products/anthropic.png"
-                              alt="Anthropic"
-                              className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
-                            />
-                            <div className="flex-1 flex items-center justify-between gap-3">
+                          {/* For returning users: Anthropic urgent item */}
+                          {!isFirstTimeInvestor && (
+                            <div
+                              onClick={() => {
+                                setUserMessage('Continue my investment in Anthropic');
+                                setFlowState('loading');
+                              }}
+                              className="flex items-center gap-3 px-5 py-4 border-b border-[#e0dce0]/60 bg-[#FEF2F2] hover:bg-[#FEE2E2] transition-colors cursor-pointer"
+                            >
+                              <img
+                                src="/icons/products/anthropic.png"
+                                alt="Anthropic"
+                                className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
+                              />
+                              <div className="flex-1 flex items-center justify-between gap-3">
+                                <p
+                                  className="text-[15px] text-[#373338]"
+                                  style={{ fontFamily: 'Soehne, sans-serif' }}
+                                >
+                                  Anthropic closes in 2 days - Complete wire transfer
+                                </p>
+                                <span
+                                  className="text-[11px] font-medium text-[#DC2626] bg-[#FEE2E2] px-2 py-1 rounded-full flex-shrink-0"
+                                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                >
+                                  Continue Investment
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* For returning users: SpaceX subscription */}
+                          {!isFirstTimeInvestor && (
+                            <div className="flex items-center gap-3 px-5 py-4 border-b border-[#e0dce0]/60 hover:bg-[#f7f7f8]/50 transition-colors cursor-pointer">
+                              <img
+                                src="/icons/products/spaceX.png"
+                                alt="SpaceX"
+                                className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
+                              />
                               <p
                                 className="text-[15px] text-[#373338]"
                                 style={{ fontFamily: 'Soehne, sans-serif' }}
                               >
-                                Anthropic closes in 2 days - Complete wire transfer
+                                SpaceX - Sign subscription docs
                               </p>
-                              <span
-                                className="text-[11px] font-medium text-[#DC2626] bg-[#FEE2E2] px-2 py-1 rounded-full flex-shrink-0"
-                                style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                              >
-                                Continue Investment
-                              </span>
                             </div>
-                          </div>
+                          )}
 
-                          {/* Item 2 - SpaceX */}
-                          <div className="flex items-center gap-3 px-5 py-4 border-b border-[#e0dce0]/60 hover:bg-[#f7f7f8]/50 transition-colors cursor-pointer">
-                            <img
-                              src="/icons/products/spaceX.png"
-                              alt="SpaceX"
-                              className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
-                            />
-                            <p
-                              className="text-[15px] text-[#373338]"
-                              style={{ fontFamily: 'Soehne, sans-serif' }}
+                          {/* New Deals - for first-time users */}
+                          {isFirstTimeInvestor && (
+                            <div
+                              onClick={() => {
+                                setUserMessage('Show me available deals');
+                                setFlowState('loading');
+                                // After loading, transition to deal discovery
+                                setTimeout(() => {
+                                  setFlowState('discoveringDeals');
+                                }, 1500);
+                              }}
+                              className="flex items-center gap-3 px-5 py-4 border-b border-[#e0dce0]/60 hover:bg-[#f7f7f8]/50 transition-colors cursor-pointer"
                             >
-                              SpaceX - Sign subscription docs
-                            </p>
-                          </div>
+                              <div className="w-8 h-8 rounded-lg bg-[#e8e5e8] flex items-center justify-center flex-shrink-0">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#685f6a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                              </div>
+                              <div className="flex-1 flex items-center justify-between gap-3">
+                                <p
+                                  className="text-[15px] text-[#373338]"
+                                  style={{ fontFamily: 'Soehne, sans-serif' }}
+                                >
+                                  Explore new investment opportunities
+                                </p>
+                                <span
+                                  className="text-[11px] font-medium text-[#5a8a5a] bg-[#5a8a5a]/10 px-2 py-1 rounded-full flex-shrink-0"
+                                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                >
+                                  New Deals
+                                </span>
+                              </div>
+                            </div>
+                          )}
 
-                          {/* Item 3 - Coffee chat */}
-                          <div className="flex items-center gap-3 px-5 py-4 hover:bg-[#f7f7f8]/50 transition-colors cursor-pointer">
+                          {/* Coffee chat - for both */}
+                          <div className={cn(
+                            "flex items-center gap-3 px-5 py-4 hover:bg-[#f7f7f8]/50 transition-colors cursor-pointer",
+                            isFirstTimeInvestor && "border-b border-[#e0dce0]/60"
+                          )}>
                             <img
                               src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face"
                               alt="Sarah M."
@@ -794,6 +989,23 @@ export function ZAIInvestmentFlow({
                               Coffee chat with Sarah M. tomorrow at 2pm
                             </p>
                           </div>
+
+                          {/* Community Insight - for first-time users */}
+                          {isFirstTimeInvestor && (
+                            <div className="flex items-center gap-3 px-5 py-4 hover:bg-[#f7f7f8]/50 transition-colors cursor-pointer">
+                              <div className="w-8 h-8 rounded-lg bg-[#e8e5e8] flex items-center justify-center flex-shrink-0">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="#685f6a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                              </div>
+                              <p
+                                className="text-[15px] text-[#373338]"
+                                style={{ fontFamily: 'Soehne, sans-serif' }}
+                              >
+                                Join the community and connect with other investors
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </>
@@ -836,6 +1048,169 @@ export function ZAIInvestmentFlow({
                     </div>
                   )}
 
+                  {/* Deal Discovery Flow - for first-time users */}
+                  {(flowState === 'discoveringDeals' || flowState === 'selectingDeal') && (
+                    <div className="w-full max-w-2xl">
+                      {/* AI Avatar */}
+                      <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm border border-[#f0eef0] mb-4">
+                        <img
+                          src="/conciergeIcon.png"
+                          alt="Goodfin AI"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+
+                      {/* AI Introduction Message */}
+                      <div className="mb-6">
+                        <p
+                          className="text-[16px] text-[#48424a] leading-relaxed mb-4"
+                          style={{ fontFamily: 'Soehne, sans-serif' }}
+                        >
+                          Welcome to Goodfin! As an accredited investor, you have access to exclusive pre-IPO and private market opportunities. Here are some of our most popular deals across different sectors:
+                        </p>
+
+                        {/* Deal Categories */}
+                        <div className="flex flex-wrap gap-2 mb-6">
+                          {DEAL_CATEGORIES.map((category) => (
+                            <button
+                              key={category.id}
+                              className="px-3 py-1.5 text-[13px] text-[#685f6a] bg-white border border-[#e0dce0] rounded-full hover:border-[#c0bcc0] hover:bg-[#f7f7f8] transition-colors"
+                              style={{ fontFamily: 'Soehne, sans-serif' }}
+                            >
+                              {category.name} <span className="text-[#a9a4ab]">({category.count})</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Featured Deals */}
+                      <div className="mb-6">
+                        <h3
+                          className="text-[14px] font-medium text-[#685f6a] mb-4"
+                          style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                        >
+                          Featured Opportunities
+                        </h3>
+                        <div className="flex flex-col gap-4">
+                          {SAMPLE_DEALS.map((sampleDeal) => (
+                            <div
+                              key={sampleDeal.id}
+                              onClick={() => {
+                                // Set the selected deal
+                                setSelectedDeal({
+                                  id: sampleDeal.id,
+                                  companyName: sampleDeal.title,
+                                  logo: sampleDeal.image,
+                                  minInvestment: 25000,
+                                  description: sampleDeal.description,
+                                });
+                                setUserMessage(`I'd like to invest in ${sampleDeal.title}`);
+                                setFlowState('selectingDeal');
+                              }}
+                              className={cn(
+                                "flex items-center gap-4 bg-white border-2 rounded-xl px-4 py-4 cursor-pointer transition-all",
+                                selectedDeal.id === sampleDeal.id && flowState === 'selectingDeal'
+                                  ? "border-[#373338]"
+                                  : "border-[#e0dce0] hover:border-[#c0bcc0]"
+                              )}
+                            >
+                              <img
+                                src={sampleDeal.image}
+                                alt={sampleDeal.title}
+                                className="w-14 h-14 rounded-xl object-cover shadow-sm"
+                              />
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h4
+                                    className="text-[17px] font-medium text-[#373338]"
+                                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                  >
+                                    {sampleDeal.title}
+                                  </h4>
+                                  <span className={cn(
+                                    "text-[10px] px-2 py-0.5 rounded-full uppercase",
+                                    sampleDeal.status === 'live' && "bg-[#5a8a5a]/10 text-[#5a8a5a]",
+                                    sampleDeal.status === 'premium' && "bg-gradient-to-r from-amber-500 to-orange-500 text-white",
+                                    sampleDeal.status === 'closing' && "bg-[#7f7582] text-white"
+                                  )}>
+                                    {sampleDeal.status === 'closing' ? 'Closing Soon' : sampleDeal.status}
+                                  </span>
+                                </div>
+                                <p
+                                  className="text-[13px] text-[#7f7582]"
+                                  style={{ fontFamily: 'Soehne, sans-serif' }}
+                                >
+                                  {sampleDeal.description}
+                                </p>
+                                <p
+                                  className="text-[11px] text-[#a9a4ab] mt-1"
+                                  style={{ fontFamily: 'Soehne, sans-serif' }}
+                                >
+                                  {sampleDeal.category} • Min. $25,000
+                                </p>
+                              </div>
+                              <ChevronDown className="w-5 h-5 text-[#a9a4ab] -rotate-90" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Prompt to select */}
+                      <p
+                        className="text-[14px] text-[#7f7582]"
+                        style={{ fontFamily: 'Soehne, sans-serif' }}
+                      >
+                        Select a deal above to learn more and start investing, or tell me what sector you're interested in.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* User deal selection response */}
+                  {flowState === 'selectingDeal' && (
+                    <div className="w-full max-w-2xl mt-4">
+                      <div className="flex justify-end">
+                        <div className="bg-[#373338] text-white px-4 py-3 rounded-2xl rounded-br-md">
+                          <p className="text-[15px] leading-relaxed" style={{ fontFamily: 'Soehne, sans-serif' }}>
+                            I'd like to invest in {selectedDeal.companyName}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* AI response after deal selection - transition to askAmount */}
+                  {flowState === 'selectingDeal' && (
+                    <div className="w-full max-w-2xl mt-4">
+                      {/* AI Avatar */}
+                      <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm border border-[#f0eef0] mb-4">
+                        <img
+                          src="/conciergeIcon.png"
+                          alt="Goodfin AI"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+
+                      <p
+                        className="text-[16px] text-[#48424a] leading-relaxed mb-4"
+                        style={{ fontFamily: 'Soehne, sans-serif' }}
+                      >
+                        Great choice! {selectedDeal.companyName} is one of our most sought-after opportunities.
+                        Let me walk you through the investment process.
+                      </p>
+
+                      {/* Continue button */}
+                      <button
+                        onClick={() => {
+                          setFlowState('askAmount');
+                        }}
+                        className="px-6 py-3 bg-[#373338] text-white text-[14px] font-medium rounded-xl hover:bg-[#29272a] transition-colors"
+                        style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                      >
+                        Continue to invest in {selectedDeal.companyName}
+                      </button>
+                    </div>
+                  )}
+
                   {(flowState === 'askAmount' || flowState === 'processingAmount' || flowState === 'investing') && (
                     /* Ask Amount State - Show deal card and ask for amount */
                     <div className="w-full max-w-2xl">
@@ -851,8 +1226,8 @@ export function ZAIInvestmentFlow({
                       {/* Mini Deal Card */}
                       <div className="flex items-center gap-4 bg-[#e8e5e8]/50 rounded-xl px-5 py-4 mb-6">
                         <img
-                          src={deal.logo}
-                          alt={deal.companyName}
+                          src={selectedDeal.logo}
+                          alt={selectedDeal.companyName}
                           className="w-14 h-14 rounded-xl object-cover shadow-sm"
                         />
                         <div>
@@ -860,9 +1235,9 @@ export function ZAIInvestmentFlow({
                             className="text-xl font-medium text-[#373338]"
                             style={{ fontFamily: 'Test Signifier, serif' }}
                           >
-                            Invest in {deal.companyName}
+                            Invest in {selectedDeal.companyName}
                           </h2>
-                          <p className="text-[#7f7582] text-sm mt-0.5">{deal.description}</p>
+                          <p className="text-[#7f7582] text-sm mt-0.5">{selectedDeal.description}</p>
                         </div>
                       </div>
 
@@ -871,7 +1246,7 @@ export function ZAIInvestmentFlow({
                         className="text-[16px] text-[#48424a] leading-relaxed"
                         style={{ fontFamily: 'Soehne, sans-serif' }}
                       >
-                        How much would you like to invest in {deal.companyName}?
+                        How much would you like to invest in {selectedDeal.companyName}?
                       </p>
                     </div>
                   )}
@@ -930,7 +1305,7 @@ export function ZAIInvestmentFlow({
                         className="text-[16px] text-[#48424a] leading-relaxed mb-4"
                         style={{ fontFamily: 'Soehne, sans-serif' }}
                       >
-                        Great! I've prepared your investment of ${investmentAmount?.toLocaleString()} in {deal.companyName}. Let's walk through the steps:
+                        Great! I've prepared your investment of ${investmentAmount?.toLocaleString()} in {selectedDeal.companyName}. Let's walk through the steps:
                       </p>
 
                       {/* Investment Card with Horizontal Stepper */}
@@ -938,8 +1313,8 @@ export function ZAIInvestmentFlow({
                         {/* Card Header - Deal Info */}
                         <div className="flex items-center gap-4 px-5 py-4 border-b border-[#e0dce0]/50">
                           <img
-                            src={deal.logo}
-                            alt={deal.companyName}
+                            src={selectedDeal.logo}
+                            alt={selectedDeal.companyName}
                             className="w-14 h-14 rounded-xl object-cover shadow-sm"
                           />
                           <div className="flex-1">
@@ -947,7 +1322,7 @@ export function ZAIInvestmentFlow({
                               className="text-xl font-medium text-[#373338]"
                               style={{ fontFamily: 'Test Signifier, serif' }}
                             >
-                              Invest in {deal.companyName}
+                              Invest in {selectedDeal.companyName}
                             </h2>
                             <EditableAmount
                               amount={investmentAmount}
@@ -1119,7 +1494,7 @@ export function ZAIInvestmentFlow({
                           if (displayStep.id === 'commit') {
                             const adminFeePercent = 0.05;
                             const fundFeePercent = 0.10;
-                            const amount = investmentAmount || deal.minInvestment;
+                            const amount = investmentAmount || selectedDeal.minInvestment;
                             const adminFee = amount * adminFeePercent;
                             const fundFee = amount * fundFeePercent;
 
@@ -1499,7 +1874,7 @@ export function ZAIInvestmentFlow({
                         className="text-[16px] text-[#48424a] leading-relaxed mb-4"
                         style={{ fontFamily: 'Soehne, sans-serif' }}
                       >
-                        Here's your investment progress for {deal.companyName}:
+                        Here's your investment progress for {selectedDeal.companyName}:
                       </p>
 
                       {/* Mini Investment Card */}
@@ -1507,8 +1882,8 @@ export function ZAIInvestmentFlow({
                         {/* Card Header - Deal Info */}
                         <div className="flex items-center gap-4 px-5 py-4 border-b border-[#e0dce0]/50">
                           <img
-                            src={deal.logo}
-                            alt={deal.companyName}
+                            src={selectedDeal.logo}
+                            alt={selectedDeal.companyName}
                             className="w-12 h-12 rounded-xl object-cover shadow-sm"
                           />
                           <div className="flex-1">
@@ -1516,7 +1891,7 @@ export function ZAIInvestmentFlow({
                               className="text-lg font-medium text-[#373338]"
                               style={{ fontFamily: 'Test Signifier, serif' }}
                             >
-                              {deal.companyName}
+                              {selectedDeal.companyName}
                             </h2>
                             <EditableAmount
                               amount={investmentAmount}
@@ -1610,7 +1985,7 @@ export function ZAIInvestmentFlow({
             </ScrollAreaPrimitive.Root>
 
             {/* Blur Overlay when callout is expanded */}
-            {(showCommitConfirm || showInvestorTypeSelection || flowState === 'askAmount') && (
+            {(showCommitConfirm || showInvestorTypeSelection || showBusinessInfoForm || flowState === 'askAmount') && (
               <div
                 className="absolute inset-0 z-15 bg-black/20 backdrop-blur-sm transition-all duration-300"
                 onClick={() => {
@@ -1619,6 +1994,7 @@ export function ZAIInvestmentFlow({
                     setShowInvestorTypeSelection(false);
                     setSelectedInvestorType(null);
                   }
+                  if (showBusinessInfoForm) setShowBusinessInfoForm(false);
                   // Don't dismiss on askAmount - user needs to enter amount
                 }}
               />
@@ -1627,7 +2003,7 @@ export function ZAIInvestmentFlow({
             {/* Sticky Bottom Input Bar */}
             <div className={cn(
               "absolute bottom-0 left-0 right-0 z-20 flex justify-center p-6 pointer-events-none transition-all duration-300",
-              (showCommitConfirm || showInvestorTypeSelection || flowState === 'askAmount')
+              (showCommitConfirm || showInvestorTypeSelection || showBusinessInfoForm || flowState === 'askAmount')
                 ? "bg-transparent"
                 : "bg-gradient-to-t from-[#f7f7f8] via-[#f7f7f8]/80 to-transparent"
             )}>
@@ -1638,25 +2014,29 @@ export function ZAIInvestmentFlow({
                   shake={shakeInput}
                   placeholder={getStepPlaceholder()}
                   formCallout={(flowState === 'askAmount' || flowState === 'processingAmount' || flowState === 'investing') ? {
-                    state: showInvestorTypeSelection
-                      ? 'investor_type'
-                      : showCommitConfirm
-                        ? 'commit_confirm'
-                        : amountError
-                          ? 'error'
-                          : flowState === 'askAmount'
-                            ? 'awaiting_input'
-                            : 'confirmed',
-                    dealLogo: deal.logo,
+                    state: showBusinessInfoForm
+                      ? 'business_info'
+                      : showInvestorTypeSelection
+                        ? 'investor_type'
+                        : showCommitConfirm
+                          ? 'commit_confirm'
+                          : amountError
+                            ? 'error'
+                            : flowState === 'askAmount'
+                              ? 'awaiting_input'
+                              : 'confirmed',
+                    dealLogo: selectedDeal.logo,
                     headerText: amountError
                       ? amountError
-                      : showInvestorTypeSelection
-                        ? 'Select your investor type'
-                        : showCommitConfirm
-                          ? 'Confirm your commitment'
-                          : flowState === 'askAmount'
-                            ? 'How much would you like to invest?'
-                            : `Invest in ${deal.companyName}`,
+                      : showBusinessInfoForm
+                        ? 'Business Information'
+                        : showInvestorTypeSelection
+                          ? 'Select your investor type'
+                          : showCommitConfirm
+                            ? 'Confirm your commitment'
+                            : flowState === 'askAmount'
+                              ? 'How much would you like to invest?'
+                              : `Invest in ${selectedDeal.companyName}`,
                     displayValue: investmentAmount ? `$${investmentAmount.toLocaleString()}` : undefined,
                     onClose: handleCloseClick,
                     onProgressClick: handleProgressClick,
@@ -1664,14 +2044,29 @@ export function ZAIInvestmentFlow({
                     // Commit confirmation props
                     checkboxes: showCommitConfirm ? commitCheckboxes : undefined,
                     onCheckboxChange: showCommitConfirm ? handleCommitCheckboxChange : undefined,
-                    ctaText: showInvestorTypeSelection ? 'Continue' : 'I agree and understand',
-                    onCtaClick: showInvestorTypeSelection ? handleInvestorTypeContinue : handleCommitConfirm,
+                    ctaText: showBusinessInfoForm
+                      ? 'Submit Business Information'
+                      : showInvestorTypeSelection
+                        ? 'Continue'
+                        : 'I agree and understand',
+                    onCtaClick: showBusinessInfoForm
+                      ? handleBusinessInfoSubmit
+                      : showInvestorTypeSelection
+                        ? handleInvestorTypeContinue
+                        : handleCommitConfirm,
                     // Investor type selection props
                     investorTypeGroups: showInvestorTypeSelection ? investorTypeGroups : undefined,
                     selectedInvestorType: showInvestorTypeSelection ? selectedInvestorType ?? undefined : undefined,
                     onInvestorTypeSelect: showInvestorTypeSelection ? setSelectedInvestorType : undefined,
+                    // Business info form props
+                    businessInfo: showBusinessInfoForm ? businessInfo : undefined,
+                    onBusinessInfoChange: showBusinessInfoForm ? handleBusinessInfoChange : undefined,
+                    onAddBusinessOwner: showBusinessInfoForm ? handleAddBusinessOwner : undefined,
+                    onOwnerEmailChange: showBusinessInfoForm ? handleOwnerEmailChange : undefined,
+                    onAddDocument: showBusinessInfoForm ? handleAddDocument : undefined,
+                    primaryOwnerName: showBusinessInfoForm ? 'sudeep mp' : undefined,
                     // Saved profile for returning investors (show when not in selection mode and not awaiting input)
-                    savedInvestorProfile: (!showInvestorTypeSelection && !showCommitConfirm && flowState !== 'askAmount' && savedInvestorProfile) ? savedInvestorProfile : undefined,
+                    savedInvestorProfile: (!showBusinessInfoForm && !showInvestorTypeSelection && !showCommitConfirm && flowState !== 'askAmount' && savedInvestorProfile) ? savedInvestorProfile : undefined,
                     onChangeProfile: handleChangeProfile,
                   } : undefined}
                 />
@@ -1691,7 +2086,7 @@ export function ZAIInvestmentFlow({
       <TransferModal
         isOpen={showTransferModal}
         deal={deal}
-        investmentAmount={investmentAmount || deal.minInvestment}
+        investmentAmount={investmentAmount || selectedDeal.minInvestment}
         onClose={() => setShowTransferModal(false)}
         onBack={() => setShowTransferModal(false)}
         onComplete={(amount) => handleTransferComplete(amount)}
