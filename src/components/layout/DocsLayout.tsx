@@ -331,6 +331,11 @@ export function DocsLayout({
   // Prototype mode notification
   const [showPrototypeNotification, setShowPrototypeNotification] = useState(false);
 
+  // Option to hide prototype hint overlay (persisted to URL)
+  const [hidePrototypeHint, setHidePrototypeHint] = useState(() => {
+    return getBoolParam(getUrlParams(), 'hideHint', false);
+  });
+
   // Track ESC key presses for double-tap exit
   const [escPressCount, setEscPressCount] = useState(0);
   const escTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -424,6 +429,8 @@ export function DocsLayout({
       release: selectedRelease !== getLatestRelease().id ? selectedRelease : undefined,
       // Theme (only store if dark to keep URLs cleaner, light is default)
       theme: theme === 'dark' ? 'dark' : undefined,
+      // Hide prototype hint (only store if true to keep URLs cleaner)
+      hideHint: hidePrototypeHint ? true : undefined,
     };
 
     // Add block-04 specific params
@@ -435,7 +442,7 @@ export function DocsLayout({
     }
 
     updateUrlParams(params);
-  }, [viewMode, activeId, activeGroupId, variantStates, activeConversationFlow, activeOnboardingVariant, activePersonalizationVariant, activeWelcomeVariant, activeWelcome02Variant, activeWelcome02HomeVariant, activeInvestmentFlowStep, activeZAIInvestmentFlowVariant, isFullscreen, showWelcome02Chrome, isSidebarCollapsed, selectedRelease, theme, showPresets, showStepper, showSuggestions, presetCount]);
+  }, [viewMode, activeId, activeGroupId, variantStates, activeConversationFlow, activeOnboardingVariant, activePersonalizationVariant, activeWelcomeVariant, activeWelcome02Variant, activeWelcome02HomeVariant, activeInvestmentFlowStep, activeZAIInvestmentFlowVariant, isFullscreen, showWelcome02Chrome, isSidebarCollapsed, selectedRelease, theme, hidePrototypeHint, showPresets, showStepper, showSuggestions, presetCount]);
 
   // Build sidebar sections based on view mode
   const buildSidebarSections = (): SidebarSection[] => {
@@ -754,8 +761,8 @@ export function DocsLayout({
   if (isFullscreen) {
     return (
       <div className="fixed inset-0 z-50 bg-muted">
-        {/* Prototype Mode Notification Overlay */}
-        {showPrototypeNotification && (
+        {/* Prototype Mode Notification Overlay - hidden if hideHint=1 in URL */}
+        {showPrototypeNotification && !hidePrototypeHint && (
           <div
             className="fixed inset-0 z-[60] flex items-center justify-center transition-opacity duration-500"
             onClick={() => setShowPrototypeNotification(false)}
@@ -839,7 +846,9 @@ export function DocsLayout({
           isOpen={isSidebarOpen}
           isCollapsed={isSidebarCollapsed}
           theme={theme}
+          hidePrototypeHint={hidePrototypeHint}
           onThemeChange={setTheme}
+          onHidePrototypeHintChange={setHidePrototypeHint}
           onClose={() => setIsSidebarOpen(false)}
           onToggleCollapse={() => setIsSidebarCollapsed(prev => !prev)}
           onSectionClick={handleSectionClick}

@@ -34,7 +34,9 @@ type SidebarProps = {
   isOpen?: boolean;
   isCollapsed?: boolean;
   theme?: Theme;
+  hidePrototypeHint?: boolean;
   onThemeChange?: (theme: Theme) => void;
+  onHidePrototypeHintChange?: (hide: boolean) => void;
   onClose?: () => void;
   onToggleCollapse?: () => void;
   onSectionClick?: (sectionId: string) => void;
@@ -52,7 +54,9 @@ export function Sidebar({
   isOpen = false,
   isCollapsed = false,
   theme = 'light',
+  hidePrototypeHint = false,
   onThemeChange,
+  onHidePrototypeHintChange,
   onClose,
   onToggleCollapse,
   onSectionClick,
@@ -99,7 +103,8 @@ export function Sidebar({
 
   // Settings footer component
   const settingsFooter = (
-    <div className="border-t border-border p-4 bg-background">
+    <div className="border-t border-border p-4 bg-background space-y-3">
+      {/* Theme Toggle */}
       <div className="flex items-center justify-between">
         <span className="text-sm text-muted-foreground">Theme</span>
         <button
@@ -125,6 +130,28 @@ export function Sidebar({
               'w-6 h-6 rounded-full shadow-sm transition-transform duration-200',
               theme === 'dark'
                 ? 'translate-x-8 bg-background'
+                : 'translate-x-0 bg-white'
+            )}
+          />
+        </button>
+      </div>
+
+      {/* Hide Prototype Hint Toggle */}
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-muted-foreground">Hide ESC hint</span>
+        <button
+          onClick={() => onHidePrototypeHintChange?.(!hidePrototypeHint)}
+          className={cn(
+            'relative w-10 h-6 rounded-full p-0.5 transition-colors',
+            hidePrototypeHint ? 'bg-foreground' : 'bg-muted'
+          )}
+          aria-label={hidePrototypeHint ? 'Show ESC hint' : 'Hide ESC hint'}
+        >
+          <span
+            className={cn(
+              'block w-5 h-5 rounded-full shadow-sm transition-transform duration-200',
+              hidePrototypeHint
+                ? 'translate-x-4 bg-background'
                 : 'translate-x-0 bg-white'
             )}
           />
