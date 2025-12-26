@@ -188,19 +188,51 @@ export const componentRegistry: ComponentVersionRegistry = {
     versions: [
       { version: '1.0.0', changelog: 'Welcome 0.2 initial release' },
       { version: '1.1.0', changelog: 'Added chat history drawer, portfolio tabs' },
+      { version: '2.0.0', changelog: 'Welcome Screen v2 - Updated electronic signature text, removed same-day processing badge, simplified international wire transfer fields' },
     ],
-    latest: '1.1.0',
+    latest: '2.0.0',
   },
 };
 
 // Release configurations
 export const releases: ReleaseConfig[] = [
   {
+    id: 'v1.3.0',
+    label: 'v1.3.0',
+    date: '2025-12-26',
+    description: 'Welcome Screen v2 with document signing improvements and wire transfer UX updates',
+    isLatest: true,
+    componentVersions: {
+      'deal-preview': '1.1.0',
+      'deal-investment': '1.2.0',
+      'investment-risk': '1.0.0',
+      'document-list': '1.0.0',
+      'document-detail': '1.0.0',
+      'signature-input': '1.0.0',
+      'document-signing': '1.0.0',
+      'tax-document': '1.0.0',
+      'accreditation': '1.0.0',
+      'entity-selection': '1.0.0',
+      'payment-method': '1.0.0',
+      'investment-review': '1.0.0',
+      'deal-page-greeting': '1.0.0',
+      'deal-page-ticker': '1.0.0',
+      'deal-page-intro': '1.0.0',
+      'deal-page-investment': '1.1.0',
+      'input-bar': '2.0.0',
+      'feedback-buttons': '1.0.0',
+      'conversation': '1.0.0',
+      'onboarding': '1.0.0',
+      'welcome': '1.0.0',
+      'welcome02': '2.0.0',
+    },
+  },
+  {
     id: 'v1.2.0',
     label: 'v1.2.0',
     date: '2025-12-19',
-    description: 'Latest release with portfolio tabs, chat history, and neutral theme',
-    isLatest: true,
+    description: 'Portfolio tabs, chat history, and neutral theme',
+    isLatest: false,
     componentVersions: {
       'deal-preview': '1.1.0',
       'deal-investment': '1.2.0',
@@ -290,7 +322,7 @@ export const releases: ReleaseConfig[] = [
 
 // Main version configuration
 export const versionConfig: VersionConfig = {
-  currentRelease: 'v1.2.0',
+  currentRelease: 'v1.3.0',
   releases,
   componentRegistry,
 };
