@@ -201,7 +201,7 @@ export function DocumentSigningInline({
               className="text-[10px] text-[#7f7582] text-center mt-2"
               style={{ fontFamily: 'Soehne, sans-serif' }}
             >
-              This acts as your electronic acknowledgment.
+              This acts as your electronic signature.
             </p>
 
             {/* Back button */}

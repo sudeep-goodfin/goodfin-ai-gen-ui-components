@@ -338,16 +338,6 @@ export function TransferModal({
 
                   {/* Bank Details Card */}
                   <div className="bg-[#f7f7f8] border border-[#48424a] rounded-xl p-4 mb-5">
-                    {/* Processing Badge */}
-                    <div className="bg-[#9b929e] px-2 py-1 rounded self-start inline-block mb-4">
-                      <span
-                        className="text-[11px] text-[#f0eef0] uppercase tracking-[0.36px] font-semibold"
-                        style={{ fontFamily: 'Inter, sans-serif' }}
-                      >
-                        Same-day processing if received before 3:00 PM PT
-                      </span>
-                    </div>
-
                     {transferType === 'domestic' ? (
                       /* Domestic Bank Details */
                       <div className="flex flex-col gap-0.5">
