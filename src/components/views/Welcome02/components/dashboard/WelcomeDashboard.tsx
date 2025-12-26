@@ -621,7 +621,26 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
         return { ...prev, [questionId]: [optionId] };
       }
     });
-    // No auto-advance - user must click Continue button
+
+    // Auto-advance for single-select questions
+    if (!isMultiSelect) {
+      setTimeout(() => {
+        const nextIdx = findNextVisibleQuestionIndex(currentQuestionIndex);
+        if (nextIdx > currentQuestionIndex) {
+          setCurrentQuestionIndex(nextIdx);
+        } else {
+          // Last question - trigger completion
+          handlePersonalizationComplete();
+        }
+      }, 300); // Small delay for visual feedback
+    }
+  };
+
+  // Go back to previous question
+  const handlePersonalizationBack = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(prev => prev - 1);
+    }
   };
 
   // Text input change handler
@@ -681,6 +700,12 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
   // Unlock personalization - triggered by clicking the unlock CTA
   const handleUnlockPersonalization = () => {
     setHasUnlockedPersonalization(true);
+  };
+
+  // Skip personalization - remind me later
+  const handleSkipPersonalization = () => {
+    setHasUnlockedPersonalization(false);
+    setPersonalizationComplete(true);
   };
 
   // Toggle personalization expand/collapse
@@ -1017,11 +1042,14 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
                 isPersonalizationExpanded,
                 onTogglePersonalizationExpand: handleTogglePersonalizationExpand,
                 onSkipQuestion: handleSkipQuestion,
+                onSkipPersonalization: handleSkipPersonalization,
+                onBack: handlePersonalizationBack,
                 ctaText: isLastQuestion && currentQuestionAnswered
                   ? "Complete Setup"
                   : currentQuestionAnswered
                     ? "Continue"
                     : "Select an option",
+                isCtaDisabled: !currentQuestionAnswered,
                 onCtaClick: isLastQuestion && currentQuestionAnswered
                   ? handlePersonalizationComplete
                   : handlePersonalizationContinue,

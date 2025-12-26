@@ -224,6 +224,7 @@ interface FormCallout {
   checkboxes?: CommitCheckbox[];
   onCheckboxChange?: (id: string, checked: boolean) => void;
   ctaText?: string;
+  isCtaDisabled?: boolean;
   onCtaClick?: () => void;
   // Investor type selection props
   investorTypeGroups?: InvestorTypeGroup[];
@@ -249,6 +250,8 @@ interface FormCallout {
   isPersonalizationExpanded?: boolean;
   onTogglePersonalizationExpand?: () => void;
   onSkipQuestion?: () => void; // For optional questions
+  onSkipPersonalization?: () => void; // Skip entire personalization flow
+  onBack?: () => void; // Go back to previous question
   // Completion flow props
   gratificationTitle?: string;
   gratificationSubtitle?: string;
@@ -632,6 +635,17 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 </div>
               </div>
               <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+                {/* Skip personalization button */}
+                {formCallout.state === 'personalization' && formCallout.isPersonalizationExpanded && formCallout.onSkipPersonalization && (
+                  <button
+                    onClick={formCallout.onSkipPersonalization}
+                    className="flex items-center justify-center px-2.5 py-1.5 text-[11px] font-medium text-[#685f6a] bg-white/60 hover:bg-white/80 border border-[#d0cdd2] rounded-lg transition-colors"
+                    title="Remind me later"
+                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                  >
+                    Skip
+                  </button>
+                )}
                 {/* Personalization collapse button - icon only */}
                 {formCallout.state === 'personalization' && formCallout.isPersonalizationExpanded && formCallout.onTogglePersonalizationExpand && (
                   <button
@@ -999,17 +1013,31 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                       key={question.id}
                       className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300"
                     >
-                      {/* Question Text */}
+                      {/* Question Text with Back Button */}
                       <div className="flex items-center justify-between">
-                        <p
-                          className="text-[15px] text-[#373338]"
-                          style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                        >
-                          {question.question}
-                          {question.optional && (
-                            <span className="text-[12px] text-[#a09a9f] ml-2">(optional)</span>
+                        <div className="flex items-center gap-2">
+                          {/* Back button - only show if not on first question */}
+                          {(formCallout.currentQuestionIndex ?? 0) > 0 && formCallout.onBack && (
+                            <button
+                              onClick={formCallout.onBack}
+                              className="flex items-center justify-center w-7 h-7 text-[#685f6a] hover:text-[#373338] hover:bg-[#f0eef0] rounded-lg transition-colors"
+                              title="Go back"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M19 12H5M12 19l-7-7 7-7"/>
+                              </svg>
+                            </button>
                           )}
-                        </p>
+                          <p
+                            className="text-[15px] text-[#373338]"
+                            style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                          >
+                            {question.question}
+                            {question.optional && (
+                              <span className="text-[12px] text-[#a09a9f] ml-2">(optional)</span>
+                            )}
+                          </p>
+                        </div>
                         {isMultiSelect && (
                           <span
                             className="text-[11px] text-[#7f7582] bg-[#f0eef0] px-2 py-0.5 rounded-full"
@@ -1319,10 +1347,10 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
             ) : formCallout?.state === 'personalization' ? (
               <button
                 onClick={formCallout.onCtaClick}
-                disabled={!formCallout.selectedPersonalizationOptions || Object.keys(formCallout.selectedPersonalizationOptions).length === 0}
+                disabled={formCallout.isCtaDisabled}
                 className={cn(
                   "w-full py-3.5 rounded-xl text-[16px] font-medium transition-all",
-                  formCallout.selectedPersonalizationOptions && Object.keys(formCallout.selectedPersonalizationOptions).length > 0
+                  !formCallout.isCtaDisabled
                     ? "bg-[#373338] text-white hover:bg-[#29272a] cursor-pointer"
                     : "bg-[#e8e5e8] text-[#9a909a] cursor-not-allowed"
                 )}
