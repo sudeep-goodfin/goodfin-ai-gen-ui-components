@@ -240,16 +240,8 @@ Reference ID: ${INTERNATIONAL_BANK_DETAILS.uniqueReferenceId}`;
 
           {/* Bank Details Card */}
           <div className="bg-[#eae8eb] border border-[#48424a]/30 rounded-lg p-3">
-            {/* Header with Processing Badge and Copy All */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="bg-[#9b929e] px-1.5 py-0.5 rounded">
-                <span
-                  className="text-[9px] text-[#f0eef0] uppercase tracking-[0.3px] font-semibold"
-                  style={{ fontFamily: 'Inter, sans-serif' }}
-                >
-                  Same-day processing before 3:00 PM PT
-                </span>
-              </div>
+            {/* Header with Copy All */}
+            <div className="flex items-center justify-end mb-3">
               <button
                 onClick={handleCopyAll}
                 className={cn(

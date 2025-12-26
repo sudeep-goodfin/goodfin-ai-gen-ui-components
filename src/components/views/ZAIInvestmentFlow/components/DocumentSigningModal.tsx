@@ -292,7 +292,7 @@ export function DocumentSigningModal({
                       className="text-[13px] leading-[16px] text-[#7f7582] text-center mt-1"
                       style={{ fontFamily: 'Soehne, sans-serif' }}
                     >
-                      This acts as your electronic acknowledgment for this document.
+                      This acts as your electronic signature for this document.
                     </p>
                   </div>
                 </div>
