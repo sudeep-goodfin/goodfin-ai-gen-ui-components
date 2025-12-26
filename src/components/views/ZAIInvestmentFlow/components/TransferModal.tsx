@@ -373,22 +373,16 @@ export function TransferModal({
                         />
                       </div>
                     ) : (
-                      /* International Bank Details - Step by Step */
+                      /* International Bank Details */
                       <div className="flex flex-col gap-5">
-                        {/* Step 1: Beneficiary Bank Information */}
+                        {/* Beneficiary Bank Information */}
                         <div className="flex flex-col gap-0.5">
                           <div className="py-1.5 mb-1">
-                            <p
-                              className="text-[14px] text-[#373338] uppercase"
-                              style={{ fontFamily: 'Test Signifier, serif' }}
-                            >
-                              Step 1
-                            </p>
                             <p
                               className="text-[12px] text-[#685f6a]"
                               style={{ fontFamily: 'Soehne, sans-serif' }}
                             >
-                              Enter beneficiary bank information
+                              Beneficiary bank information
                             </p>
                           </div>
                           <CopyField
@@ -413,20 +407,14 @@ export function TransferModal({
                           />
                         </div>
 
-                        {/* Step 2: Beneficiary Information */}
+                        {/* Beneficiary Information */}
                         <div className="flex flex-col gap-0.5">
                           <div className="py-1.5 mb-1">
-                            <p
-                              className="text-[14px] text-[#373338] uppercase"
-                              style={{ fontFamily: 'Test Signifier, serif' }}
-                            >
-                              Step 2
-                            </p>
                             <p
                               className="text-[12px] text-[#685f6a]"
                               style={{ fontFamily: 'Soehne, sans-serif' }}
                             >
-                              Enter beneficiary information
+                              Beneficiary information
                             </p>
                           </div>
                           <CopyField
@@ -446,20 +434,14 @@ export function TransferModal({
                           />
                         </div>
 
-                        {/* Step 3: Memo Content */}
+                        {/* Memo Content */}
                         <div className="flex flex-col gap-0.5">
                           <div className="py-1.5 mb-1">
-                            <p
-                              className="text-[14px] text-[#373338] uppercase"
-                              style={{ fontFamily: 'Test Signifier, serif' }}
-                            >
-                              Step 3
-                            </p>
                             <p
                               className="text-[12px] text-[#685f6a]"
                               style={{ fontFamily: 'Soehne, sans-serif' }}
                             >
-                              Enter memo content
+                              Memo content
                             </p>
                           </div>
                           <CopyField
