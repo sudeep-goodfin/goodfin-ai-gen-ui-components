@@ -1323,8 +1323,8 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 className={cn(
                   "w-full py-3.5 rounded-xl text-[16px] font-medium transition-all",
                   formCallout.selectedPersonalizationOptions && Object.keys(formCallout.selectedPersonalizationOptions).length > 0
-                    ? "animate-rainbow bg-[length:200%] [background-clip:padding-box,border-box,border-box] [background-origin:border-box] [border:2px_solid_transparent] bg-[linear-gradient(#121213,#121213),linear-gradient(#121213_50%,rgba(18,18,19,0.6)_80%,rgba(18,18,19,0)),linear-gradient(90deg,var(--color-1),var(--color-5),var(--color-3),var(--color-4),var(--color-2))] text-white cursor-pointer"
-                    : "bg-[#e8e5e8] text-[#9a909a] cursor-not-allowed border-2 border-transparent"
+                    ? "bg-[#373338] text-white hover:bg-[#29272a] cursor-pointer"
+                    : "bg-[#e8e5e8] text-[#9a909a] cursor-not-allowed"
                 )}
                 style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
               >
