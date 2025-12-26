@@ -149,6 +149,13 @@ export interface InvestorTypeOption {
   subtitle: string;
 }
 
+// Investor type group (for grouped sections)
+export interface InvestorTypeGroup {
+  category: string;
+  title: string;
+  options: InvestorTypeOption[];
+}
+
 // Saved investor profile for returning users
 export interface SavedInvestorProfile {
   id: string;
@@ -170,7 +177,7 @@ interface FormCallout {
   ctaText?: string;
   onCtaClick?: () => void;
   // Investor type selection props
-  investorTypeOptions?: InvestorTypeOption[];
+  investorTypeGroups?: InvestorTypeGroup[];
   selectedInvestorType?: string;
   onInvestorTypeSelect?: (id: string) => void;
   // Saved profile for returning investors
@@ -621,33 +628,49 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
               </div>
             )}
 
-            {/* Investor Type Selection */}
-            {formCallout.state === 'investor_type' && formCallout.investorTypeOptions && (
-              <div className="flex flex-col gap-3 mt-2">
-                {formCallout.investorTypeOptions.map((option) => (
-                  <button
-                    key={option.id}
-                    onClick={() => formCallout.onInvestorTypeSelect?.(option.id)}
-                    className={cn(
-                      "w-full text-left p-4 rounded-xl border-2 transition-all",
-                      formCallout.selectedInvestorType === option.id
-                        ? "border-[#373338] bg-white"
-                        : "border-[#e0dce0] bg-white hover:border-[#c0bcc0]"
-                    )}
-                  >
+            {/* Investor Type Selection - Grouped Sections */}
+            {formCallout.state === 'investor_type' && formCallout.investorTypeGroups && (
+              <div className="flex flex-col gap-4 mt-2">
+                {formCallout.investorTypeGroups.map((group) => (
+                  <div key={group.category} className="flex flex-col gap-2">
+                    {/* Group Title */}
                     <h4
-                      className="text-[18px] leading-[24px] text-[#373338] mb-2"
-                      style={{ fontFamily: 'Test Signifier, serif' }}
+                      className="text-[14px] font-medium text-[#685f6a]"
+                      style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                     >
-                      {option.title}
+                      {group.title}
                     </h4>
-                    <span
-                      className="inline-block px-3 py-1.5 text-[12px] leading-[16px] text-[#685f6a] bg-[#e8e5e8] rounded-md uppercase tracking-wide"
-                      style={{ fontFamily: 'Soehne, sans-serif' }}
-                    >
-                      {option.subtitle}
-                    </span>
-                  </button>
+                    {/* Group Options */}
+                    <div className="flex flex-col gap-2">
+                      {group.options.map((option) => (
+                        <button
+                          key={option.id}
+                          onClick={() => formCallout.onInvestorTypeSelect?.(option.id)}
+                          className={cn(
+                            "w-full text-left px-4 py-3 rounded-xl border-2 transition-all",
+                            formCallout.selectedInvestorType === option.id
+                              ? "border-[#373338] bg-white"
+                              : "border-[#e0dce0] bg-white hover:border-[#c0bcc0]"
+                          )}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span
+                              className="text-[15px] text-[#373338]"
+                              style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                            >
+                              {option.title}
+                            </span>
+                            <span
+                              className="text-[12px] text-[#7f7582]"
+                              style={{ fontFamily: 'Soehne, sans-serif' }}
+                            >
+                              {option.subtitle}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             )}

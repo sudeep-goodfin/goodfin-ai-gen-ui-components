@@ -243,16 +243,40 @@ export function ZAIInvestmentFlow({
   // Investor type selection state
   const [showInvestorTypeSelection, setShowInvestorTypeSelection] = useState(false);
   const [selectedInvestorType, setSelectedInvestorType] = useState<string | null>(null);
-  const investorTypeOptions = [
+
+  // All investor type options grouped by category
+  const investorTypeGroups = [
     {
-      id: 'us-entity',
-      title: 'U.S. entity, trust, or joint account',
-      subtitle: 'Business, trust, or shared account registered in the U.S.',
+      category: 'individual',
+      title: "I'm an individual",
+      options: [
+        {
+          id: 'us-individual',
+          title: 'U.S. Individual',
+          subtitle: 'Residing in the U.S.',
+        },
+        {
+          id: 'non-us-individual',
+          title: 'Non-U.S. Individual',
+          subtitle: 'Residing outside the U.S.',
+        },
+      ],
     },
     {
-      id: 'non-us-entity',
-      title: 'Non-U.S. entity, trust, or joint account',
-      subtitle: 'Registered outside the U.S.',
+      category: 'business',
+      title: "I'm a business",
+      options: [
+        {
+          id: 'us-entity',
+          title: 'U.S. Entity, Trust, or Joint Account',
+          subtitle: 'Registered in the U.S.',
+        },
+        {
+          id: 'non-us-entity',
+          title: 'Non-U.S. Entity, Trust, or Joint Account',
+          subtitle: 'Registered outside the U.S.',
+        },
+      ],
     },
   ];
 
@@ -471,12 +495,16 @@ export function ZAIInvestmentFlow({
   // Handle investor type selection continue
   const handleInvestorTypeContinue = () => {
     if (selectedInvestorType) {
-      // Save the profile
-      const selectedOption = investorTypeOptions.find(opt => opt.id === selectedInvestorType);
-      if (selectedOption) {
-        const profileLabel = selectedInvestorType === 'us-entity' ? 'U.S. Entity' : 'Non-U.S. Entity';
-        setSavedInvestorProfile({ id: selectedInvestorType, label: profileLabel });
+      // Find the selected option from the groups to get its label
+      let profileLabel = '';
+      for (const group of investorTypeGroups) {
+        const found = group.options.find(opt => opt.id === selectedInvestorType);
+        if (found) {
+          profileLabel = found.title;
+          break;
+        }
       }
+      setSavedInvestorProfile({ id: selectedInvestorType, label: profileLabel });
       setShowInvestorTypeSelection(false);
       setShowIdentityModal(true);
     }
@@ -1639,7 +1667,7 @@ export function ZAIInvestmentFlow({
                     ctaText: showInvestorTypeSelection ? 'Continue' : 'I agree and understand',
                     onCtaClick: showInvestorTypeSelection ? handleInvestorTypeContinue : handleCommitConfirm,
                     // Investor type selection props
-                    investorTypeOptions: showInvestorTypeSelection ? investorTypeOptions : undefined,
+                    investorTypeGroups: showInvestorTypeSelection ? investorTypeGroups : undefined,
                     selectedInvestorType: showInvestorTypeSelection ? selectedInvestorType ?? undefined : undefined,
                     onInvestorTypeSelect: showInvestorTypeSelection ? setSelectedInvestorType : undefined,
                     // Saved profile for returning investors (show when not in selection mode and not awaiting input)
