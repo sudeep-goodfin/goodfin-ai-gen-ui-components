@@ -44,7 +44,7 @@ const PREVIEW_ACTIONS = [
 ];
 
 // Personalization Preview Component - shows muted/locked cards
-function PersonalizationPreview({ isVisible }: { isVisible: boolean }) {
+function PersonalizationPreview({ isVisible, onUnlock, isUnlocked }: { isVisible: boolean; onUnlock?: () => void; isUnlocked?: boolean }) {
   if (!isVisible) return null;
 
   return (
@@ -102,15 +102,20 @@ function PersonalizationPreview({ isVisible }: { isVisible: boolean }) {
           </div>
         </div>
 
-        {/* Lock indicator in center */}
-        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-          <div className="flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-sm rounded-full border border-[#e0dce0] shadow-sm">
-            <Lock className="w-3.5 h-3.5 text-[#7f7582]" />
-            <span className="text-[12px] text-[#7f7582] font-['Soehne_Kraftig',sans-serif]">
-              Complete setup to unlock
-            </span>
+        {/* Lock indicator / Unlock CTA button in center - only show when not unlocked */}
+        {!isUnlocked && (
+          <div className="absolute inset-0 flex items-center justify-center z-20">
+            <button
+              onClick={onUnlock}
+              className="group flex items-center gap-2 px-5 py-2.5 rounded-full animate-rainbow bg-[length:200%] [background-clip:padding-box,border-box,border-box] [background-origin:border-box] [border:2px_solid_transparent] bg-[linear-gradient(#121213,#121213),linear-gradient(#121213_50%,rgba(18,18,19,0.6)_80%,rgba(18,18,19,0)),linear-gradient(90deg,var(--color-1),var(--color-5),var(--color-3),var(--color-4),var(--color-2))] text-white cursor-pointer transition-transform hover:scale-[1.02] shadow-lg"
+            >
+              <Lock className="w-3.5 h-3.5" />
+              <span className="text-[13px] font-['Soehne_Kraftig',sans-serif]">
+                Complete setup to unlock
+              </span>
+            </button>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
@@ -525,6 +530,7 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
   const [selectedPersonalizationOptions, setSelectedPersonalizationOptions] = useState<Record<string, string[]>>({});
   const [isPersonalizationExpanded, setIsPersonalizationExpanded] = useState(true);
   const [personalizationComplete, setPersonalizationComplete] = useState(false);
+  const [hasUnlockedPersonalization, setHasUnlockedPersonalization] = useState(false);
 
   // Completion flow state: 'questions' | 'processing' | 'gratification' | 'done'
   const [completionFlowState, setCompletionFlowState] = useState<'questions' | 'processing' | 'gratification' | 'done'>('questions');
@@ -550,6 +556,7 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
     setSelectedPersonalizationOptions({});
     setIsPersonalizationExpanded(true);
     setPersonalizationComplete(false);
+    setHasUnlockedPersonalization(false);
     setCompletionFlowState('questions');
 
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -666,6 +673,11 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
     setCompletionFlowState('done');
     setPersonalizationComplete(true);
     setIsPersonalizationExpanded(false);
+  };
+
+  // Unlock personalization - triggered by clicking the unlock CTA
+  const handleUnlockPersonalization = () => {
+    setHasUnlockedPersonalization(true);
   };
 
   // Toggle personalization expand/collapse
@@ -913,7 +925,11 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
                           : 'opacity-100 translate-y-0'
                       )}
                     >
-                      <PersonalizationPreview isVisible={!personalizationComplete} />
+                      <PersonalizationPreview
+                        isVisible={!personalizationComplete}
+                        onUnlock={handleUnlockPersonalization}
+                        isUnlocked={hasUnlockedPersonalization}
+                      />
                     </div>
                     {/* Personalization questions are now shown in the InputBar callout below */}
                   </div>
@@ -976,8 +992,8 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
         )}
       >
         <div className="w-full max-w-3xl">
-          {/* Use InputBarV02 with personalization callout for first-time users */}
-          {isFirstTimeUser && !personalizationComplete ? (
+          {/* Show personalization flow only after user clicks unlock */}
+          {isFirstTimeUser && hasUnlockedPersonalization && !personalizationComplete ? (
             <InputBarV02
               currentMode={currentMode}
               onModeChange={handleModeChange}
