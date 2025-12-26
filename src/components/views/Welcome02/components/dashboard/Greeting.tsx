@@ -5,13 +5,17 @@ interface GreetingProps {
   portfolioGain?: string;
   portfolioPercentage?: string;
   priorityAllocations?: string;
+  isFirstTimeUser?: boolean;
+  firstTimeDescription?: string;
 }
 
 export function Greeting({
   title = "Good afternoon, Alex",
   portfolioGain = "$154k",
   portfolioPercentage = "+12.4%",
-  priorityAllocations = "3 priority allocations expiring soon"
+  priorityAllocations = "3 priority allocations expiring soon",
+  isFirstTimeUser = false,
+  firstTimeDescription = "Welcome to Goodfin! I'm your AI concierge, here to help you discover and invest in exclusive opportunities. Let's get started."
 }: GreetingProps) {
   return (
     <div className="flex flex-col gap-3 w-full">
@@ -25,18 +29,24 @@ export function Greeting({
         </h1>
       </div>
 
-      {/* Description with highlighted text */}
-      <p className="text-[16px] text-[#7f7582] leading-[24px] font-['Soehne',sans-serif]">
-        Your portfolio increased by{' '}
-        <span className="font-['Soehne_Kraftig',sans-serif] text-[#29272a] font-medium">
-          {portfolioGain} ({portfolioPercentage})
-        </span>{' '}
-        this month, primarily driven by secondary market activity in SpaceX. You have{' '}
-        <span className="font-['Soehne_Kraftig',sans-serif] text-[#29272a] font-medium">
-          {priorityAllocations}
-        </span>
-        .
-      </p>
+      {/* Description - different for first-time vs returning users */}
+      {isFirstTimeUser ? (
+        <p className="text-[16px] text-[#7f7582] leading-[24px] font-['Soehne',sans-serif]">
+          {firstTimeDescription}
+        </p>
+      ) : (
+        <p className="text-[16px] text-[#7f7582] leading-[24px] font-['Soehne',sans-serif]">
+          Your portfolio increased by{' '}
+          <span className="font-['Soehne_Kraftig',sans-serif] text-[#29272a] font-medium">
+            {portfolioGain} ({portfolioPercentage})
+          </span>{' '}
+          this month, primarily driven by secondary market activity in SpaceX. You have{' '}
+          <span className="font-['Soehne_Kraftig',sans-serif] text-[#29272a] font-medium">
+            {priorityAllocations}
+          </span>
+          .
+        </p>
+      )}
     </div>
   );
 }
