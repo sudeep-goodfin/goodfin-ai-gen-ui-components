@@ -1358,24 +1358,36 @@ export function ZAIInvestmentFlow({
                       {/* Investment Card with Horizontal Stepper */}
                       <div ref={investmentCardRef} className="bg-white rounded-xl border border-[#e0dce0]">
                         {/* Card Header - Deal Info */}
-                        <div className="flex items-center gap-4 px-5 py-4 border-b border-[#e0dce0]/50">
-                          <img
-                            src={selectedDeal.logo}
-                            alt={selectedDeal.companyName}
-                            className="w-14 h-14 rounded-xl object-cover shadow-sm"
-                          />
-                          <div className="flex-1">
-                            <h2
-                              className="text-xl font-medium text-[#373338]"
-                              style={{ fontFamily: 'Test Signifier, serif' }}
-                            >
-                              Invest in {selectedDeal.companyName}
-                            </h2>
-                            <EditableAmount
-                              amount={investmentAmount}
-                              onEdit={handleEditAmount}
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-[#e0dce0]/50">
+                          <div className="flex items-center gap-4">
+                            <img
+                              src={selectedDeal.logo}
+                              alt={selectedDeal.companyName}
+                              className="w-14 h-14 rounded-xl object-cover shadow-sm"
                             />
+                            <div>
+                              <h2
+                                className="text-xl font-medium text-[#373338]"
+                                style={{ fontFamily: 'Test Signifier, serif' }}
+                              >
+                                Invest in {selectedDeal.companyName}
+                              </h2>
+                              <EditableAmount
+                                amount={investmentAmount}
+                                onEdit={handleEditAmount}
+                              />
+                            </div>
                           </div>
+                          {isTransferComplete && (
+                            <div className="flex flex-col items-end gap-1">
+                              <span className="text-[12px] font-medium text-[#f59e0b] bg-[#f59e0b]/10 px-2.5 py-1 rounded-full" style={{ fontFamily: 'Soehne, sans-serif' }}>
+                                Pending Wire
+                              </span>
+                              <span className="text-[13px] text-[#7f7582]" style={{ fontFamily: 'Soehne, sans-serif' }}>
+                                1-2 business days
+                              </span>
+                            </div>
+                          )}
                         </div>
 
                         {/* Horizontal Stepper */}
@@ -1400,6 +1412,38 @@ export function ZAIInvestmentFlow({
                           const displayStep = selectedStepId
                             ? steps.find(s => s.id === selectedStepId)
                             : steps.find(s => s.status === 'current');
+
+                          // Show completed state when all steps are done
+                          if (!displayStep && isTransferComplete) {
+                            return (
+                              <div className="px-5 pb-5 pt-4">
+                                {/* Wire Completed Card - similar to other step completed states */}
+                                <div className="bg-[#f7f7f8] rounded-xl p-4">
+                                  <div className="flex items-center justify-between mb-3">
+                                    <h3
+                                      className="text-[16px] font-medium text-[#373338]"
+                                      style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                    >
+                                      Wire
+                                    </h3>
+                                    <span
+                                      className="text-[12px] font-medium text-[#f59e0b] bg-[#f59e0b]/10 px-2.5 py-1 rounded-full"
+                                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                                    >
+                                      Pending
+                                    </span>
+                                  </div>
+                                  <p
+                                    className="text-[14px] text-[#7f7582] leading-relaxed"
+                                    style={{ fontFamily: 'Soehne, sans-serif' }}
+                                  >
+                                    Congratulations! You've completed all the steps on your end. Your documents are signed and your wire is on its way.
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          }
+
                           if (!displayStep) return null;
                           const isViewingCompleted = selectedStepId && displayStep.status === 'completed';
 
@@ -1920,6 +1964,48 @@ export function ZAIInvestmentFlow({
                     </div>
                   )}
 
+                  {/* Reward AI Response - shown when all steps are complete */}
+                  {flowState === 'investing' && isTransferComplete && (
+                    <div className="w-full max-w-2xl mt-6">
+                      {/* AI Avatar */}
+                      <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm border border-[#f0eef0] mb-4">
+                        <img
+                          src="/conciergeIcon.png"
+                          alt="Goodfin AI"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+
+                      {/* Reward Card */}
+                      <div className="bg-gradient-to-br from-[#fef3c7] to-[#fde68a] rounded-xl p-5 border border-[#fbbf24]/30">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-lg">🎁</span>
+                          <span
+                            className="text-[11px] text-[#92400e] uppercase tracking-wider font-medium"
+                            style={{ fontFamily: 'Soehne, sans-serif' }}
+                          >
+                            You've Unlocked a Reward
+                          </span>
+                        </div>
+                        <p
+                          className="text-[15px] text-[#78350f] leading-relaxed mb-4"
+                          style={{ fontFamily: 'Soehne, sans-serif' }}
+                        >
+                          Congratulations! You've earned $300 in Goodfin credit toward your next investment.
+                        </p>
+                        <button
+                          onClick={() => {
+                            // Handle claim reward
+                          }}
+                          className="w-full py-2.5 bg-[#78350f] text-white text-[14px] font-medium rounded-lg hover:bg-[#92400e] transition-colors"
+                          style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                        >
+                          Claim Your $300
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Investor Type Selection AI Message */}
                   {flowState === 'investing' && showInvestorTypeSelection && (
                     <div className="w-full max-w-2xl">
@@ -2004,6 +2090,38 @@ export function ZAIInvestmentFlow({
                         {/* Current Step Details */}
                         {(() => {
                           const currentStep = steps.find(s => s.status === 'current');
+
+                          // Show completed state when all steps are done
+                          if (!currentStep && isTransferComplete) {
+                            return (
+                              <div className="px-5 pb-5 pt-4">
+                                {/* Wire Completed Card - similar to other step completed states */}
+                                <div className="bg-[#f7f7f8] rounded-xl p-4">
+                                  <div className="flex items-center justify-between mb-3">
+                                    <h3
+                                      className="text-[16px] font-medium text-[#373338]"
+                                      style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                    >
+                                      Wire
+                                    </h3>
+                                    <span
+                                      className="text-[12px] font-medium text-[#f59e0b] bg-[#f59e0b]/10 px-2.5 py-1 rounded-full"
+                                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                                    >
+                                      Pending
+                                    </span>
+                                  </div>
+                                  <p
+                                    className="text-[14px] text-[#7f7582] leading-relaxed"
+                                    style={{ fontFamily: 'Soehne, sans-serif' }}
+                                  >
+                                    Congratulations! You've completed all the steps on your end. Your documents are signed and your wire is on its way.
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          }
+
                           if (!currentStep) return null;
 
                           // Special rendering for Wire step - show bank details inline
