@@ -27,6 +27,7 @@ import { DocumentSigningModal } from './components/DocumentSigningModal';
 import { WireBankDetails } from './components/WireBankDetails';
 import { DocumentSigningInline } from './components/DocumentSigningInline';
 import { DealCard, type DealCardProps } from '@/components/ui/DealCard';
+import { ScratchCard } from '@/components/ui/ScratchCard';
 import {
   type FlowStep,
   type Message,
@@ -1439,6 +1440,30 @@ export function ZAIInvestmentFlow({
                                   >
                                     Congratulations! You've completed all the steps on your end. Your documents are signed and your wire is on its way.
                                   </p>
+
+                                  {/* What Happens Next */}
+                                  <div className="mt-4 pt-4 border-t border-[#e0dce0]">
+                                    <p
+                                      className="text-[11px] text-[#7f7582] uppercase tracking-wider font-medium mb-3"
+                                      style={{ fontFamily: 'Soehne, sans-serif' }}
+                                    >
+                                      What Happens Next
+                                    </p>
+                                    <ol className="space-y-2">
+                                      <li className="flex items-start gap-2">
+                                        <span className="text-[13px] text-[#7f7582] font-medium" style={{ fontFamily: 'Soehne, sans-serif' }}>1.</span>
+                                        <span className="text-[13px] text-[#373338]" style={{ fontFamily: 'Soehne, sans-serif' }}>Our team will verify your wire (typically within 1-2 days)</span>
+                                      </li>
+                                      <li className="flex items-start gap-2">
+                                        <span className="text-[13px] text-[#7f7582] font-medium" style={{ fontFamily: 'Soehne, sans-serif' }}>2.</span>
+                                        <span className="text-[13px] text-[#373338]" style={{ fontFamily: 'Soehne, sans-serif' }}>You'll receive a notification + email once confirmed</span>
+                                      </li>
+                                      <li className="flex items-start gap-2">
+                                        <span className="text-[13px] text-[#7f7582] font-medium" style={{ fontFamily: 'Soehne, sans-serif' }}>3.</span>
+                                        <span className="text-[13px] text-[#373338]" style={{ fontFamily: 'Soehne, sans-serif' }}>Your investment will appear in your portfolio</span>
+                                      </li>
+                                    </ol>
+                                  </div>
                                 </div>
                               </div>
                             );
@@ -1460,9 +1485,21 @@ export function ZAIInvestmentFlow({
                                       {displayStep.label}
                                     </h3>
                                     {isViewingCompleted && (
-                                      <span className="text-[12px] text-[#5a8a5a] bg-[#5a8a5a]/10 px-2 py-1 rounded-full">
-                                        Completed
-                                      </span>
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-[12px] text-[#5a8a5a] bg-[#5a8a5a]/10 px-2 py-1 rounded-full">
+                                          Completed
+                                        </span>
+                                        <button
+                                          onClick={() => {
+                                            setSignedDocuments([]);
+                                            setSelectedStepId(null);
+                                          }}
+                                          className="text-[12px] text-[#7f7582] bg-[#e8e5e8] hover:bg-[#d8d5d8] px-2 py-1 rounded-full transition-colors"
+                                          style={{ fontFamily: 'Soehne, sans-serif' }}
+                                        >
+                                          Update
+                                        </button>
+                                      </div>
                                     )}
                                   </div>
 
@@ -1601,12 +1638,23 @@ export function ZAIInvestmentFlow({
                                       {displayStep.label}
                                     </h3>
                                     {isViewingCompleted && (
-                                      <span
-                                        className="text-[12px] text-[#5a8a5a] bg-[#5a8a5a]/10 px-3 py-1.5 rounded-full"
-                                        style={{ fontFamily: 'Soehne, sans-serif' }}
-                                      >
-                                        Completed
-                                      </span>
+                                      <div className="flex items-center gap-2">
+                                        <span
+                                          className="text-[12px] text-[#5a8a5a] bg-[#5a8a5a]/10 px-3 py-1.5 rounded-full"
+                                          style={{ fontFamily: 'Soehne, sans-serif' }}
+                                        >
+                                          Completed
+                                        </span>
+                                        <button
+                                          onClick={() => {
+                                            setSelectedStepId(null);
+                                          }}
+                                          className="text-[12px] text-[#7f7582] bg-[#e8e5e8] hover:bg-[#d8d5d8] px-3 py-1.5 rounded-full transition-colors"
+                                          style={{ fontFamily: 'Soehne, sans-serif' }}
+                                        >
+                                          Update
+                                        </button>
+                                      </div>
                                     )}
                                   </div>
                                   {/* Total Investment */}
@@ -1905,9 +1953,20 @@ export function ZAIInvestmentFlow({
                                     {displayStep.label}
                                   </h3>
                                   {isViewingCompleted && (
-                                    <span className="text-[12px] text-[#5a8a5a] bg-[#5a8a5a]/10 px-2 py-1 rounded-full">
-                                      Completed
-                                    </span>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[12px] text-[#5a8a5a] bg-[#5a8a5a]/10 px-2 py-1 rounded-full">
+                                        Completed
+                                      </span>
+                                      <button
+                                        onClick={() => {
+                                          setSelectedStepId(null);
+                                        }}
+                                        className="text-[12px] text-[#7f7582] bg-[#e8e5e8] hover:bg-[#d8d5d8] px-2 py-1 rounded-full transition-colors"
+                                        style={{ fontFamily: 'Soehne, sans-serif' }}
+                                      >
+                                        Update
+                                      </button>
+                                    </div>
                                   )}
                                 </div>
                                 <p
@@ -1976,33 +2035,41 @@ export function ZAIInvestmentFlow({
                         />
                       </div>
 
-                      {/* Reward Card */}
-                      <div className="bg-gradient-to-br from-[#fef3c7] to-[#fde68a] rounded-xl p-5 border border-[#fbbf24]/30">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="text-lg">🎁</span>
-                          <span
-                            className="text-[11px] text-[#92400e] uppercase tracking-wider font-medium"
+                      {/* Scratch Card Reward */}
+                      <ScratchCard
+                        revealThreshold={40}
+                        onReveal={() => {
+                          // Handle reward claimed
+                          console.log('Reward claimed!');
+                        }}
+                      >
+                        <div className="bg-gradient-to-br from-[#fef3c7] to-[#fde68a] rounded-xl p-5 border border-[#fbbf24]/30">
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="text-lg">🎁</span>
+                            <span
+                              className="text-[11px] text-[#92400e] uppercase tracking-wider font-medium"
+                              style={{ fontFamily: 'Soehne, sans-serif' }}
+                            >
+                              You've Unlocked a Reward
+                            </span>
+                          </div>
+                          <p
+                            className="text-[15px] text-[#78350f] leading-relaxed mb-4"
                             style={{ fontFamily: 'Soehne, sans-serif' }}
                           >
-                            You've Unlocked a Reward
-                          </span>
+                            Congratulations! You've earned $300 in Goodfin credit toward your next investment.
+                          </p>
+                          <button
+                            onClick={() => {
+                              // Handle claim reward
+                            }}
+                            className="w-full py-2.5 bg-[#78350f] text-white text-[14px] font-medium rounded-lg hover:bg-[#92400e] transition-colors"
+                            style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                          >
+                            Claim Your $300
+                          </button>
                         </div>
-                        <p
-                          className="text-[15px] text-[#78350f] leading-relaxed mb-4"
-                          style={{ fontFamily: 'Soehne, sans-serif' }}
-                        >
-                          Congratulations! You've earned $300 in Goodfin credit toward your next investment.
-                        </p>
-                        <button
-                          onClick={() => {
-                            // Handle claim reward
-                          }}
-                          className="w-full py-2.5 bg-[#78350f] text-white text-[14px] font-medium rounded-lg hover:bg-[#92400e] transition-colors"
-                          style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                        >
-                          Claim Your $300
-                        </button>
-                      </div>
+                      </ScratchCard>
                     </div>
                   )}
 
