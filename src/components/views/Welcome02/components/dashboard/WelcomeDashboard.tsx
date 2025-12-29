@@ -14,6 +14,7 @@ import { ArrowLeft, Lock, Target, Zap, Calendar, Sparkles } from 'lucide-react';
 import svgPaths from '../../imports/svg-191opiemcf';
 import { svgPaths as localSvgPaths } from '../../svgPaths';
 import { cn } from '../../../../../lib/utils';
+import { ConversationalOnboarding } from '../conversational';
 
 // Preview cards data for personalization peek
 const PREVIEW_DEALS = [
@@ -517,10 +518,11 @@ const PERSONALIZATION_QUESTIONS: PersonalizationQuestion[] = [
 interface WelcomeDashboardProps {
   homeVariant?: HomeVariant;
   isFirstTimeUser?: boolean;
+  isConversationalOnboarding?: boolean;
   animationKey?: number;
 }
 
-export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, animationKey = 0 }: WelcomeDashboardProps) {
+export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, isConversationalOnboarding = false, animationKey = 0 }: WelcomeDashboardProps) {
   const [currentMode, setCurrentMode] = useState<ChatMode>('default');
   const [extraSlotItem, setExtraSlotItem] = useState<MoreMode | null>(null);
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
@@ -888,7 +890,21 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
         }}
       />
 
-      {/* Top Header Row */}
+      {/* Conversational Onboarding - Full screen takeover */}
+      {isConversationalOnboarding && (
+        <div className="relative z-10 flex-1 flex flex-col overflow-hidden">
+          <ConversationalOnboarding
+            animationKey={animationKey}
+            onComplete={() => {
+              // Handle completion - could navigate to dashboard
+              console.log('Conversational onboarding complete');
+            }}
+          />
+        </div>
+      )}
+
+      {/* Top Header Row - Hidden during conversational onboarding */}
+      {!isConversationalOnboarding && (
       <div className="relative z-10 w-full">
         {chatState.isActive ? (
           /* When in chat: show back button on left, history toggle still on left but after back */
@@ -923,8 +939,10 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
           />
         )}
       </div>
+      )}
 
       {/* Main Content Scrollable Area - Using Radix UI ScrollArea */}
+      {!isConversationalOnboarding && (
       <ScrollAreaPrimitive.Root className="relative z-10 flex-1 w-full overflow-hidden">
         <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-none [&>div]:!block">
           <div className="flex flex-col items-center p-6 gap-10 w-full min-h-full">
@@ -1024,8 +1042,10 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
         </ScrollAreaPrimitive.Scrollbar>
         <ScrollAreaPrimitive.Corner />
       </ScrollAreaPrimitive.Root>
+      )}
 
       {/* Sticky Bottom Input Bar - with blur animation for first-time users */}
+      {!isConversationalOnboarding && (
       <div
         className={cn(
           "relative z-20 w-full flex justify-center p-6 bg-gradient-to-t from-[#f7f7f8] via-[#f7f7f8]/80 to-transparent",
@@ -1085,6 +1105,7 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
           )}
         </div>
       </div>
+      )}
     </div>
   );
 }

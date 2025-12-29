@@ -613,6 +613,7 @@ export function App() {
   // Personalization variants (post-account creation onboarding questions)
   const personalizationVariants = [
     { id: 'accredited-first-time', label: 'Accredited First Time' },
+    { id: 'conversational', label: 'Conversational' },
   ];
 
   return (
@@ -633,6 +634,7 @@ export function App() {
           showChrome={false}
           homeVariant="v2-full"
           isFirstTimeUser={variant === 'accredited-first-time'}
+          isConversationalOnboarding={variant === 'conversational'}
           animationKey={animationKey}
         />
       )}
