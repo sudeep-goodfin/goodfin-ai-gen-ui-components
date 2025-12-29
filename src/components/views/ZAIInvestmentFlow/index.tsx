@@ -2072,8 +2072,8 @@ export function ZAIInvestmentFlow({
               <ScrollAreaPrimitive.Corner />
             </ScrollAreaPrimitive.Root>
 
-            {/* Blur Overlay when callout is expanded */}
-            {(showCommitConfirm || showInvestorTypeSelection || showBusinessInfoForm || showCalloutDelayed) && (
+            {/* Blur Overlay when callout is expanded - only during askAmount awaiting input */}
+            {(showCommitConfirm || showInvestorTypeSelection || showBusinessInfoForm || (flowState === 'askAmount' && showCalloutDelayed)) && (
               <div
                 className="absolute inset-0 z-15 bg-black/20 backdrop-blur-sm transition-all duration-300"
                 onClick={() => {
@@ -2091,7 +2091,7 @@ export function ZAIInvestmentFlow({
             {/* Sticky Bottom Input Bar */}
             <div className={cn(
               "absolute bottom-0 left-0 right-0 z-20 flex justify-center p-6 pointer-events-none transition-all duration-300",
-              (showCommitConfirm || showInvestorTypeSelection || showBusinessInfoForm || showCalloutDelayed)
+              (showCommitConfirm || showInvestorTypeSelection || showBusinessInfoForm || (flowState === 'askAmount' && showCalloutDelayed))
                 ? "bg-transparent"
                 : "bg-gradient-to-t from-[#f7f7f8] via-[#f7f7f8]/80 to-transparent"
             )}>
