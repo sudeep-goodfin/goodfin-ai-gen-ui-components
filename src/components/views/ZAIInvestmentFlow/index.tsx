@@ -258,6 +258,26 @@ export function ZAIInvestmentFlow({
   const [showProgressResponse, setShowProgressResponse] = useState(false);
   const progressResponseRef = useRef<HTMLDivElement>(null);
 
+  // Callout delay state - controls when the callout opens after askAmount state
+  const [showCalloutDelayed, setShowCalloutDelayed] = useState(false);
+
+  // Delay the callout opening when entering askAmount state
+  useEffect(() => {
+    if (flowState === 'askAmount') {
+      // Reset and delay the callout
+      setShowCalloutDelayed(false);
+      const timer = setTimeout(() => {
+        setShowCalloutDelayed(true);
+      }, 2200); // 2.2 second delay to let user see the card first
+      return () => clearTimeout(timer);
+    } else if (flowState === 'processingAmount' || flowState === 'investing') {
+      // Immediately show callout for these states
+      setShowCalloutDelayed(true);
+    } else {
+      setShowCalloutDelayed(false);
+    }
+  }, [flowState]);
+
   // Auto-expand first unsigned document when on signing step
   useEffect(() => {
     if (hasCommitted && signedDocuments.length < INVESTMENT_DOCUMENTS.length) {
@@ -2053,7 +2073,7 @@ export function ZAIInvestmentFlow({
             </ScrollAreaPrimitive.Root>
 
             {/* Blur Overlay when callout is expanded */}
-            {(showCommitConfirm || showInvestorTypeSelection || showBusinessInfoForm || flowState === 'askAmount') && (
+            {(showCommitConfirm || showInvestorTypeSelection || showBusinessInfoForm || showCalloutDelayed) && (
               <div
                 className="absolute inset-0 z-15 bg-black/20 backdrop-blur-sm transition-all duration-300"
                 onClick={() => {
@@ -2071,7 +2091,7 @@ export function ZAIInvestmentFlow({
             {/* Sticky Bottom Input Bar */}
             <div className={cn(
               "absolute bottom-0 left-0 right-0 z-20 flex justify-center p-6 pointer-events-none transition-all duration-300",
-              (showCommitConfirm || showInvestorTypeSelection || showBusinessInfoForm || flowState === 'askAmount')
+              (showCommitConfirm || showInvestorTypeSelection || showBusinessInfoForm || showCalloutDelayed)
                 ? "bg-transparent"
                 : "bg-gradient-to-t from-[#f7f7f8] via-[#f7f7f8]/80 to-transparent"
             )}>
@@ -2081,7 +2101,7 @@ export function ZAIInvestmentFlow({
                   onSubmit={flowState === 'askAmount' ? handleAmountSubmit : handleInputSubmit}
                   shake={shakeInput}
                   placeholder={getStepPlaceholder()}
-                  formCallout={(flowState === 'askAmount' || flowState === 'processingAmount' || flowState === 'investing') ? {
+                  formCallout={showCalloutDelayed ? {
                     state: showBusinessInfoForm
                       ? 'business_info'
                       : showInvestorTypeSelection
