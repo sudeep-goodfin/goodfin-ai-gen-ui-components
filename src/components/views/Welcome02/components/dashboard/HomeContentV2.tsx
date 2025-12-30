@@ -21,7 +21,8 @@ import {
   Trophy,
   Check,
   Circle,
-  Sparkles
+  Sparkles,
+  Gift
 } from 'lucide-react';
 
 // Section Header Component - matches v1 style from ResumeInvestmentCard and ExploreGoodfin
@@ -80,22 +81,18 @@ function ActionNeededSection({ onItemClick }: { onItemClick?: (action: string) =
     {
       icon: (
         <div className="w-6 h-6 rounded-md overflow-hidden">
-          <img src="/icons/products/anthropic.png" alt="Anthropic" className="w-full h-full object-cover" />
+          <img src="/icons/products/databricks.jpg" alt="Databricks" className="w-full h-full object-cover" />
         </div>
       ),
-      text: 'Anthropic - Sign subscription docs'
+      text: 'Databricks - Share why you invested'
     },
     {
       icon: (
-        <div className="w-6 h-6 rounded-full overflow-hidden">
-          <img
-            src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop&crop=face"
-            alt="Sarah M."
-            className="w-full h-full object-cover"
-          />
+        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+          <Gift className="w-3.5 h-3.5 text-white" />
         </div>
       ),
-      text: 'Coffee chat with Sarah M. tomorrow at 2pm'
+      text: 'Invite friends to Goodfin'
     },
   ];
 

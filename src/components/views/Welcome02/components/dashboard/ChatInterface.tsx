@@ -2,6 +2,7 @@ import React from 'react';
 import { Sparkles, Building2, ArrowRight } from 'lucide-react';
 import ContainerCollapse from './wizard/ContainerCollapse';
 import { AllDealsView } from './AllDealsView';
+import { TickerCTA, ReferralCTA } from '../../../../ui/PostInvestmentCTA';
 
 export function ThinkingBubble() {
     return (
@@ -127,6 +128,30 @@ export function ChatInterface({ messages, isThinking, streamingContent, onWizard
                      return (
                          <div key={idx} className="w-full animate-fade-in">
                              <AllDealsView onCardClick={onCardClick} />
+                         </div>
+                     );
+                 }
+
+                 if (msg.type === 'component' && msg.componentName === 'ticker-cta') {
+                     return (
+                         <div key={idx} className="w-full animate-fade-in">
+                             <TickerCTA
+                                 dealName={msg.data?.dealName || 'Databricks'}
+                                 dealLogo={msg.data?.dealLogo || '/icons/products/databricks.jpg'}
+                                 onPostSubmit={(post) => console.log('Post submitted:', post)}
+                             />
+                         </div>
+                     );
+                 }
+
+                 if (msg.type === 'component' && msg.componentName === 'referral-cta') {
+                     return (
+                         <div key={idx} className="w-full animate-fade-in">
+                             <ReferralCTA
+                                 referralCode={msg.data?.referralCode || 'abc123'}
+                                 referralCredit={msg.data?.referralCredit || 300}
+                                 onCopyLink={() => console.log('Referral link copied')}
+                             />
                          </div>
                      );
                  }
