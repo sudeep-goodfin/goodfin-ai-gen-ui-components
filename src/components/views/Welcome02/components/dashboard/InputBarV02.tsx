@@ -637,7 +637,26 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 </div>
               </div>
               <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-                {/* Skip personalization button */}
+                {/* Ask AI button - on the left */}
+                {formCallout.state === 'personalization' && formCallout.isPersonalizationExpanded && (
+                  <TooltipProvider delayDuration={300}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-[#685f6a] bg-white/60 hover:bg-white/80 border border-[#d0cdd2] rounded-lg transition-colors"
+                          style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          Ask AI
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Ask AI for help</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                {/* Skip personalization button - on the right */}
                 {formCallout.state === 'personalization' && formCallout.isPersonalizationExpanded && formCallout.onSkipPersonalization && (
                   <TooltipProvider delayDuration={300}>
                     <Tooltip>
@@ -652,26 +671,6 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>Remind me later</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-                {/* Personalization collapse button - icon only */}
-                {formCallout.state === 'personalization' && formCallout.isPersonalizationExpanded && formCallout.onTogglePersonalizationExpand && (
-                  <TooltipProvider delayDuration={300}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={formCallout.onTogglePersonalizationExpand}
-                          className="flex items-center justify-center w-7 h-7 text-[#685f6a] bg-white/60 hover:bg-white/80 border border-[#d0cdd2] rounded-lg transition-colors"
-                        >
-                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-[#685f6a]">
-                            <path d="M4 10L8 6L12 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Minimize</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
