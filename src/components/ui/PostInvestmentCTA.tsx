@@ -255,7 +255,7 @@ export function PostInvestmentCTA({
                   className="text-[12px] text-blue-500"
                   style={{ fontFamily: 'Soehne, sans-serif' }}
                 >
-                  {minChars - charCount} more needed
+                  {minChars - charCount} more characters needed
                 </span>
               )}
             </div>
@@ -280,7 +280,7 @@ export function PostInvestmentCTA({
                         Post to Ticker
                       </>
                     ) : (
-                      <span className="text-white/90">{charsNeeded} more needed</span>
+                      <span className="text-white/90">{charsNeeded} more characters</span>
                     )}
                   </button>
                 </TooltipTrigger>
