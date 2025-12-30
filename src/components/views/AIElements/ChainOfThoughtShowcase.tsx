@@ -48,7 +48,7 @@ export function ChainOfThoughtShowcase() {
             Reset
           </Button>
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() => setIsOpen(!isOpen)}
           >

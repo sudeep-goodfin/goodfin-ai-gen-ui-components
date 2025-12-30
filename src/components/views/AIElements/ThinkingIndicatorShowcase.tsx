@@ -100,7 +100,7 @@ export function ThinkingIndicatorShowcase({
           <Button variant="secondary" size="sm" onClick={handleToggle}>
             {isPlaying ? 'Stop' : 'Start'}
           </Button>
-          <Button variant="outline" size="sm" onClick={handleReplay}>
+          <Button variant="secondary" size="sm" onClick={handleReplay}>
             <RotateCcw className="w-4 h-4 mr-1" />
             Replay
           </Button>
