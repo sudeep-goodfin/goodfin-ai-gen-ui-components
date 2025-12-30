@@ -26,8 +26,8 @@ const REFERRAL_SUGGESTIONS = [
 ];
 
 const TICKER_SUGGESTIONS = [
-  'What happens next?',
-  'View my dashboard',
+  'What do others say about this deal?',
+  'Help me write my post',
 ];
 
 // AI-generated draft post template
