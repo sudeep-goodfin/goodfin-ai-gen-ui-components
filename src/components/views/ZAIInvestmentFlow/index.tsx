@@ -1500,7 +1500,7 @@ export function ZAIInvestmentFlow({
                                     {/* Get Support CTA */}
                                     <div className="mt-4 pt-3">
                                       <button
-                                        className="text-[13px] text-[#7f7582] hover:text-[#373338] transition-colors underline underline-offset-2"
+                                        className="w-full py-2.5 text-[13px] text-[#7f7582] hover:text-[#373338] bg-[#e8e5e8]/30 hover:bg-[#e8e5e8] rounded-lg transition-colors"
                                         style={{ fontFamily: 'Soehne, sans-serif' }}
                                       >
                                         Get Support
