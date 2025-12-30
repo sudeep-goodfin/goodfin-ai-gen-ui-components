@@ -1,33 +1,63 @@
 import { useState } from 'react';
-import { Copy, Check, Calendar, MessageCircle, Users, ArrowRight, Sparkles } from 'lucide-react';
+import { Copy, Check, Users, Sparkles, Send, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 
 interface PostInvestmentCTAProps {
   referralCode?: string;
   referralCredit?: number;
+  dealName?: string;
+  dealTicker?: string;
+  dealLogo?: string;
   onCopyLink?: () => void;
-  onScheduleCall?: () => void;
-  onViewDiscussions?: () => void;
   onSuggestionClick?: (suggestion: string) => void;
+  onPostSubmit?: (post: string) => void;
 }
 
 const FOLLOW_UP_SUGGESTIONS = [
   'How do referral credits work?',
-  'What can I ask in a 1:1 call?',
   'Show me trending deals',
+  'What happens next?',
 ];
+
+// AI-generated draft post template
+const generateDraftPost = (dealName: string) => {
+  return `Just invested in ${dealName} on @Goodfin. Excited about their vision and long-term potential. 🚀`;
+};
+
+// Placeholder text
+const PLACEHOLDER_TEXT = "Share why you invested in this deal...";
 
 export function PostInvestmentCTA({
   referralCode = 'abc123',
   referralCredit = 300,
+  dealName = 'Anthropic',
+  dealTicker = 'ANTHR',
+  dealLogo = '/icons/products/anthropic.png',
   onCopyLink,
-  onScheduleCall,
-  onViewDiscussions,
   onSuggestionClick,
+  onPostSubmit,
 }: PostInvestmentCTAProps) {
   const [copied, setCopied] = useState(false);
+  const [postText, setPostText] = useState('');
+  const [isEnhanced, setIsEnhanced] = useState(false);
+
+  const handleEnhanceWithAI = () => {
+    // In production, this would call an AI API to enhance the text
+    // For now, we'll use the template or enhance the existing text
+    const enhanced = postText.length > 0
+      ? `${postText} 🚀 #Goodfin`
+      : generateDraftPost(dealName);
+    setPostText(enhanced);
+    setIsEnhanced(true);
+  };
 
   const referralLink = `goodfin.com/invite/${referralCode}`;
+  const charCount = postText.length;
+  const minChars = 120;
+  const progress = Math.min((charCount / minChars) * 100, 100);
+  const isMinMet = charCount >= minChars;
+  const charsNeeded = minChars - charCount;
 
   const handleCopy = async () => {
     try {
@@ -60,7 +90,7 @@ export function PostInvestmentCTA({
               className="text-[14px] text-amber-700/80"
               style={{ fontFamily: 'Soehne, sans-serif' }}
             >
-              Earn ${referralCredit} credit when they complete their first investment
+              Earn a ${referralCredit} credit when they complete their first investment
             </p>
           </div>
         </div>
@@ -100,61 +130,169 @@ export function PostInvestmentCTA({
         </div>
       </div>
 
-      {/* Feature Cards Row */}
-      <div className="grid grid-cols-2 gap-3">
-        {/* Schedule Call Card */}
-        <button
-          onClick={onScheduleCall}
-          className="group bg-white rounded-xl p-4 border border-gray-200 hover:border-violet-300 hover:shadow-md transition-all text-left"
-        >
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-violet-100 rounded-lg flex items-center justify-center group-hover:bg-violet-200 transition-colors">
-              <Calendar className="w-5 h-5 text-violet-600" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h4
-                className="text-[14px] font-medium text-gray-900 mb-0.5"
+      {/* Goodfin Ticker - Share Your Investment */}
+      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+        {/* Header */}
+        <div className="px-5 py-4 border-b border-gray-100">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-emerald-500" />
+              <h3
+                className="text-[15px] font-medium text-gray-900"
                 style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
               >
-                Schedule a Call
-              </h4>
-              <p
-                className="text-[12px] text-gray-500 leading-snug"
-                style={{ fontFamily: 'Soehne, sans-serif' }}
-              >
-                1:1 with a Goodfin advisor
-              </p>
+                Goodfin Ticker
+              </h3>
             </div>
-            <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-violet-500 group-hover:translate-x-0.5 transition-all mt-1" />
+            <span
+              className="text-[12px] text-gray-500"
+              style={{ fontFamily: 'Soehne, sans-serif' }}
+            >
+              Share why you invested
+            </span>
           </div>
-        </button>
+          <p
+            className="text-[13px] text-gray-500 leading-relaxed"
+            style={{ fontFamily: 'Soehne, sans-serif' }}
+          >
+            Goodfin Ticker is where investors share insights on deals. Post your take and see what others think.
+          </p>
+        </div>
 
-        {/* Deal Discussions Card */}
-        <button
-          onClick={onViewDiscussions}
-          className="group bg-white rounded-xl p-4 border border-gray-200 hover:border-emerald-300 hover:shadow-md transition-all text-left"
-        >
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center group-hover:bg-emerald-200 transition-colors">
-              <MessageCircle className="w-5 h-5 text-emerald-600" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h4
-                className="text-[14px] font-medium text-gray-900 mb-0.5"
+        {/* Post Composer */}
+        <div className="px-5 py-4">
+          {/* Deal Badge + AI Enhance */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <img
+                src={dealLogo}
+                alt={dealName}
+                className="w-6 h-6 rounded-md object-cover"
+              />
+              <span
+                className="text-[13px] font-medium text-gray-700"
                 style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
               >
-                Deal Discussions
-              </h4>
-              <p
-                className="text-[12px] text-gray-500 leading-snug"
+                {dealName}
+              </span>
+              <span
+                className="text-[12px] text-gray-400"
                 style={{ fontFamily: 'Soehne, sans-serif' }}
               >
-                See what investors are saying
-              </p>
+                ${dealTicker}
+              </span>
             </div>
-            <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-emerald-500 group-hover:translate-x-0.5 transition-all mt-1" />
+            {isEnhanced ? (
+              <span
+                className="flex items-center gap-1 px-2 py-0.5 bg-violet-100 text-violet-600 text-[11px] font-medium rounded-full"
+                style={{ fontFamily: 'Soehne, sans-serif' }}
+              >
+                <Sparkles className="w-3 h-3" />
+                AI Enhanced
+              </span>
+            ) : charCount > 0 ? (
+              <button
+                onClick={handleEnhanceWithAI}
+                className="flex items-center gap-1 px-2.5 py-1 bg-violet-50 hover:bg-violet-100 text-violet-600 text-[11px] font-medium rounded-full transition-colors"
+                style={{ fontFamily: 'Soehne, sans-serif' }}
+              >
+                <Sparkles className="w-3 h-3" />
+                Enhance with AI
+              </button>
+            ) : null}
           </div>
-        </button>
+
+          {/* Editable Post */}
+          <div className="relative">
+            <textarea
+              value={postText}
+              onChange={(e) => {
+                setPostText(e.target.value);
+                setIsEnhanced(false); // Reset enhanced state when user edits
+              }}
+              placeholder={PLACEHOLDER_TEXT}
+              className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-[14px] text-gray-700 leading-relaxed resize-none focus:outline-none focus:border-emerald-300 focus:ring-1 focus:ring-emerald-300 placeholder:text-gray-400"
+              style={{ fontFamily: 'Soehne, sans-serif', minHeight: '80px' }}
+            />
+          </div>
+
+          {/* Footer: Character Count + Submit */}
+          <div className="flex items-center justify-between mt-3">
+            <div className="flex items-center gap-3">
+              {/* Circular Progress Indicator */}
+              <div className="relative w-6 h-6">
+                <svg className="w-6 h-6 -rotate-90" viewBox="0 0 24 24">
+                  {/* Background circle */}
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    fill="none"
+                    stroke="#e5e7eb"
+                    strokeWidth="2"
+                  />
+                  {/* Progress circle */}
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    fill="none"
+                    stroke={isMinMet ? '#10b981' : '#3b82f6'}
+                    strokeWidth="2"
+                    strokeDasharray={`${progress * 0.628} 100`}
+                    strokeLinecap="round"
+                    className="transition-all duration-200"
+                  />
+                </svg>
+                {isMinMet && (
+                  <Check className="absolute inset-0 m-auto w-3 h-3 text-emerald-500" />
+                )}
+              </div>
+
+              {/* Character count text */}
+              {!isMinMet && (
+                <span
+                  className="text-[12px] text-blue-500"
+                  style={{ fontFamily: 'Soehne, sans-serif' }}
+                >
+                  {minChars - charCount} more needed
+                </span>
+              )}
+            </div>
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => onPostSubmit?.(postText)}
+                    disabled={!isMinMet}
+                    className={cn(
+                      "flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium rounded-lg transition-all",
+                      isMinMet
+                        ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                        : "bg-emerald-500/40 text-white cursor-not-allowed"
+                    )}
+                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                  >
+                    {isMinMet ? (
+                      <>
+                        <Send className="w-3.5 h-3.5" />
+                        Post to Ticker
+                      </>
+                    ) : (
+                      <span className="text-white/90">{charsNeeded} more needed</span>
+                    )}
+                  </button>
+                </TooltipTrigger>
+                {!isMinMet && (
+                  <TooltipContent side="top" className="text-xs">
+                    <p>Write at least {minChars} characters to post</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </div>
       </div>
 
       {/* Follow-up Suggestions */}
