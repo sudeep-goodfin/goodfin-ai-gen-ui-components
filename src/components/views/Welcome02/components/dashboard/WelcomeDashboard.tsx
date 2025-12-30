@@ -767,7 +767,31 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
       let fullResponse = "";
       let componentMessage: ChatMessage | null = null;
 
-      if (text.includes("Anthropic")) {
+      if (text.includes("Databricks") && text.includes("Share why you invested")) {
+        fullResponse = "";
+        componentMessage = {
+          role: 'ai',
+          content: '',
+          type: 'component',
+          componentName: 'ticker-cta',
+          data: {
+            dealName: 'Databricks',
+            dealLogo: '/icons/products/databricks.jpg'
+          }
+        };
+      } else if (text.includes("Invite friends to Goodfin")) {
+        fullResponse = "Invite friends and earn a $300 credit when they complete their first investment. Credits can be applied to reduce your next investment amount.";
+        componentMessage = {
+          role: 'ai',
+          content: '',
+          type: 'component',
+          componentName: 'referral-cta',
+          data: {
+            referralCode: 'abc123',
+            referralCredit: 300
+          }
+        };
+      } else if (text.includes("Anthropic")) {
         fullResponse = "Let's resume the investment with Anthropic. I've secured a specialized allocation block for you in the Series C secondary round. Here are the details:";
         componentMessage = {
           role: 'ai',
