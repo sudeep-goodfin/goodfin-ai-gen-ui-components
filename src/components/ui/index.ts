@@ -34,4 +34,4 @@ export type { Investment } from './MyInvestments';
 export { SuggestionCard, SuggestionsList } from './SuggestionCard';
 export type { SuggestionItemProps } from './SuggestionCard';
 export { ProgressWidget, ProgressCircle } from './ProgressWidget';
-export { PostInvestmentCTA } from './PostInvestmentCTA';
+export { PostInvestmentCTA, ReferralCTA, TickerCTA } from './PostInvestmentCTA';

@@ -3,21 +3,32 @@ import { Copy, Check, Users, Sparkles, Send, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 
-interface PostInvestmentCTAProps {
+interface ReferralCTAProps {
   referralCode?: string;
   referralCredit?: number;
+  onCopyLink?: () => void;
+  onSuggestionClick?: (suggestion: string) => void;
+}
+
+interface TickerCTAProps {
   dealName?: string;
   dealTicker?: string;
   dealLogo?: string;
-  onCopyLink?: () => void;
-  onSuggestionClick?: (suggestion: string) => void;
   onPostSubmit?: (post: string) => void;
+  onSuggestionClick?: (suggestion: string) => void;
 }
 
-const FOLLOW_UP_SUGGESTIONS = [
+// Combined props for backwards compatibility
+interface PostInvestmentCTAProps extends ReferralCTAProps, TickerCTAProps {}
+
+const REFERRAL_SUGGESTIONS = [
   'How do referral credits work?',
   'Show me trending deals',
+];
+
+const TICKER_SUGGESTIONS = [
   'What happens next?',
+  'View my dashboard',
 ];
 
 // AI-generated draft post template
@@ -28,36 +39,18 @@ const generateDraftPost = (dealName: string) => {
 // Placeholder text
 const PLACEHOLDER_TEXT = "Share why you invested in this deal...";
 
-export function PostInvestmentCTA({
+/**
+ * Referral CTA Component
+ * AI intro text: "If you liked the Goodfin experience, invite friends and earn a $300 credit when they complete their first investment."
+ */
+export function ReferralCTA({
   referralCode = 'abc123',
   referralCredit = 300,
-  dealName = 'Anthropic',
-  dealTicker = 'ANTHR',
-  dealLogo = '/icons/products/anthropic.png',
   onCopyLink,
   onSuggestionClick,
-  onPostSubmit,
-}: PostInvestmentCTAProps) {
+}: ReferralCTAProps) {
   const [copied, setCopied] = useState(false);
-  const [postText, setPostText] = useState('');
-  const [isEnhanced, setIsEnhanced] = useState(false);
-
-  const handleEnhanceWithAI = () => {
-    // In production, this would call an AI API to enhance the text
-    // For now, we'll use the template or enhance the existing text
-    const enhanced = postText.length > 0
-      ? `${postText} 🚀 #Goodfin`
-      : generateDraftPost(dealName);
-    setPostText(enhanced);
-    setIsEnhanced(true);
-  };
-
   const referralLink = `goodfin.com/invite/${referralCode}`;
-  const charCount = postText.length;
-  const minChars = 120;
-  const progress = Math.min((charCount / minChars) * 100, 100);
-  const isMinMet = charCount >= minChars;
-  const charsNeeded = minChars - charCount;
 
   const handleCopy = async () => {
     try {
@@ -128,6 +121,83 @@ export function PostInvestmentCTA({
             )}
           </button>
         </div>
+      </div>
+
+      {/* Follow-up Suggestions */}
+      <div className="pt-2">
+        <div className="flex items-center gap-1.5 mb-3">
+          <Sparkles className="w-4 h-4 text-[#c4a882]" />
+          <span
+            className="text-[13px] font-medium text-[#685f6a]"
+            style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+          >
+            Suggestions
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {REFERRAL_SUGGESTIONS.map((suggestion, index) => (
+            <button
+              key={index}
+              onClick={() => onSuggestionClick?.(suggestion)}
+              className="px-3 py-1.5 text-[13px] text-[#685f6a] bg-white border border-[#e0dce0] rounded-full hover:bg-[#f7f7f8] hover:border-[#c0bcc0] transition-colors"
+              style={{ fontFamily: 'Soehne, sans-serif' }}
+            >
+              {suggestion}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Ticker CTA Component
+ * AI intro text: "Share why you invested in this deal with the Goodfin community."
+ */
+export function TickerCTA({
+  dealName = 'Anthropic',
+  dealTicker = 'ANTHR',
+  dealLogo = '/icons/products/anthropic.png',
+  onPostSubmit,
+  onSuggestionClick,
+}: TickerCTAProps) {
+  const [postText, setPostText] = useState('');
+  const [isEnhanced, setIsEnhanced] = useState(false);
+
+  const charCount = postText.length;
+  const minChars = 120;
+  const progress = Math.min((charCount / minChars) * 100, 100);
+  const isMinMet = charCount >= minChars;
+  const charsNeeded = minChars - charCount;
+
+  const handleEnhanceWithAI = () => {
+    const enhanced = postText.length > 0
+      ? `${postText} 🚀 #Goodfin`
+      : generateDraftPost(dealName);
+    setPostText(enhanced);
+    setIsEnhanced(true);
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* AI Message Header */}
+      <div>
+        {/* AI Avatar */}
+        <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm border border-[#f0eef0] mb-4">
+          <img
+            src="/conciergeIcon.png"
+            alt="Goodfin AI"
+            className="w-full h-full object-cover"
+          />
+        </div>
+        {/* AI Intro Text */}
+        <p
+          className="text-[16px] text-[#48424a] leading-relaxed mb-4"
+          style={{ fontFamily: 'Soehne, sans-serif' }}
+        >
+          Share why you invested in this deal with the Goodfin community.
+        </p>
       </div>
 
       {/* Goodfin Ticker - Share Your Investment */}
@@ -208,7 +278,7 @@ export function PostInvestmentCTA({
               value={postText}
               onChange={(e) => {
                 setPostText(e.target.value);
-                setIsEnhanced(false); // Reset enhanced state when user edits
+                setIsEnhanced(false);
               }}
               placeholder={PLACEHOLDER_TEXT}
               className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-[14px] text-gray-700 leading-relaxed resize-none focus:outline-none focus:border-emerald-300 focus:ring-1 focus:ring-emerald-300 placeholder:text-gray-400"
@@ -222,7 +292,6 @@ export function PostInvestmentCTA({
               {/* Circular Progress Indicator */}
               <div className="relative w-6 h-6">
                 <svg className="w-6 h-6 -rotate-90" viewBox="0 0 24 24">
-                  {/* Background circle */}
                   <circle
                     cx="12"
                     cy="12"
@@ -231,7 +300,6 @@ export function PostInvestmentCTA({
                     stroke="#e5e7eb"
                     strokeWidth="2"
                   />
-                  {/* Progress circle */}
                   <circle
                     cx="12"
                     cy="12"
@@ -307,7 +375,7 @@ export function PostInvestmentCTA({
           </span>
         </div>
         <div className="flex flex-wrap gap-2">
-          {FOLLOW_UP_SUGGESTIONS.map((suggestion, index) => (
+          {TICKER_SUGGESTIONS.map((suggestion, index) => (
             <button
               key={index}
               onClick={() => onSuggestionClick?.(suggestion)}
@@ -319,6 +387,30 @@ export function PostInvestmentCTA({
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Combined PostInvestmentCTA - for backwards compatibility
+ * Renders both ReferralCTA and TickerCTA together
+ */
+export function PostInvestmentCTA(props: PostInvestmentCTAProps) {
+  return (
+    <div className="space-y-6">
+      <ReferralCTA
+        referralCode={props.referralCode}
+        referralCredit={props.referralCredit}
+        onCopyLink={props.onCopyLink}
+        onSuggestionClick={props.onSuggestionClick}
+      />
+      <TickerCTA
+        dealName={props.dealName}
+        dealTicker={props.dealTicker}
+        dealLogo={props.dealLogo}
+        onPostSubmit={props.onPostSubmit}
+        onSuggestionClick={props.onSuggestionClick}
+      />
     </div>
   );
 }
