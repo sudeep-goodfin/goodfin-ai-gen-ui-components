@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, ArrowLeft, ChevronDown, Check, Maximize2, Sparkles, Pencil } from 'lucide-react';
+import { X, ArrowLeft, ChevronDown, Check, Maximize2, Sparkles, Pencil, Bell, CheckCircle, Briefcase } from 'lucide-react';
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
 
 // Import PDF documents
@@ -27,7 +27,7 @@ import { DocumentSigningModal } from './components/DocumentSigningModal';
 import { WireBankDetails } from './components/WireBankDetails';
 import { DocumentSigningInline } from './components/DocumentSigningInline';
 import { DealCard, type DealCardProps } from '@/components/ui/DealCard';
-import { ScratchCard } from '@/components/ui/ScratchCard';
+import { GiftReveal } from '@/components/ui/GiftReveal';
 import {
   type FlowStep,
   type Message,
@@ -1444,25 +1444,50 @@ export function ZAIInvestmentFlow({
                                   {/* What Happens Next */}
                                   <div className="mt-4 pt-4 border-t border-[#e0dce0]">
                                     <p
-                                      className="text-[11px] text-[#7f7582] uppercase tracking-wider font-medium mb-3"
+                                      className="text-[11px] text-[#7f7582] uppercase tracking-wider font-medium mb-4"
                                       style={{ fontFamily: 'Soehne, sans-serif' }}
                                     >
                                       What Happens Next
                                     </p>
-                                    <ol className="space-y-2">
-                                      <li className="flex items-start gap-2">
-                                        <span className="text-[13px] text-[#7f7582] font-medium" style={{ fontFamily: 'Soehne, sans-serif' }}>1.</span>
-                                        <span className="text-[13px] text-[#373338]" style={{ fontFamily: 'Soehne, sans-serif' }}>Our team will verify your wire (typically within 1-2 days)</span>
-                                      </li>
-                                      <li className="flex items-start gap-2">
-                                        <span className="text-[13px] text-[#7f7582] font-medium" style={{ fontFamily: 'Soehne, sans-serif' }}>2.</span>
-                                        <span className="text-[13px] text-[#373338]" style={{ fontFamily: 'Soehne, sans-serif' }}>You'll receive a notification + email once confirmed</span>
-                                      </li>
-                                      <li className="flex items-start gap-2">
-                                        <span className="text-[13px] text-[#7f7582] font-medium" style={{ fontFamily: 'Soehne, sans-serif' }}>3.</span>
-                                        <span className="text-[13px] text-[#373338]" style={{ fontFamily: 'Soehne, sans-serif' }}>Your investment will appear in your portfolio</span>
-                                      </li>
-                                    </ol>
+
+                                    {/* Timeline */}
+                                    <div className="relative">
+                                      {/* Continuous vertical line */}
+                                      <div className="absolute left-[3px] top-[8px] bottom-[8px] w-0.5 bg-[#e8e5e8]" />
+
+                                      <div className="space-y-3">
+                                        {/* Step 1 */}
+                                        <div className="flex items-center gap-3">
+                                          <div className="w-2 h-2 rounded-full bg-[#f59e0b] animate-pulse relative z-10" style={{ animationDelay: '0s' }} />
+                                          <CheckCircle className="w-4 h-4 text-[#7f7582] flex-shrink-0" />
+                                          <span className="text-[13px] text-[#373338]" style={{ fontFamily: 'Soehne, sans-serif' }}>Our team will verify your wire (1-2 days)</span>
+                                        </div>
+
+                                        {/* Step 2 */}
+                                        <div className="flex items-center gap-3">
+                                          <div className="w-2 h-2 rounded-full bg-[#f59e0b] animate-pulse relative z-10" style={{ animationDelay: '0.5s' }} />
+                                          <Bell className="w-4 h-4 text-[#7f7582] flex-shrink-0" />
+                                          <span className="text-[13px] text-[#373338]" style={{ fontFamily: 'Soehne, sans-serif' }}>You'll receive a notification + email</span>
+                                        </div>
+
+                                        {/* Step 3 */}
+                                        <div className="flex items-center gap-3">
+                                          <div className="w-2 h-2 rounded-full bg-[#f59e0b] animate-pulse relative z-10" style={{ animationDelay: '1s' }} />
+                                          <Briefcase className="w-4 h-4 text-[#7f7582] flex-shrink-0" />
+                                          <span className="text-[13px] text-[#373338]" style={{ fontFamily: 'Soehne, sans-serif' }}>Your investment appears in portfolio</span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Get Support CTA */}
+                                    <div className="mt-4 pt-3">
+                                      <button
+                                        className="text-[13px] text-[#7f7582] hover:text-[#373338] transition-colors underline underline-offset-2"
+                                        style={{ fontFamily: 'Soehne, sans-serif' }}
+                                      >
+                                        Get Support
+                                      </button>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -2035,41 +2060,27 @@ export function ZAIInvestmentFlow({
                         />
                       </div>
 
-                      {/* Scratch Card Reward */}
-                      <ScratchCard
-                        revealThreshold={40}
-                        onReveal={() => {
-                          // Handle reward claimed
-                          console.log('Reward claimed!');
-                        }}
+                      {/* AI Text */}
+                      <p
+                        className="text-[16px] text-[#48424a] leading-relaxed mb-4"
+                        style={{ fontFamily: 'Soehne, sans-serif' }}
                       >
-                        <div className="bg-gradient-to-br from-[#fef3c7] to-[#fde68a] rounded-xl p-5 border border-[#fbbf24]/30">
-                          <div className="flex items-center gap-2 mb-3">
-                            <span className="text-lg">🎁</span>
-                            <span
-                              className="text-[11px] text-[#92400e] uppercase tracking-wider font-medium"
-                              style={{ fontFamily: 'Soehne, sans-serif' }}
-                            >
-                              You've Unlocked a Reward
-                            </span>
-                          </div>
-                          <p
-                            className="text-[15px] text-[#78350f] leading-relaxed mb-4"
-                            style={{ fontFamily: 'Soehne, sans-serif' }}
-                          >
-                            Congratulations! You've earned $300 in Goodfin credit toward your next investment.
-                          </p>
-                          <button
-                            onClick={() => {
-                              // Handle claim reward
-                            }}
-                            className="w-full py-2.5 bg-[#78350f] text-white text-[14px] font-medium rounded-lg hover:bg-[#92400e] transition-colors"
-                            style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                          >
-                            Claim Your $300
-                          </button>
-                        </div>
-                      </ScratchCard>
+                        You've unlocked some exclusive rewards! Here's what you've earned for completing your investment.
+                      </p>
+
+                      {/* Gift Reveal Reward */}
+                      <GiftReveal
+                        onComplete={() => {
+                          console.log('All rewards revealed!');
+                        }}
+                        onCardAction={(cardId) => {
+                          console.log('Card action:', cardId);
+                          // Handle different card actions
+                          // 1 = Claim $300 credit
+                          // 2 = Schedule 1-on-1 meeting
+                          // 3 = View deal discussions
+                        }}
+                      />
                     </div>
                   )}
 
