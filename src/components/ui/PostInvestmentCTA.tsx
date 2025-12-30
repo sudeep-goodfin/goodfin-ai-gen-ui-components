@@ -36,7 +36,7 @@ const generateDraftPost = (dealName: string) => {
 };
 
 // Placeholder text
-const PLACEHOLDER_TEXT = "Share why you invested in this deal...";
+const PLACEHOLDER_TEXT = "Why did you invest? Share what made this deal compelling...";
 
 /**
  * Referral CTA Component
@@ -156,9 +156,9 @@ export function ReferralCTA({
  */
 // How bullish options
 const BULLISH_OPTIONS = [
-  { id: 'cautious', label: 'Cautiously optimistic' },
-  { id: 'bullish', label: 'Very bullish' },
-  { id: 'selective', label: 'Selective - depends on execution' },
+  { id: 'moon', label: 'To the moon' },
+  { id: 'strong', label: 'Strong bet' },
+  { id: 'watching', label: 'Watching closely' },
 ];
 
 export function TickerCTA({
@@ -220,21 +220,21 @@ export function TickerCTA({
                 className="text-[15px] font-medium text-gray-900"
                 style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
               >
-                Goodfin Ticker
+                Goodfin Investor Ticker
               </h3>
             </div>
             <span
               className="text-[12px] text-gray-500"
               style={{ fontFamily: 'Soehne, sans-serif' }}
             >
-              Share why you invested
+              Share your investment thesis
             </span>
           </div>
           <p
             className="text-[13px] text-gray-500 leading-relaxed"
             style={{ fontFamily: 'Soehne, sans-serif' }}
           >
-            Goodfin Ticker is where investors share insights on deals. Post your take and see what others think.
+            Tell the Goodfin community why you invested. Your perspective helps others evaluate opportunities.
           </p>
         </div>
 
@@ -354,6 +354,16 @@ export function TickerCTA({
             />
           </div>
 
+          {/* Helper text */}
+          {charCount === 0 && (
+            <p
+              className="text-[12px] text-gray-400 mt-2"
+              style={{ fontFamily: 'Soehne, sans-serif' }}
+            >
+              Share at least 140 characters. Quality insights drive better discussions.
+            </p>
+          )}
+
           {/* Footer: Character Count + Submit */}
           <div className="flex items-center justify-between mt-3">
             <div className="flex items-center gap-3">
@@ -386,14 +396,15 @@ export function TickerCTA({
               </div>
 
               {/* Character count text */}
-              {!isMinMet && (
-                <span
-                  className="text-[12px] text-blue-500"
-                  style={{ fontFamily: 'Soehne, sans-serif' }}
-                >
-                  {minChars - charCount} more characters needed
-                </span>
-              )}
+              <span
+                className={cn(
+                  "text-[12px]",
+                  isMinMet ? "text-emerald-500" : "text-gray-500"
+                )}
+                style={{ fontFamily: 'Soehne, sans-serif' }}
+              >
+                {isMinMet ? "Ready to submit" : `${minChars - charCount} more characters needed`}
+              </span>
             </div>
 
             <TooltipProvider>
@@ -406,23 +417,12 @@ export function TickerCTA({
                       "flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium rounded-lg transition-all",
                       isFormComplete
                         ? "bg-emerald-500 hover:bg-emerald-600 text-white"
-                        : "bg-emerald-500/40 text-white cursor-not-allowed"
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
                     )}
                     style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                   >
-                    {isFormComplete ? (
-                      <>
-                        <Send className="w-3.5 h-3.5" />
-                        Post to Ticker
-                      </>
-                    ) : !isMinMet ? (
-                      <span className="text-white/90">{charsNeeded} more characters</span>
-                    ) : (
-                      <>
-                        <Send className="w-3.5 h-3.5" />
-                        Post to Ticker
-                      </>
-                    )}
+                    <Send className="w-3.5 h-3.5" />
+                    Submit Your Insights
                   </button>
                 </TooltipTrigger>
                 {!isFormComplete && (
