@@ -27,7 +27,7 @@ import { DocumentSigningModal } from './components/DocumentSigningModal';
 import { WireBankDetails } from './components/WireBankDetails';
 import { DocumentSigningInline } from './components/DocumentSigningInline';
 import { DealCard, type DealCardProps } from '@/components/ui/DealCard';
-import { GiftReveal } from '@/components/ui/GiftReveal';
+import { PostInvestmentCTA } from '@/components/ui/PostInvestmentCTA';
 import {
   type FlowStep,
   type Message,
@@ -92,35 +92,53 @@ const DEAL_CATEGORIES = [
 
 // Suggestion chips data for each step
 const STEP_SUGGESTIONS: Record<string, string[]> = {
+  // Commit step - User is confirming their investment amount
   commit: [
-    'What are the investment risks?',
-    'Tell me more about the valuation',
-    'What happens after I commit?',
+    'How much should I invest?',
+    'What\'s the minimum investment?',
+    'Can I change my amount later?',
   ],
+  // PPM Document - Private Placement Memorandum
   ppm: [
-    'Summarize the key terms',
-    'What are the fees involved?',
-    'Explain the risk factors',
+    'Summarize this in plain English',
+    'What are the main risks?',
+    'How does the fund make money?',
   ],
+  // Subscription Agreement
   subscription: [
-    'What am I agreeing to?',
-    'Can I cancel my investment?',
-    'Explain the ownership structure',
+    'What am I signing up for?',
+    'When will I be charged?',
+    'Can I back out after signing?',
   ],
+  // LLC/Suitability Agreement
   suitability: [
-    'Why is this suitable for me?',
-    'What are the liquidity terms?',
-    'How long is the lock-up period?',
+    'What are my rights as an investor?',
+    'How do I receive distributions?',
+    'What\'s the expected timeline?',
   ],
+  // KYC - Identity Verification
   kyc: [
-    'How is my data protected?',
+    'Why do you need my ID?',
+    'Is my information secure?',
     'What if verification fails?',
-    'Why do you need this information?',
   ],
+  // Wire Transfer
   wire: [
-    'When will I receive confirmation?',
-    'What are the next steps?',
-    'How long until the investment closes?',
+    'Can I use ACH instead?',
+    'How long until it\'s confirmed?',
+    'What happens after I wire?',
+  ],
+  // Investor Type Selection (for first-time users)
+  investor_type: [
+    'Which type am I?',
+    'What\'s an accredited investor?',
+    'Does my type affect anything?',
+  ],
+  // Completed state (after wire is sent)
+  completed: [
+    'When will I see returns?',
+    'How do I track my investment?',
+    'Can I invest in more deals?',
   ],
 };
 
@@ -2065,20 +2083,23 @@ export function ZAIInvestmentFlow({
                         className="text-[16px] text-[#48424a] leading-relaxed mb-4"
                         style={{ fontFamily: 'Soehne, sans-serif' }}
                       >
-                        You've unlocked some exclusive rewards! Here's what you've earned for completing your investment.
+                        Congratulations on your investment! If you liked the Goodfin experience, invite friends and earn $300 credit when they complete their first investment. You can also schedule a 1:1 call with our team or see what other investors are saying about deals.
                       </p>
 
-                      {/* Gift Reveal Reward */}
-                      <GiftReveal
-                        onComplete={() => {
-                          console.log('All rewards revealed!');
+                      {/* Post Investment CTA */}
+                      <PostInvestmentCTA
+                        referralCode="abc123"
+                        referralCredit={300}
+                        onCopyLink={() => {
+                          console.log('Referral link copied');
                         }}
-                        onCardAction={(cardId) => {
-                          console.log('Card action:', cardId);
-                          // Handle different card actions
-                          // 1 = Claim $300 credit
-                          // 2 = Schedule 1-on-1 meeting
-                          // 3 = View deal discussions
+                        onScheduleCall={() => {
+                          console.log('Schedule call clicked');
+                          // Open scheduling modal or redirect
+                        }}
+                        onViewDiscussions={() => {
+                          console.log('View discussions clicked');
+                          // Navigate to community/discussions
                         }}
                       />
                     </div>
