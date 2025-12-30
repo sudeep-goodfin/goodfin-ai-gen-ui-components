@@ -50,19 +50,25 @@ function SectionHeader({
 function ActionItem({
   icon,
   text,
+  actionLabel,
   onClick
 }: {
   icon: React.ReactNode;
   text: string;
+  actionLabel?: string;
   onClick?: () => void;
 }) {
   return (
     <div
       onClick={onClick}
-      className="flex items-center gap-3 py-3 px-4 hover:bg-[#f7f7f8] cursor-pointer transition-colors border-b border-[#e6e4e7] last:border-b-0"
+      className="group flex items-center gap-3 py-3 px-4 hover:bg-[#f7f7f8] cursor-pointer transition-colors border-b border-[#e6e4e7] last:border-b-0"
     >
       <div className="w-6 h-6 flex items-center justify-center shrink-0">{icon}</div>
-      <span className="text-[14px] text-[#29272a] leading-5 font-['Soehne',sans-serif]">{text}</span>
+      <span className="flex-1 text-[14px] text-[#29272a] leading-5 font-['Soehne',sans-serif]">{text}</span>
+      <span className="flex items-center gap-1 text-[13px] text-[#7f7582] opacity-0 group-hover:opacity-100 transition-opacity font-['Soehne_Kraftig',sans-serif]">
+        {actionLabel || 'View'}
+        <ArrowRight className="w-3.5 h-3.5" />
+      </span>
     </div>
   );
 }
@@ -76,7 +82,8 @@ function ActionNeededSection({ onItemClick }: { onItemClick?: (action: string) =
           <img src="/icons/products/spaceX.png" alt="SpaceX" className="w-full h-full object-cover" />
         </div>
       ),
-      text: 'SpaceX closes in 2 days - Complete wire transfer'
+      text: 'SpaceX closes in 2 days - Complete wire transfer',
+      actionLabel: 'Complete'
     },
     {
       icon: (
@@ -84,7 +91,8 @@ function ActionNeededSection({ onItemClick }: { onItemClick?: (action: string) =
           <img src="/icons/products/databricks.jpg" alt="Databricks" className="w-full h-full object-cover" />
         </div>
       ),
-      text: 'Databricks - Share why you invested'
+      text: 'Databricks - Share why you invested',
+      actionLabel: 'Share'
     },
     {
       icon: (
@@ -92,7 +100,8 @@ function ActionNeededSection({ onItemClick }: { onItemClick?: (action: string) =
           <Gift className="w-3.5 h-3.5 text-white" />
         </div>
       ),
-      text: 'Invite friends to Goodfin'
+      text: 'Invite friends and earn a $300 credit',
+      actionLabel: 'Invite'
     },
   ];
 
@@ -109,6 +118,7 @@ function ActionNeededSection({ onItemClick }: { onItemClick?: (action: string) =
             key={idx}
             icon={action.icon}
             text={action.text}
+            actionLabel={action.actionLabel}
             onClick={() => onItemClick?.(action.text)}
           />
         ))}
@@ -761,8 +771,8 @@ export function HomeContentV2({
 
         {variant === 'full' && (
           <>
-            <ConciergeSuggestionsSection onAction={(action) => handleItemClick(action)} />
             <ActionNeededSection onItemClick={handleItemClick} />
+            <ConciergeSuggestionsSection onAction={(action) => handleItemClick(action)} />
             <ThisWeekSection onItemClick={handleItemClick} />
             <DealsForYouSection onDealClick={(deal) => onModeChange?.('deals')} />
             <DealAlertsSection onManageAlerts={() => handleItemClick('manage-alerts')} />

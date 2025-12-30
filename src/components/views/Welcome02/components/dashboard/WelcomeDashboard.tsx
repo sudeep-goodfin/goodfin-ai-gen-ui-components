@@ -779,7 +779,7 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
             dealLogo: '/icons/products/databricks.jpg'
           }
         };
-      } else if (text.includes("Invite friends to Goodfin")) {
+      } else if (text.includes("Invite friends") && text.includes("$300 credit")) {
         fullResponse = "Invite friends and earn a $300 credit when they complete their first investment. Credits can be applied to reduce your next investment amount.";
         componentMessage = {
           role: 'ai',
