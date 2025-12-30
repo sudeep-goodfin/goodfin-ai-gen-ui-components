@@ -1456,7 +1456,7 @@ export function ZAIInvestmentFlow({
                                     className="text-[14px] text-[#7f7582] leading-relaxed"
                                     style={{ fontFamily: 'Soehne, sans-serif' }}
                                   >
-                                    Congratulations! You've completed all the steps on your end. Your documents are signed and your wire is on its way.
+                                    Congratulations! You've completed all the steps on your end. Your documents are signed.
                                   </p>
 
                                   {/* What Happens Next */}
@@ -1478,7 +1478,7 @@ export function ZAIInvestmentFlow({
                                         <div className="flex items-center gap-3">
                                           <div className="w-2 h-2 rounded-full bg-[#f59e0b] animate-pulse relative z-10" style={{ animationDelay: '0s' }} />
                                           <CheckCircle className="w-4 h-4 text-[#7f7582] flex-shrink-0" />
-                                          <span className="text-[13px] text-[#373338]" style={{ fontFamily: 'Soehne, sans-serif' }}>Our team will verify your wire (1-2 days)</span>
+                                          <span className="text-[13px] text-[#373338]" style={{ fontFamily: 'Soehne, sans-serif' }}>Our team will verify your wire (typically 1-2 days)</span>
                                         </div>
 
                                         {/* Step 2 */}
@@ -1492,7 +1492,7 @@ export function ZAIInvestmentFlow({
                                         <div className="flex items-center gap-3">
                                           <div className="w-2 h-2 rounded-full bg-[#f59e0b] animate-pulse relative z-10" style={{ animationDelay: '1s' }} />
                                           <Briefcase className="w-4 h-4 text-[#7f7582] flex-shrink-0" />
-                                          <span className="text-[13px] text-[#373338]" style={{ fontFamily: 'Soehne, sans-serif' }}>Your investment appears in portfolio</span>
+                                          <span className="text-[13px] text-[#373338]" style={{ fontFamily: 'Soehne, sans-serif' }}>Your investment appears in your dashboard</span>
                                         </div>
                                       </div>
                                     </div>
@@ -2083,7 +2083,7 @@ export function ZAIInvestmentFlow({
                         className="text-[16px] text-[#48424a] leading-relaxed mb-4"
                         style={{ fontFamily: 'Soehne, sans-serif' }}
                       >
-                        Congratulations on your investment! If you liked the Goodfin experience, invite friends and earn $300 credit when they complete their first investment. You can also schedule a 1:1 call with our team or see what other investors are saying about deals.
+                        Congratulations on your investment! If you liked the Goodfin experience, invite friends and earn a $300 credit when they complete their first investment.
                       </p>
 
                       {/* Post Investment CTA */}
@@ -2092,14 +2092,6 @@ export function ZAIInvestmentFlow({
                         referralCredit={300}
                         onCopyLink={() => {
                           console.log('Referral link copied');
-                        }}
-                        onScheduleCall={() => {
-                          console.log('Schedule call clicked');
-                          // Open scheduling modal or redirect
-                        }}
-                        onViewDiscussions={() => {
-                          console.log('View discussions clicked');
-                          // Navigate to community/discussions
                         }}
                       />
                     </div>
@@ -2211,21 +2203,11 @@ export function ZAIInvestmentFlow({
                                     </span>
                                   </div>
                                   <p
-                                    className="text-[14px] text-[#7f7582] leading-relaxed mb-4"
+                                    className="text-[14px] text-[#7f7582] leading-relaxed"
                                     style={{ fontFamily: 'Soehne, sans-serif' }}
                                   >
-                                    Congratulations! You've completed all the steps on your end. Your documents are signed and your wire is on its way.
+                                    Congratulations! You've completed all the steps on your end. Your documents are signed.
                                   </p>
-                                  <button
-                                    className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[13px] font-medium rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all"
-                                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                                    onClick={() => {
-                                      const rewardSection = document.querySelector('[data-reward-section]');
-                                      rewardSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                    }}
-                                  >
-                                    Invite Friends & Earn $300
-                                  </button>
                                 </div>
                               </div>
                             );

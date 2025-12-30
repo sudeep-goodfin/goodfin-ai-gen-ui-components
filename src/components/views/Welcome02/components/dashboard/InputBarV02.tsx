@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { chatSvgPaths } from './chat-icons';
 import { cn } from '@/lib/utils';
-import { FileText, Calendar, Briefcase, Home, X, Pencil, Plus, Info } from "lucide-react";
+import { FileText, Calendar, Briefcase, Home, X, Pencil, Plus, Info, Sparkles } from "lucide-react";
 import { CommandPanel, Recipe, Context, Pill, PanelMode } from './command-panel';
 import { useRecording } from './hooks/useRecording';
 import { VoiceRecordingInterface } from './VoiceRecordingInterface';
@@ -1386,19 +1386,35 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 {formCallout.ctaText || 'Submit Business Information'}
               </button>
             ) : formCallout?.state === 'personalization' ? (
-              <button
-                onClick={formCallout.onCtaClick}
-                disabled={formCallout.isCtaDisabled}
-                className={cn(
-                  "w-full py-3.5 rounded-xl text-[16px] font-medium transition-all",
-                  !formCallout.isCtaDisabled
-                    ? "bg-[#373338] text-white hover:bg-[#29272a] cursor-pointer"
-                    : "bg-[#e8e5e8] text-[#9a909a] cursor-not-allowed"
-                )}
-                style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-              >
-                {formCallout.ctaText || 'Continue'}
-              </button>
+              <div className="flex items-center gap-3">
+                {/* Input field area */}
+                <div className="flex-1 flex items-center">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Ask anything..."
+                    className="flex-1 min-w-[100px] text-[16px] leading-normal text-[#29272a] placeholder:text-[#7f7582] bg-transparent outline-none font-light tracking-[-0.3125px]"
+                  />
+                </div>
+                {/* Ask AI button on the right */}
+                <button
+                  onClick={formCallout.onCtaClick}
+                  disabled={formCallout.isCtaDisabled}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2.5 rounded-xl text-[14px] font-medium transition-all shrink-0",
+                    !formCallout.isCtaDisabled
+                      ? "bg-[#373338] text-white hover:bg-[#29272a] cursor-pointer"
+                      : "bg-[#e8e5e8] text-[#9a909a] cursor-not-allowed"
+                  )}
+                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Ask AI</span>
+                </button>
+              </div>
             ) : (
               <>
                 {/* Investment Action Header */}
