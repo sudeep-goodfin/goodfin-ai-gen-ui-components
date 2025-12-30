@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { chatSvgPaths } from './chat-icons';
 import { cn } from '@/lib/utils';
-import { FileText, Calendar, Briefcase, Home, X, Pencil, Plus, Info, Sparkles } from "lucide-react";
+import { FileText, Calendar, Briefcase, Home, X, Pencil, Plus, Info, Sparkles, ArrowLeft } from "lucide-react";
 import { CommandPanel, Recipe, Context, Pill, PanelMode } from './command-panel';
 import { useRecording } from './hooks/useRecording';
 import { VoiceRecordingInterface } from './VoiceRecordingInterface';
@@ -615,7 +615,16 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
             {formCallout.state !== 'personalization_processing' && formCallout.state !== 'personalization_complete' && (
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-3 min-w-0 flex-1">
-                {formCallout.dealLogo && (
+                {/* Back button when AI overlay is shown */}
+                {formCallout.state === 'personalization' && isAskAiExpanded && (
+                  <button
+                    onClick={() => setIsAskAiExpanded(false)}
+                    className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/60 transition-colors"
+                  >
+                    <ArrowLeft className="w-5 h-5 text-[#373338]" />
+                  </button>
+                )}
+                {!isAskAiExpanded && formCallout.dealLogo && (
                   <img
                     src={formCallout.dealLogo}
                     alt="Deal"
@@ -623,7 +632,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                   />
                 )}
                 <div className="flex flex-col gap-1 min-w-0">
-                  {formCallout.headerText && (
+                  {(formCallout.headerText || isAskAiExpanded) && (
                   <span
                     className={cn(
                       "text-[14px] md:text-[15px] font-medium text-[#29272a] truncate",
@@ -631,11 +640,11 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                     )}
                     style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                   >
-                    {formCallout.headerText}
+                    {isAskAiExpanded ? "Ask AI anything" : formCallout.headerText}
                   </span>
                   )}
-                  {/* Saved investor profile badge for returning users */}
-                  {formCallout.savedInvestorProfile && (
+                  {/* Saved investor profile badge for returning users - hidden when AI overlay */}
+                  {formCallout.savedInvestorProfile && !isAskAiExpanded && (
                     <button
                       onClick={formCallout.onChangeProfile}
                       className="self-start flex items-center gap-1 px-2 py-0.5 text-[10px] text-[#685f6a] bg-white/60 hover:bg-white/80 border border-[#d0cdd2] rounded-md transition-colors"
@@ -649,8 +658,8 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 </div>
               </div>
               <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-                {/* Ask AI button - toggles expanded AI response area */}
-                {formCallout.state === 'personalization' && formCallout.isPersonalizationExpanded && (
+                {/* Ask AI button - toggles expanded AI response area - hidden when already expanded */}
+                {formCallout.state === 'personalization' && formCallout.isPersonalizationExpanded && !isAskAiExpanded && (
                   <TooltipProvider delayDuration={300}>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -674,8 +683,8 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                     </Tooltip>
                   </TooltipProvider>
                 )}
-                {/* Skip personalization button - on the right */}
-                {formCallout.state === 'personalization' && formCallout.isPersonalizationExpanded && formCallout.onSkipPersonalization && (
+                {/* Skip personalization button - on the right - hidden when AI overlay */}
+                {formCallout.state === 'personalization' && formCallout.isPersonalizationExpanded && formCallout.onSkipPersonalization && !isAskAiExpanded && (
                   <TooltipProvider delayDuration={300}>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -966,8 +975,8 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
               </div>
             )}
 
-            {/* Personalization Questions - Progressive Disclosure (One at a time) */}
-            {formCallout.state === 'personalization' && formCallout.personalizationQuestions && formCallout.isPersonalizationExpanded && (
+            {/* Personalization Questions - Progressive Disclosure (One at a time) - Hidden when AI overlay is shown */}
+            {formCallout.state === 'personalization' && formCallout.personalizationQuestions && formCallout.isPersonalizationExpanded && !isAskAiExpanded && (
               <div className="flex flex-col gap-3 mt-2">
                 {/* Previously answered questions - playful stacked summary */}
                 {(() => {
@@ -1268,8 +1277,8 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
               </div>
             )}
 
-            {/* Minimized Personalization Summary with Progress */}
-            {formCallout.state === 'personalization' && !formCallout.isPersonalizationExpanded && (
+            {/* Minimized Personalization Summary with Progress - Hidden when AI overlay is shown */}
+            {formCallout.state === 'personalization' && !formCallout.isPersonalizationExpanded && !isAskAiExpanded && (
               <button
                 onClick={formCallout.onTogglePersonalizationExpand}
                 className="flex items-center justify-between w-full px-4 py-3 mt-1 rounded-xl bg-white/70 hover:bg-white/90 border border-[#e0dce0] transition-all group"
@@ -1404,67 +1413,75 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
               </button>
             ) : formCallout?.state === 'personalization' ? (
               <div className="flex flex-col gap-3">
-                {/* Expanded AI Response Area - shows when Ask AI is clicked */}
+                {/* Primary CTA Button - hidden when AI overlay is shown */}
+                {!isAskAiExpanded && (
+                  <button
+                    onClick={formCallout.onCtaClick}
+                    disabled={formCallout.isCtaDisabled}
+                    className={cn(
+                      "w-full py-3.5 rounded-xl text-[16px] font-medium transition-all",
+                      !formCallout.isCtaDisabled
+                        ? "bg-[#373338] text-white hover:bg-[#29272a] cursor-pointer"
+                        : "bg-[#e8e5e8] text-[#9a909a] cursor-not-allowed"
+                    )}
+                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                  >
+                    {formCallout.ctaText || 'Continue'}
+                  </button>
+                )}
+
+                {/* AI Chat Overlay - shows when Ask AI is clicked */}
                 {isAskAiExpanded && (
-                  <div className="flex flex-col gap-3 p-3 bg-[#f8f7f9] rounded-xl border border-[#e8e5e8] animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="flex flex-col gap-3">
                     {/* Conversation Messages - Scrollable */}
-                    <div className="flex flex-col gap-3 max-h-[200px] overflow-y-auto pr-1">
-                      {askAiMessages.length > 0 ? (
-                        askAiMessages.map((msg, idx) => (
-                          <div key={idx} className={cn(
-                            "flex gap-2",
-                            msg.role === 'user' ? "flex-row-reverse" : ""
+                    <div className="flex flex-col gap-3 max-h-[180px] overflow-y-auto pr-1">
+                      {askAiMessages.map((msg, idx) => (
+                        <div key={idx} className={cn(
+                          "flex gap-2",
+                          msg.role === 'user' ? "flex-row-reverse" : ""
+                        )}>
+                          {/* Avatar */}
+                          <div className={cn(
+                            "w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0",
+                            msg.role === 'ai'
+                              ? "bg-gradient-to-br from-[#373338] to-[#685f6a]"
+                              : "bg-[#e0dce0]"
                           )}>
-                            {/* Avatar */}
-                            <div className={cn(
-                              "w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0",
-                              msg.role === 'ai'
-                                ? "bg-gradient-to-br from-[#373338] to-[#685f6a]"
-                                : "bg-[#e0dce0]"
-                            )}>
-                              {msg.role === 'ai' ? (
-                                <Sparkles className="w-3 h-3 text-white" />
-                              ) : (
-                                <span className="text-[10px] font-medium text-[#685f6a]">Y</span>
-                              )}
-                            </div>
-                            {/* Message Bubble */}
-                            <div className={cn(
-                              "flex-1 max-w-[85%] rounded-lg px-3 py-2",
-                              msg.role === 'ai'
-                                ? "bg-white border border-[#e8e5e8]"
-                                : "bg-[#373338] text-white"
-                            )}>
-                              <p
-                                className={cn(
-                                  "text-[13px] leading-relaxed",
-                                  msg.role === 'ai' ? "text-[#373338]" : "text-white"
-                                )}
-                                style={{ fontFamily: 'Soehne, sans-serif' }}
-                              >
-                                {msg.content}
-                              </p>
-                            </div>
+                            {msg.role === 'ai' ? (
+                              <Sparkles className="w-3 h-3 text-white" />
+                            ) : (
+                              <span className="text-[10px] font-medium text-[#685f6a]">Y</span>
+                            )}
                           </div>
-                        ))
-                      ) : (
-                        <div className="flex items-center gap-2 text-[13px] text-[#7f7582]">
-                          <Sparkles className="w-4 h-4" />
-                          <span style={{ fontFamily: 'Soehne, sans-serif' }}>
-                            Ask me anything about your preferences or investments...
-                          </span>
+                          {/* Message Bubble */}
+                          <div className={cn(
+                            "flex-1 max-w-[85%] rounded-lg px-3 py-2",
+                            msg.role === 'ai'
+                              ? "bg-white border border-[#e8e5e8]"
+                              : "bg-[#373338] text-white"
+                          )}>
+                            <p
+                              className={cn(
+                                "text-[13px] leading-relaxed",
+                                msg.role === 'ai' ? "text-[#373338]" : "text-white"
+                              )}
+                              style={{ fontFamily: 'Soehne, sans-serif' }}
+                            >
+                              {msg.content}
+                            </p>
+                          </div>
                         </div>
-                      )}
+                      ))}
                     </div>
+
                     {/* AI Query Input */}
-                    <div className="flex items-center gap-2 bg-white rounded-lg border border-[#e0dce0] px-3 py-2">
+                    <div className="flex items-center gap-2 bg-white rounded-xl border border-[#e0dce0] px-4 py-3">
                       <input
                         type="text"
                         value={askAiQuery}
                         onChange={(e) => setAskAiQuery(e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && askAiQuery.trim()) {
-                            // Add user message and simulate AI response
                             const userMsg = { role: 'user' as const, content: askAiQuery };
                             const aiMsg = { role: 'ai' as const, content: `That's a great question! Based on your investment profile and goals, I'd suggest considering a balanced approach. Would you like more specific recommendations?` };
                             setAskAiMessages(prev => [...prev, userMsg, aiMsg]);
@@ -1472,7 +1489,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                           }
                         }}
                         placeholder="Type your question..."
-                        className="flex-1 text-[14px] text-[#29272a] placeholder:text-[#a09a9f] bg-transparent outline-none"
+                        className="flex-1 text-[15px] text-[#29272a] placeholder:text-[#a09a9f] bg-transparent outline-none"
                         style={{ fontFamily: 'Soehne, sans-serif' }}
                       />
                       <button
@@ -1484,29 +1501,15 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                             setAskAiQuery('');
                           }
                         }}
-                        className="p-1.5 rounded-lg hover:bg-[#f0eef0] transition-colors"
+                        className="p-2 rounded-lg bg-[#373338] hover:bg-[#29272a] transition-colors"
                       >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#685f6a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
                         </svg>
                       </button>
                     </div>
                   </div>
                 )}
-                {/* Primary CTA Button */}
-                <button
-                  onClick={formCallout.onCtaClick}
-                  disabled={formCallout.isCtaDisabled}
-                  className={cn(
-                    "w-full py-3.5 rounded-xl text-[16px] font-medium transition-all",
-                    !formCallout.isCtaDisabled
-                      ? "bg-[#373338] text-white hover:bg-[#29272a] cursor-pointer"
-                      : "bg-[#e8e5e8] text-[#9a909a] cursor-not-allowed"
-                  )}
-                  style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-                >
-                  {formCallout.ctaText || 'Continue'}
-                </button>
               </div>
             ) : (
               <>
