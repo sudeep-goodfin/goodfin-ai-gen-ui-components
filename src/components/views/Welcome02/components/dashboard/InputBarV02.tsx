@@ -280,6 +280,18 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
   const [selectedPills, setSelectedPills] = useState<Pill[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Ask AI expanded state for personalization
+  const [isAskAiExpanded, setIsAskAiExpanded] = useState(false);
+  const [askAiQuery, setAskAiQuery] = useState('');
+
+  // Mock conversation messages for demo
+  const [askAiMessages, setAskAiMessages] = useState<Array<{ role: 'user' | 'ai'; content: string }>>([
+    { role: 'user', content: 'What investment sectors should I focus on?' },
+    { role: 'ai', content: 'Based on your profile, I recommend focusing on growth-stage technology companies, particularly in AI/ML infrastructure and fintech. These sectors align well with your risk tolerance and investment horizon.' },
+    { role: 'user', content: 'How much should I allocate to alternatives?' },
+    { role: 'ai', content: 'For your net worth range, a 15-25% allocation to alternatives is typical. Start with 10% if you\'re new to private markets, then gradually increase as you gain experience.' },
+  ]);
+
   // Voice recording hook
   const {
     recordingState,
@@ -637,13 +649,19 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 </div>
               </div>
               <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-                {/* Ask AI button - on the left */}
+                {/* Ask AI button - toggles expanded AI response area */}
                 {formCallout.state === 'personalization' && formCallout.isPersonalizationExpanded && (
                   <TooltipProvider delayDuration={300}>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <button
-                          className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-[#685f6a] bg-white/60 hover:bg-white/80 border border-[#d0cdd2] rounded-lg transition-colors"
+                          onClick={() => setIsAskAiExpanded(!isAskAiExpanded)}
+                          className={cn(
+                            "flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium border rounded-lg transition-colors",
+                            isAskAiExpanded
+                              ? "text-white bg-[#373338] border-[#373338] hover:bg-[#29272a]"
+                              : "text-[#685f6a] bg-white/60 hover:bg-white/80 border-[#d0cdd2]"
+                          )}
                           style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                         >
                           <Sparkles className="w-3.5 h-3.5" />
@@ -651,7 +669,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                         </button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Ask AI for help</p>
+                        <p>{isAskAiExpanded ? 'Close AI assistant' : 'Ask AI for help'}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -1385,33 +1403,109 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 {formCallout.ctaText || 'Submit Business Information'}
               </button>
             ) : formCallout?.state === 'personalization' ? (
-              <div className="flex items-center gap-3">
-                {/* Input field area */}
-                <div className="flex-1 flex items-center">
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={inputValue}
-                    onChange={handleInputChange}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Ask anything..."
-                    className="flex-1 min-w-[100px] text-[16px] leading-normal text-[#29272a] placeholder:text-[#7f7582] bg-transparent outline-none font-light tracking-[-0.3125px]"
-                  />
-                </div>
-                {/* Ask AI button on the right */}
+              <div className="flex flex-col gap-3">
+                {/* Expanded AI Response Area - shows when Ask AI is clicked */}
+                {isAskAiExpanded && (
+                  <div className="flex flex-col gap-3 p-3 bg-[#f8f7f9] rounded-xl border border-[#e8e5e8] animate-in fade-in slide-in-from-top-2 duration-200">
+                    {/* Conversation Messages - Scrollable */}
+                    <div className="flex flex-col gap-3 max-h-[200px] overflow-y-auto pr-1">
+                      {askAiMessages.length > 0 ? (
+                        askAiMessages.map((msg, idx) => (
+                          <div key={idx} className={cn(
+                            "flex gap-2",
+                            msg.role === 'user' ? "flex-row-reverse" : ""
+                          )}>
+                            {/* Avatar */}
+                            <div className={cn(
+                              "w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0",
+                              msg.role === 'ai'
+                                ? "bg-gradient-to-br from-[#373338] to-[#685f6a]"
+                                : "bg-[#e0dce0]"
+                            )}>
+                              {msg.role === 'ai' ? (
+                                <Sparkles className="w-3 h-3 text-white" />
+                              ) : (
+                                <span className="text-[10px] font-medium text-[#685f6a]">Y</span>
+                              )}
+                            </div>
+                            {/* Message Bubble */}
+                            <div className={cn(
+                              "flex-1 max-w-[85%] rounded-lg px-3 py-2",
+                              msg.role === 'ai'
+                                ? "bg-white border border-[#e8e5e8]"
+                                : "bg-[#373338] text-white"
+                            )}>
+                              <p
+                                className={cn(
+                                  "text-[13px] leading-relaxed",
+                                  msg.role === 'ai' ? "text-[#373338]" : "text-white"
+                                )}
+                                style={{ fontFamily: 'Soehne, sans-serif' }}
+                              >
+                                {msg.content}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="flex items-center gap-2 text-[13px] text-[#7f7582]">
+                          <Sparkles className="w-4 h-4" />
+                          <span style={{ fontFamily: 'Soehne, sans-serif' }}>
+                            Ask me anything about your preferences or investments...
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    {/* AI Query Input */}
+                    <div className="flex items-center gap-2 bg-white rounded-lg border border-[#e0dce0] px-3 py-2">
+                      <input
+                        type="text"
+                        value={askAiQuery}
+                        onChange={(e) => setAskAiQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && askAiQuery.trim()) {
+                            // Add user message and simulate AI response
+                            const userMsg = { role: 'user' as const, content: askAiQuery };
+                            const aiMsg = { role: 'ai' as const, content: `That's a great question! Based on your investment profile and goals, I'd suggest considering a balanced approach. Would you like more specific recommendations?` };
+                            setAskAiMessages(prev => [...prev, userMsg, aiMsg]);
+                            setAskAiQuery('');
+                          }
+                        }}
+                        placeholder="Type your question..."
+                        className="flex-1 text-[14px] text-[#29272a] placeholder:text-[#a09a9f] bg-transparent outline-none"
+                        style={{ fontFamily: 'Soehne, sans-serif' }}
+                      />
+                      <button
+                        onClick={() => {
+                          if (askAiQuery.trim()) {
+                            const userMsg = { role: 'user' as const, content: askAiQuery };
+                            const aiMsg = { role: 'ai' as const, content: `That's a great question! Based on your investment profile and goals, I'd suggest considering a balanced approach. Would you like more specific recommendations?` };
+                            setAskAiMessages(prev => [...prev, userMsg, aiMsg]);
+                            setAskAiQuery('');
+                          }
+                        }}
+                        className="p-1.5 rounded-lg hover:bg-[#f0eef0] transition-colors"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#685f6a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {/* Primary CTA Button */}
                 <button
                   onClick={formCallout.onCtaClick}
                   disabled={formCallout.isCtaDisabled}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2.5 rounded-xl text-[14px] font-medium transition-all shrink-0",
+                    "w-full py-3.5 rounded-xl text-[16px] font-medium transition-all",
                     !formCallout.isCtaDisabled
                       ? "bg-[#373338] text-white hover:bg-[#29272a] cursor-pointer"
                       : "bg-[#e8e5e8] text-[#9a909a] cursor-not-allowed"
                   )}
                   style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                 >
-                  <Sparkles className="w-4 h-4" />
-                  <span>Ask AI</span>
+                  {formCallout.ctaText || 'Continue'}
                 </button>
               </div>
             ) : (
