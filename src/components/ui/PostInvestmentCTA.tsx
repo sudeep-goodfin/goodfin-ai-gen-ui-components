@@ -12,7 +12,6 @@ interface ReferralCTAProps {
 
 interface TickerCTAProps {
   dealName?: string;
-  dealTicker?: string;
   dealLogo?: string;
   onPostSubmit?: (post: string) => void;
   onSuggestionClick?: (suggestion: string) => void;
@@ -124,7 +123,7 @@ export function ReferralCTA({
       </div>
 
       {/* Follow-up Suggestions */}
-      <div className="pt-2">
+      <div className="pt-1">
         <div className="flex items-center gap-1.5 mb-3">
           <Sparkles className="w-4 h-4 text-[#c4a882]" />
           <span
@@ -157,7 +156,6 @@ export function ReferralCTA({
  */
 export function TickerCTA({
   dealName = 'Anthropic',
-  dealTicker = 'ANTHR',
   dealLogo = '/icons/products/anthropic.png',
   onPostSubmit,
   onSuggestionClick,
@@ -182,7 +180,7 @@ export function TickerCTA({
   return (
     <div className="space-y-4">
       {/* AI Message Header */}
-      <div>
+      <div className="mt-4">
         {/* AI Avatar */}
         <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm border border-[#f0eef0] mb-4">
           <img
@@ -244,12 +242,6 @@ export function TickerCTA({
                 style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
               >
                 {dealName}
-              </span>
-              <span
-                className="text-[12px] text-gray-400"
-                style={{ fontFamily: 'Soehne, sans-serif' }}
-              >
-                ${dealTicker}
               </span>
             </div>
             {isEnhanced ? (
@@ -364,7 +356,7 @@ export function TickerCTA({
       </div>
 
       {/* Follow-up Suggestions */}
-      <div className="pt-2">
+      <div className="pt-1">
         <div className="flex items-center gap-1.5 mb-3">
           <Sparkles className="w-4 h-4 text-[#c4a882]" />
           <span
@@ -397,7 +389,7 @@ export function TickerCTA({
  */
 export function PostInvestmentCTA(props: PostInvestmentCTAProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <ReferralCTA
         referralCode={props.referralCode}
         referralCredit={props.referralCredit}
@@ -406,7 +398,6 @@ export function PostInvestmentCTA(props: PostInvestmentCTAProps) {
       />
       <TickerCTA
         dealName={props.dealName}
-        dealTicker={props.dealTicker}
         dealLogo={props.dealLogo}
         onPostSubmit={props.onPostSubmit}
         onSuggestionClick={props.onSuggestionClick}
