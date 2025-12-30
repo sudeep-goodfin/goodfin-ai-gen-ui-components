@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Copy, Check, Users, Sparkles, Send, TrendingUp } from 'lucide-react';
+import { Copy, Check, Users, Sparkles, Send, TrendingUp, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 
@@ -162,12 +162,15 @@ export function TickerCTA({
 }: TickerCTAProps) {
   const [postText, setPostText] = useState('');
   const [isEnhanced, setIsEnhanced] = useState(false);
+  const [starRating, setStarRating] = useState(0);
+  const [hoveredStar, setHoveredStar] = useState(0);
 
   const charCount = postText.length;
   const minChars = 120;
   const progress = Math.min((charCount / minChars) * 100, 100);
   const isMinMet = charCount >= minChars;
   const charsNeeded = minChars - charCount;
+  const isFormComplete = isMinMet && starRating > 0;
 
   const handleEnhanceWithAI = () => {
     const enhanced = postText.length > 0
@@ -229,21 +232,59 @@ export function TickerCTA({
 
         {/* Post Composer */}
         <div className="px-5 py-4">
-          {/* Deal Badge + AI Enhance */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <img
-                src={dealLogo}
-                alt={dealName}
-                className="w-6 h-6 rounded-md object-cover"
-              />
-              <span
-                className="text-[13px] font-medium text-gray-700"
-                style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-              >
-                {dealName}
-              </span>
+          {/* Deal Badge */}
+          <div className="flex items-center gap-2 mb-5">
+            <img
+              src={dealLogo}
+              alt={dealName}
+              className="w-6 h-6 rounded-md object-cover"
+            />
+            <span
+              className="text-[13px] font-medium text-gray-700"
+              style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+            >
+              {dealName}
+            </span>
+          </div>
+
+          {/* Star Rating */}
+          <div className="mb-5">
+            <p
+              className="text-[14px] font-medium text-gray-800 mb-2.5"
+              style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+            >
+              Your overall view of this deal.
+            </p>
+            <div className="flex gap-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onClick={() => setStarRating(star)}
+                  onMouseEnter={() => setHoveredStar(star)}
+                  onMouseLeave={() => setHoveredStar(0)}
+                  className="p-0.5 transition-transform hover:scale-110"
+                >
+                  <Star
+                    className={cn(
+                      "w-7 h-7 transition-colors",
+                      (hoveredStar || starRating) >= star
+                        ? "fill-amber-400 text-amber-400"
+                        : "fill-gray-200 text-gray-200"
+                    )}
+                  />
+                </button>
+              ))}
             </div>
+          </div>
+
+          {/* Textarea Label + AI Enhance */}
+          <div className="flex items-center justify-between mb-2.5">
+            <p
+              className="text-[14px] font-medium text-gray-800"
+              style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+            >
+              Anything else you'd like to add?
+            </p>
             {isEnhanced ? (
               <span
                 className="flex items-center gap-1 px-2 py-0.5 bg-violet-100 text-violet-600 text-[11px] font-medium rounded-full"
@@ -325,28 +366,36 @@ export function TickerCTA({
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => onPostSubmit?.(postText)}
-                    disabled={!isMinMet}
+                    disabled={!isFormComplete}
                     className={cn(
                       "flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium rounded-lg transition-all",
-                      isMinMet
+                      isFormComplete
                         ? "bg-emerald-500 hover:bg-emerald-600 text-white"
                         : "bg-emerald-500/40 text-white cursor-not-allowed"
                     )}
                     style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                   >
-                    {isMinMet ? (
+                    {isFormComplete ? (
                       <>
                         <Send className="w-3.5 h-3.5" />
                         Post to Ticker
                       </>
-                    ) : (
+                    ) : !isMinMet ? (
                       <span className="text-white/90">{charsNeeded} more characters</span>
+                    ) : (
+                      <>
+                        <Send className="w-3.5 h-3.5" />
+                        Post to Ticker
+                      </>
                     )}
                   </button>
                 </TooltipTrigger>
-                {!isMinMet && (
+                {!isFormComplete && (
                   <TooltipContent side="top" className="text-xs">
-                    <p>Write at least {minChars} characters to post</p>
+                    {!isMinMet
+                      ? <p>Write at least {minChars} characters</p>
+                      : <p>Add your star rating</p>
+                    }
                   </TooltipContent>
                 )}
               </Tooltip>
