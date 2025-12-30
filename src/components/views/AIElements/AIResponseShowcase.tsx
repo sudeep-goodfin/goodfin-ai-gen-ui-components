@@ -26,6 +26,7 @@ export function AIResponseShowcase({
   const [displayedText, setDisplayedText] = useState('');
   const [isThinking, setIsThinking] = useState(true);
   const [key, setKey] = useState(0);
+  const [thinkingDuration, setThinkingDuration] = useState(0);
 
   // Thinking phase then streaming
   useEffect(() => {
@@ -33,9 +34,13 @@ export function AIResponseShowcase({
 
     setIsThinking(true);
     setDisplayedText('');
+    setThinkingDuration(0);
+    const thinkingStartTime = Date.now();
 
     // Show thinking for 1.5 seconds
     const thinkingTimer = setTimeout(() => {
+      const duration = Math.round((Date.now() - thinkingStartTime) / 1000);
+      setThinkingDuration(duration);
       setIsThinking(false);
 
       // Start streaming
@@ -52,7 +57,7 @@ export function AIResponseShowcase({
       }, 80);
 
       return () => clearInterval(streamInterval);
-    }, 1500);
+    }, 5000);
 
     return () => clearTimeout(thinkingTimer);
   }, [isPlaying, key]);
@@ -67,7 +72,7 @@ export function AIResponseShowcase({
   const isStreaming = !isThinking && displayedText.length < SAMPLE_RESPONSE.length;
 
   return (
-    <div className="p-8 bg-[#f7f7f8] min-h-[500px]">
+    <div className="p-8 bg-[#EDEBEE] min-h-[500px]">
       <div className="max-w-2xl mx-auto space-y-8">
         <div className="space-y-2">
           <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
@@ -87,7 +92,7 @@ export function AIResponseShowcase({
         </div>
 
         {/* Main showcase - Chat bubble style with Goodfin AI avatar */}
-        <div className="rounded-xl border border-border bg-[#f7f7f8] p-6">
+        <div className="rounded-xl border-2 border-white bg-[#F7F7F8] p-6">
           <div className="flex gap-3">
             {/* Goodfin AI Avatar */}
             <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
@@ -98,19 +103,23 @@ export function AIResponseShowcase({
               />
             </div>
 
-            <div className="flex-1 space-y-1">
-              <span className="text-xs font-medium text-muted-foreground">
-                Goodfin AI
-              </span>
-
-              {/* Thinking State */}
-              {isThinking && (
-                <Shimmer className="text-base font-heading">
-                  thinking about your question...
-                </Shimmer>
+            <div className="flex-1 space-y-2">
+              {/* Thinking State - stays visible, shimmers while thinking, shows duration when done */}
+              {(isThinking || displayedText.length > 0) && (
+                <div>
+                  {isThinking ? (
+                    <Shimmer className="text-base font-heading">
+                      thinking about your question...
+                    </Shimmer>
+                  ) : (
+                    <span className="text-base font-heading text-muted-foreground">
+                      thought for {thinkingDuration} sec{thinkingDuration !== 1 ? 's' : ''}
+                    </span>
+                  )}
+                </div>
               )}
 
-              {/* Streaming Response */}
+              {/* Streaming Response - on new line below thinking */}
               {!isThinking && (
                 <div className="text-foreground text-base leading-relaxed">
                   {displayedText}
@@ -128,7 +137,7 @@ export function AIResponseShowcase({
           {/* Thinking state */}
           <div className="space-y-2">
             <span className="text-xs text-muted-foreground">Thinking State</span>
-            <div className="rounded-xl border border-border bg-[#f7f7f8] p-4">
+            <div className="rounded-xl border-2 border-white bg-[#F7F7F8] p-4">
               <div className="flex gap-3">
                 <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
                   <img
@@ -137,10 +146,7 @@ export function AIResponseShowcase({
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="flex-1 space-y-1">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    Goodfin AI
-                  </span>
+                <div className="flex-1 flex items-center">
                   <Shimmer className="text-sm font-heading">
                     analyzing your portfolio...
                   </Shimmer>
@@ -152,7 +158,7 @@ export function AIResponseShowcase({
           {/* Completed state */}
           <div className="space-y-2">
             <span className="text-xs text-muted-foreground">Completed State</span>
-            <div className="rounded-xl border border-border bg-[#f7f7f8] p-4">
+            <div className="rounded-xl border-2 border-white bg-[#F7F7F8] p-4">
               <div className="flex gap-3">
                 <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
                   <img
@@ -161,10 +167,7 @@ export function AIResponseShowcase({
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="flex-1 space-y-1">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    Goodfin AI
-                  </span>
+                <div className="flex-1">
                   <p className="text-sm text-foreground leading-relaxed">
                     Your portfolio is well-diversified across AI sectors.
                   </p>

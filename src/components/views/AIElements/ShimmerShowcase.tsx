@@ -40,7 +40,7 @@ export function ShimmerShowcase({ variant = 'default' }: ShimmerShowcaseProps) {
   const props = getShimmerProps();
 
   return (
-    <div className="p-8 bg-[#f7f7f8] min-h-[400px]">
+    <div className="p-8 bg-[#EDEBEE] min-h-[400px]">
       <div className="max-w-2xl mx-auto space-y-8">
         <div className="space-y-2">
           <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
@@ -55,7 +55,7 @@ export function ShimmerShowcase({ variant = 'default' }: ShimmerShowcaseProps) {
         </div>
 
         {/* Preview area with app background */}
-        <div className="rounded-xl border border-border bg-[#f7f7f8] p-6 space-y-6">
+        <div className="rounded-xl border-2 border-white bg-[#F7F7F8] p-6 space-y-6">
           {/* Heading example */}
           <div className="space-y-2">
             <span className="text-xs text-muted-foreground">Heading</span>

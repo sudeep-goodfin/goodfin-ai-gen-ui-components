@@ -81,7 +81,7 @@ export function ThinkingIndicatorShowcase({
   const loadingTexts = loadingTextsByVariant[variant];
 
   return (
-    <div className="p-8 bg-[#f7f7f8] min-h-[400px]">
+    <div className="p-8 bg-[#EDEBEE] min-h-[400px]">
       <div className="max-w-2xl mx-auto space-y-8">
         <div className="space-y-2">
           <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
@@ -107,7 +107,7 @@ export function ThinkingIndicatorShowcase({
         </div>
 
         {/* Main showcase with Goodfin AI avatar */}
-        <div className="rounded-xl border border-border bg-[#f7f7f8] p-6">
+        <div className="rounded-xl border-2 border-white bg-[#F7F7F8] p-6">
           <div className="flex gap-3">
             {/* Goodfin AI Avatar */}
             <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
@@ -118,10 +118,7 @@ export function ThinkingIndicatorShowcase({
               />
             </div>
 
-            <div className="flex-1 space-y-1">
-              <span className="text-xs font-medium text-muted-foreground">
-                Goodfin AI
-              </span>
+            <div className="flex-1 flex items-center">
               <ThinkingText
                 key={key}
                 isVisible={isPlaying}
