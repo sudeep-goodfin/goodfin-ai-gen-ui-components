@@ -255,6 +255,33 @@ export function TickerCTA({
             </span>
           </div>
 
+          {/* How Bullish Question */}
+          <div className="mb-5">
+            <p
+              className="text-[14px] font-medium text-gray-800 mb-2.5"
+              style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+            >
+              How bullish are you on this deal?
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {BULLISH_OPTIONS.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => setBullishSelection(option.id)}
+                  className={cn(
+                    "px-3.5 py-2 text-[13px] rounded-lg border-2 transition-all",
+                    bullishSelection === option.id
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-700 font-medium"
+                      : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                  )}
+                  style={{ fontFamily: 'Soehne, sans-serif' }}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Star Rating */}
           <div className="mb-5">
             <p
@@ -280,33 +307,6 @@ export function TickerCTA({
                         : "fill-gray-200 text-gray-200"
                     )}
                   />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* How Bullish Question */}
-          <div className="mb-5">
-            <p
-              className="text-[14px] font-medium text-gray-800 mb-2.5"
-              style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
-            >
-              How bullish are you on this deal?
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {BULLISH_OPTIONS.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => setBullishSelection(option.id)}
-                  className={cn(
-                    "px-3.5 py-2 text-[13px] rounded-lg border-2 transition-all",
-                    bullishSelection === option.id
-                      ? "border-emerald-500 bg-emerald-50 text-emerald-700 font-medium"
-                      : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
-                  )}
-                  style={{ fontFamily: 'Soehne, sans-serif' }}
-                >
-                  {option.label}
                 </button>
               ))}
             </div>
