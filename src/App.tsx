@@ -583,7 +583,7 @@ export function App() {
           id: 'long-running-task',
           label: 'Long Running Task',
           component: () => <LongRunningTaskShowcase />,
-          icon: <Clock className="w-6 h-6" />,
+          icon: <Clock className="w-5 h-5" />,
         },
       ],
     },
