@@ -26,7 +26,7 @@ const REFERRAL_SUGGESTIONS = [
 ];
 
 const TICKER_SUGGESTIONS = [
-  'What do others say about this deal?',
+  'What is Goodfin Ticker?',
   'Help me write my post',
 ];
 
