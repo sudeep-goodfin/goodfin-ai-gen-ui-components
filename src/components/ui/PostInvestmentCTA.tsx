@@ -154,6 +154,13 @@ export function ReferralCTA({
  * Ticker CTA Component
  * AI intro text: "Share why you invested in this deal with the Goodfin community."
  */
+// How bullish options
+const BULLISH_OPTIONS = [
+  { id: 'cautious', label: 'Cautiously optimistic' },
+  { id: 'bullish', label: 'Very bullish' },
+  { id: 'selective', label: 'Selective - depends on execution' },
+];
+
 export function TickerCTA({
   dealName = 'Anthropic',
   dealLogo = '/icons/products/anthropic.png',
@@ -164,13 +171,14 @@ export function TickerCTA({
   const [isEnhanced, setIsEnhanced] = useState(false);
   const [starRating, setStarRating] = useState(0);
   const [hoveredStar, setHoveredStar] = useState(0);
+  const [bullishSelection, setBullishSelection] = useState<string | null>(null);
 
   const charCount = postText.length;
-  const minChars = 120;
+  const minChars = 140;
   const progress = Math.min((charCount / minChars) * 100, 100);
   const isMinMet = charCount >= minChars;
   const charsNeeded = minChars - charCount;
-  const isFormComplete = isMinMet && starRating > 0;
+  const isFormComplete = isMinMet && starRating > 0 && bullishSelection !== null;
 
   const handleEnhanceWithAI = () => {
     const enhanced = postText.length > 0
@@ -272,6 +280,33 @@ export function TickerCTA({
                         : "fill-gray-200 text-gray-200"
                     )}
                   />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* How Bullish Question */}
+          <div className="mb-5">
+            <p
+              className="text-[14px] font-medium text-gray-800 mb-2.5"
+              style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+            >
+              How bullish are you on this deal?
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {BULLISH_OPTIONS.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => setBullishSelection(option.id)}
+                  className={cn(
+                    "px-3.5 py-2 text-[13px] rounded-lg border-2 transition-all",
+                    bullishSelection === option.id
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-700 font-medium"
+                      : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                  )}
+                  style={{ fontFamily: 'Soehne, sans-serif' }}
+                >
+                  {option.label}
                 </button>
               ))}
             </div>
@@ -394,7 +429,9 @@ export function TickerCTA({
                   <TooltipContent side="top" className="text-xs">
                     {!isMinMet
                       ? <p>Write at least {minChars} characters</p>
-                      : <p>Add your star rating</p>
+                      : starRating === 0
+                        ? <p>Add your star rating</p>
+                        : <p>Select how bullish you are</p>
                     }
                   </TooltipContent>
                 )}
