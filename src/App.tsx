@@ -66,6 +66,8 @@ import {
   AIResponseShowcase,
   aiResponseVariants,
   ChainOfThoughtShowcase,
+  LongRunningTaskShowcase,
+  longRunningTaskVariants,
 } from './components/views';
 import {
   Layout,
@@ -99,6 +101,7 @@ import {
   Loader2,
   MessageCircle,
   BrainCircuit,
+  Clock,
 } from 'lucide-react';
 import {
   FeedbackButtons,
@@ -575,6 +578,12 @@ export function App() {
           label: 'Chain of Thought',
           component: () => <ChainOfThoughtShowcase />,
           icon: <BrainCircuit className="w-6 h-6" />,
+        },
+        {
+          id: 'long-running-task',
+          label: 'Long Running Task',
+          component: () => <LongRunningTaskShowcase />,
+          icon: <Clock className="w-6 h-6" />,
         },
       ],
     },

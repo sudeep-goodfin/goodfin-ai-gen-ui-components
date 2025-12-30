@@ -166,4 +166,6 @@ export {
   aiResponseVariants,
   ChainOfThoughtShowcase,
   chainOfThoughtVariants,
+  LongRunningTaskShowcase,
+  longRunningTaskVariants,
 } from './AIElements';
