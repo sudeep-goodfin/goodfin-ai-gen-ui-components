@@ -155,3 +155,15 @@ export type {
   Message as ZAIMessage,
   ZAIUserState,
 } from './ZAIInvestmentFlow';
+
+// AI Elements (AI-specific UI components)
+export {
+  ShimmerShowcase,
+  shimmerVariants,
+  ThinkingIndicatorShowcase,
+  thinkingVariants,
+  AIResponseShowcase,
+  aiResponseVariants,
+  ChainOfThoughtShowcase,
+  chainOfThoughtVariants,
+} from './AIElements';

@@ -109,8 +109,8 @@ export function ThinkingText({
         className="font-heading text-lg"
         duration={1.2}
         spread={3}
-        textColor="var(--muted-foreground)"
-        shimmerColor="var(--foreground)"
+        textColor="hsl(0 0% 65%)"
+        shimmerColor="hsl(0 0% 20%)"
       >
         {loadingTexts[currentTextIndex]}
       </Shimmer>

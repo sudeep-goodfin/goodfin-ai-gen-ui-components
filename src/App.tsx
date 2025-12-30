@@ -59,6 +59,13 @@ import {
   type WelcomeScreenVariant,
   type InputBarVersion,
   type ZAIUserState,
+  ShimmerShowcase,
+  shimmerVariants,
+  ThinkingIndicatorShowcase,
+  thinkingVariants,
+  AIResponseShowcase,
+  aiResponseVariants,
+  ChainOfThoughtShowcase,
 } from './components/views';
 import {
   Layout,
@@ -88,6 +95,10 @@ import {
   Gauge,
   Compass,
   LayoutGrid,
+  Bot,
+  Loader2,
+  MessageCircle,
+  BrainCircuit,
 } from 'lucide-react';
 import {
   FeedbackButtons,
@@ -528,6 +539,42 @@ export function App() {
             </div>
           ),
           icon: <Gauge className="w-6 h-6" />,
+        },
+      ],
+    },
+    {
+      id: 'ai-elements',
+      label: 'AI Elements',
+      components: [
+        {
+          id: 'shimmer',
+          label: 'Shimmer Effect',
+          component: (variant: string) => (
+            <ShimmerShowcase variant={variant as 'default' | 'fast' | 'slow' | 'custom-colors'} />
+          ),
+          icon: <Sparkles className="w-6 h-6" />,
+          variants: shimmerVariants,
+        },
+        {
+          id: 'thinking-indicator',
+          label: 'Thinking Indicator',
+          component: (variant: string) => (
+            <ThinkingIndicatorShowcase variant={variant as 'default' | 'investment' | 'analysis' | 'custom'} />
+          ),
+          icon: <Loader2 className="w-6 h-6" />,
+          variants: thinkingVariants,
+        },
+        {
+          id: 'ai-response',
+          label: 'AI Streaming Response',
+          component: () => <AIResponseShowcase />,
+          icon: <MessageCircle className="w-6 h-6" />,
+        },
+        {
+          id: 'chain-of-thought',
+          label: 'Chain of Thought',
+          component: () => <ChainOfThoughtShowcase />,
+          icon: <BrainCircuit className="w-6 h-6" />,
         },
       ],
     },

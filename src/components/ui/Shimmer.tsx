@@ -34,8 +34,8 @@ function ShimmerComponent<T extends ElementType = 'span'>({
   className,
   duration = 2,
   spread = 2,
-  textColor = 'var(--muted-foreground)',
-  shimmerColor = 'var(--foreground)',
+  textColor = 'hsl(0 0% 65%)',
+  shimmerColor = 'hsl(0 0% 20%)',
   ...props
 }: ShimmerProps<T>) {
   const Component = as || 'span';

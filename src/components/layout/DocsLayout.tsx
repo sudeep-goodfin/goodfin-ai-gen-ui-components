@@ -36,6 +36,10 @@ import {
   Lightbulb,
   Gauge,
   ChevronDown,
+  Bot,
+  Loader2,
+  MessageCircle,
+  BrainCircuit,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Sidebar, type SidebarSection, type Theme } from './Sidebar';
@@ -77,6 +81,7 @@ const viewModeIcons: Record<string, React.ReactNode> = {
   welcome02: <Home className="w-4 h-4" />,
   'investment-flow': <DollarSign className="w-4 h-4" />,
   'z-ai-investment-flow': <Sparkles className="w-4 h-4" />,
+  'ai-elements': <Bot className="w-4 h-4" />,
   archive: <Archive className="w-4 h-4" />,
 };
 
@@ -113,6 +118,11 @@ const componentIcons: Record<string, React.ReactNode> = {
   'my-investments': <Wallet className="w-4 h-4" />,
   'suggestion-card': <Lightbulb className="w-4 h-4" />,
   'progress-widget': <Gauge className="w-4 h-4" />,
+  // AI Elements
+  'shimmer': <Sparkles className="w-4 h-4" />,
+  'thinking-indicator': <Loader2 className="w-4 h-4" />,
+  'ai-response': <MessageCircle className="w-4 h-4" />,
+  'chain-of-thought': <BrainCircuit className="w-4 h-4" />,
 };
 
 type VariantOption = {

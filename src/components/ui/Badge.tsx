@@ -1,40 +1,36 @@
-import React from 'react';
-import { cn } from '../../lib/utils';
+import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
 
-type BadgeVariant = 'default' | 'success' | 'warning' | 'destructive' | 'info';
+import { cn } from "../../lib/utils"
 
-type BadgeProps = {
-  children: React.ReactNode;
-  variant?: BadgeVariant;
-  className?: string;
-  dot?: boolean;
-};
+const badgeVariants = cva(
+  "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  {
+    variants: {
+      variant: {
+        default:
+          "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80",
+        secondary:
+          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        destructive:
+          "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
+        outline: "text-foreground",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
 
-const variantStyles: Record<BadgeVariant, string> = {
-  default: 'bg-secondary text-secondary-foreground',
-  success: 'bg-success/10 text-success',
-  warning: 'bg-warning/10 text-warning',
-  destructive: 'bg-destructive/10 text-destructive',
-  info: 'bg-info/10 text-info',
-};
+export interface BadgeProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof badgeVariants> {}
 
-const dotStyles: Record<BadgeVariant, string> = {
-  default: 'bg-secondary-foreground',
-  success: 'bg-success',
-  warning: 'bg-warning',
-  destructive: 'bg-destructive',
-  info: 'bg-info',
-};
-
-export function Badge({ children, variant = 'default', className, dot }: BadgeProps) {
+function Badge({ className, variant, ...props }: BadgeProps) {
   return (
-    <span className={cn(
-      'inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-semibold rounded-full',
-      variantStyles[variant],
-      className
-    )}>
-      {dot && <span className={cn('w-1.5 h-1.5 rounded-full', dotStyles[variant])} />}
-      {children}
-    </span>
-  );
+    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+  )
 }
+
+export { Badge, badgeVariants }
