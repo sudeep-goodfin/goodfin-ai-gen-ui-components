@@ -2068,7 +2068,7 @@ export function ZAIInvestmentFlow({
 
                   {/* Reward AI Response - shown when all steps are complete */}
                   {flowState === 'investing' && isTransferComplete && (
-                    <div className="w-full max-w-2xl mt-6">
+                    <div className="w-full max-w-2xl mt-6" data-reward-section>
                       {/* AI Avatar */}
                       <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm border border-[#f0eef0] mb-4">
                         <img
@@ -2211,11 +2211,21 @@ export function ZAIInvestmentFlow({
                                     </span>
                                   </div>
                                   <p
-                                    className="text-[14px] text-[#7f7582] leading-relaxed"
+                                    className="text-[14px] text-[#7f7582] leading-relaxed mb-4"
                                     style={{ fontFamily: 'Soehne, sans-serif' }}
                                   >
                                     Congratulations! You've completed all the steps on your end. Your documents are signed and your wire is on its way.
                                   </p>
+                                  <button
+                                    className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[13px] font-medium rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all"
+                                    style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
+                                    onClick={() => {
+                                      const rewardSection = document.querySelector('[data-reward-section]');
+                                      rewardSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    }}
+                                  >
+                                    Invite Friends & Earn $300
+                                  </button>
                                 </div>
                               </div>
                             );
