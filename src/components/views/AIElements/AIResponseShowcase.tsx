@@ -167,7 +167,10 @@ export function AIResponseShowcase({
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 space-y-1.5">
+                  <span className="text-sm font-heading text-muted-foreground">
+                    thought for 3 secs
+                  </span>
                   <p className="text-sm text-foreground leading-relaxed">
                     Your portfolio is well-diversified across AI sectors.
                   </p>

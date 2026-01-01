@@ -161,6 +161,7 @@ export interface ChatMessage {
     type?: 'text' | 'component';
     componentName?: string;
     data?: any;
+    thinkingDuration?: number; // Duration AI spent thinking before this response
 }
 
 interface ChatInterfaceProps {
@@ -222,7 +223,14 @@ export function ChatInterface({ messages, isThinking, streamingContent, thinking
                      );
                  }
 
-                 return <AIResponse key={idx} content={msg.content} />;
+                 return (
+                     <AIResponse
+                         key={idx}
+                         content={msg.content}
+                         thinkingDuration={msg.thinkingDuration}
+                         showThinkingLabel={msg.thinkingDuration !== undefined && msg.thinkingDuration > 0}
+                     />
+                 );
             })}
 
             {/* Thinking state with shimmer animation */}

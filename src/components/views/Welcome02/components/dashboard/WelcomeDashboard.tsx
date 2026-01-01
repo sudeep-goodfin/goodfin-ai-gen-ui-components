@@ -862,12 +862,12 @@ export function WelcomeDashboard({
           currentIndex++;
         } else {
           clearInterval(streamInterval);
-          // Finalize message
+          // Finalize message with thinking duration
           setChatState(prev => ({
             ...prev,
             messages: [
               ...prev.messages,
-              { role: 'ai', content: fullResponse },
+              { role: 'ai', content: fullResponse, thinkingDuration: prev.thinkingDuration },
               ...(componentMessage ? [componentMessage] : [])
             ],
             streamingContent: ""
