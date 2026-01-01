@@ -196,7 +196,7 @@ const MODE_LABELS: Record<string, string> = {
   'insight': 'Community Insight',
   'events': 'Events',
   'portfolio': 'My Portfolio',
-  'investment': 'Investment',
+  'investment': 'Deals', // Investment flow uses Deals as the active agent
 };
 
 // Component for the conversation header when in active chat

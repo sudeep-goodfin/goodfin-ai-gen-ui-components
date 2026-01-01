@@ -1684,6 +1684,21 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                       {currentMode === 'portfolio' && (
                         <Chip label="My Portfolio" isActive={true} onClick={() => {}} icon={<Briefcase className="size-[11px] text-[#f0eef0]" />} />
                       )}
+                      {/* Investment mode shows as Deals */}
+                      {currentMode === 'investment' && (
+                        <Chip
+                          label="Deals"
+                          isActive={true}
+                          onClick={() => {}}
+                          icon={
+                            <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
+                              <path d={chatSvgPaths.pbe91080} stroke="#f0eef0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                              <path d={chatSvgPaths.p3fc7e680} stroke="#f0eef0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                              <path d={chatSvgPaths.p553b480} stroke="#f0eef0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                            </svg>
+                          }
+                        />
+                      )}
 
                       {/* More dropdown with all other modes */}
                       <SimpleDropdown
