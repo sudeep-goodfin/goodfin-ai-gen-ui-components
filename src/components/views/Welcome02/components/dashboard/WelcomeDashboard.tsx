@@ -562,7 +562,9 @@ export function WelcomeDashboard({
     messages: ChatMessage[];
     isThinking: boolean;
     streamingContent: string;
-  }>({ isActive: false, messages: [], isThinking: false, streamingContent: "" });
+    thinkingStartTime: number | null;
+    thinkingDuration: number;
+  }>({ isActive: false, messages: [], isThinking: false, streamingContent: "", thinkingStartTime: null, thinkingDuration: 0 });
 
   // Animation orchestration effect
   useEffect(() => {
@@ -764,14 +766,14 @@ export function WelcomeDashboard({
 
   // Reset chat when mode changes
   useEffect(() => {
-    setChatState({ isActive: false, messages: [], isThinking: false, streamingContent: "" });
+    setChatState({ isActive: false, messages: [], isThinking: false, streamingContent: "", thinkingStartTime: null, thinkingDuration: 0 });
   }, [currentMode]);
 
   // Sync with external conversation state (e.g., when header back button is clicked)
   useEffect(() => {
     if (externalIsInConversation === false && chatState.isActive) {
       // External state says we're not in conversation, reset local state
-      setChatState({ isActive: false, messages: [], isThinking: false, streamingContent: "" });
+      setChatState({ isActive: false, messages: [], isThinking: false, streamingContent: "", thinkingStartTime: null, thinkingDuration: 0 });
     }
   }, [externalIsInConversation]);
 
@@ -779,16 +781,24 @@ export function WelcomeDashboard({
     // Notify parent about conversation start
     onStartConversation?.(text, 'goodfin-ai');
 
+    const thinkingStart = Date.now();
+
     setChatState(prev => ({
       isActive: true,
       messages: [{ role: 'user', content: text }],
       isThinking: true,
-      streamingContent: ""
+      streamingContent: "",
+      thinkingStartTime: thinkingStart,
+      thinkingDuration: 0
     }));
+
+    // Random thinking time between 2-4 seconds for realism
+    const thinkingTime = 2000 + Math.random() * 2000;
 
     // Simulate thinking delay then streaming
     setTimeout(() => {
-      setChatState(prev => ({ ...prev, isThinking: false }));
+      const duration = Math.round((Date.now() - thinkingStart) / 1000);
+      setChatState(prev => ({ ...prev, isThinking: false, thinkingDuration: duration }));
 
       let fullResponse = "";
       let componentMessage: ChatMessage | null = null;
@@ -839,16 +849,19 @@ export function WelcomeDashboard({
         fullResponse = "I've analyzed the latest secondary market data for SpaceX. The valuation has stabilized around $180B, driven by successful Starship test flights and increased Starlink revenue. \n\nComparing against the last 6 months:\n• Trading volume is up 15%\n• Buy-side demand exceeds supply by 2:1\n• Pricing is currently at a 5% premium to the last tender offer.\n\nWould you like me to drill down into specific transaction multiples?";
       }
 
-      let i = 0;
-      const interval = setInterval(() => {
-        i++;
-        setChatState(prev => ({
-          ...prev,
-          streamingContent: fullResponse.slice(0, i)
-        }));
+      // Chunk-based streaming (12 chars per chunk, 60ms interval) - matches AI Elements pattern
+      const chunks = fullResponse.match(/.{1,12}/g) || [];
+      let currentIndex = 0;
 
-        if (i >= fullResponse.length) {
-          clearInterval(interval);
+      const streamInterval = setInterval(() => {
+        if (currentIndex < chunks.length) {
+          setChatState(prev => ({
+            ...prev,
+            streamingContent: prev.streamingContent + chunks[currentIndex]
+          }));
+          currentIndex++;
+        } else {
+          clearInterval(streamInterval);
           // Finalize message
           setChatState(prev => ({
             ...prev,
@@ -860,9 +873,9 @@ export function WelcomeDashboard({
             streamingContent: ""
           }));
         }
-      }, 15); // Streaming speed
+      }, 60); // Chunk streaming speed
 
-    }, 1500); // Thinking delay
+    }, thinkingTime);
   };
 
   const handleWizardComplete = () => {
@@ -892,7 +905,7 @@ export function WelcomeDashboard({
       onRequestBack();
     } else {
       // Otherwise, directly end conversation
-      setChatState({ isActive: false, messages: [], isThinking: false, streamingContent: "" });
+      setChatState({ isActive: false, messages: [], isThinking: false, streamingContent: "", thinkingStartTime: null, thinkingDuration: 0 });
       onEndConversation?.();
     }
   };
@@ -903,7 +916,7 @@ export function WelcomeDashboard({
 
   const handleNewChat = () => {
     // Reset to default state for new chat
-    setChatState({ isActive: false, messages: [], isThinking: false, streamingContent: "" });
+    setChatState({ isActive: false, messages: [], isThinking: false, streamingContent: "", thinkingStartTime: null, thinkingDuration: 0 });
     setCurrentMode('default');
   };
 
@@ -915,7 +928,7 @@ export function WelcomeDashboard({
 
   const handleResetConversation = () => {
     // Reset the current conversation
-    setChatState({ isActive: false, messages: [], isThinking: false, streamingContent: "" });
+    setChatState({ isActive: false, messages: [], isThinking: false, streamingContent: "", thinkingStartTime: null, thinkingDuration: 0 });
   };
 
   const handleSelectChat = (chatId: string) => {
@@ -1028,6 +1041,7 @@ export function WelcomeDashboard({
                   messages={chatState.messages}
                   isThinking={chatState.isThinking}
                   streamingContent={chatState.streamingContent}
+                  thinkingDuration={chatState.thinkingDuration}
                   onWizardComplete={handleWizardComplete}
                   onCardClick={handleStartChat}
                 />

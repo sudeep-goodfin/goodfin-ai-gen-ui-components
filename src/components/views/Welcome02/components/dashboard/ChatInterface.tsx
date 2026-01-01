@@ -1,38 +1,101 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sparkles, Building2, ArrowRight } from 'lucide-react';
 import ContainerCollapse from './wizard/ContainerCollapse';
 import { AllDealsView } from './AllDealsView';
 import { TickerCTA, ReferralCTA } from '../../../../ui/PostInvestmentCTA';
+import { Shimmer } from '../../../../ui/Shimmer';
+import goodfinAvatar from '../../assets/goodfin-ai-avatar.png';
+
+// Thinking texts to cycle through
+const THINKING_TEXTS = [
+    'analyzing your question...',
+    'reviewing market data...',
+    'connecting insights...',
+    'preparing response...',
+];
+
+// AI Avatar component
+function AIAvatar() {
+    return (
+        <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 shadow-[0px_5px_5px_0px_rgba(190,185,192,0.33)] border border-[#F8F8F8]">
+            <img src={goodfinAvatar} alt="Goodfin AI" className="w-full h-full object-cover" />
+        </div>
+    );
+}
 
 export function ThinkingBubble() {
+    const [textIndex, setTextIndex] = useState(0);
+    const [isFading, setIsFading] = useState(false);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setIsFading(true);
+            setTimeout(() => {
+                setTextIndex((prev) => (prev + 1) % THINKING_TEXTS.length);
+                setIsFading(false);
+            }, 150);
+        }, 2000);
+
+        return () => clearInterval(interval);
+    }, []);
+
     return (
-        <div className="flex gap-4 w-full animate-fade-in items-start">
-            <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 shadow-[0px_5px_5px_0px_rgba(190,185,192,0.33)] border border-[#F8F8F8]">
-                <img src="/conciergeIcon.png" alt="AI" className="w-full h-full object-cover" />
-            </div>
-            <div className="flex flex-col gap-2 pt-1 w-full max-w-[80%]">
-                <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse" />
-                <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse delay-75" />
+        <div className="flex gap-3 w-full animate-fade-in items-start">
+            <AIAvatar />
+            <div className="flex flex-col gap-1 pt-1">
+                <div
+                    className={`transition-opacity duration-150 ${isFading ? 'opacity-0' : 'opacity-100'}`}
+                >
+                    <Shimmer
+                        className="text-[15px] font-normal"
+                        duration={1.5}
+                        spread={2.5}
+                        textColor="hsl(270 5% 55%)"
+                        shimmerColor="hsl(270 5% 25%)"
+                    >
+                        {THINKING_TEXTS[textIndex]}
+                    </Shimmer>
+                </div>
             </div>
         </div>
     );
 }
 
-export function AIResponse({ content, isStreaming }: { content: string, isStreaming?: boolean }) {
-    if (!content) return null;
+interface AIResponseProps {
+    content: string;
+    isStreaming?: boolean;
+    thinkingDuration?: number;
+    showThinkingLabel?: boolean;
+}
+
+export function AIResponse({
+    content,
+    isStreaming,
+    thinkingDuration,
+    showThinkingLabel = false
+}: AIResponseProps) {
+    if (!content && !showThinkingLabel) return null;
 
     return (
-        <div className="flex gap-4 w-full animate-fade-in items-start">
-            <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 shadow-[0px_5px_5px_0px_rgba(190,185,192,0.33)] border border-[#F8F8F8]">
-                <img src="/conciergeIcon.png" alt="AI" className="w-full h-full object-cover" />
-            </div>
-            <div className="flex flex-col gap-2 pt-1 w-full max-w-[90%]">
-                <p className="text-[#29272a] text-[15px] leading-6 font-light whitespace-pre-wrap">
-                    {content}
-                    {isStreaming && (
-                        <span className="inline-block w-1.5 h-4 ml-1 bg-purple-400 align-middle animate-pulse" />
-                    )}
-                </p>
+        <div className="flex gap-3 w-full animate-fade-in items-start">
+            <AIAvatar />
+            <div className="flex flex-col gap-1.5 pt-0.5 w-full max-w-[90%]">
+                {/* Thinking duration label */}
+                {showThinkingLabel && thinkingDuration !== undefined && (
+                    <span className="text-[13px] text-[#8a7f91] font-normal">
+                        thought for {thinkingDuration}s
+                    </span>
+                )}
+
+                {/* Response content */}
+                {content && (
+                    <p className="text-[#29272a] text-[15px] leading-[1.6] font-normal whitespace-pre-wrap">
+                        {content}
+                        {isStreaming && (
+                            <span className="inline-block w-[2px] h-[18px] ml-0.5 bg-[#8a7f91] align-middle animate-pulse rounded-full" />
+                        )}
+                    </p>
+                )}
             </div>
         </div>
     );
@@ -41,8 +104,8 @@ export function AIResponse({ content, isStreaming }: { content: string, isStream
 export function UserBubble({ content }: { content: string }) {
     return (
         <div className="flex justify-end w-full animate-fade-in">
-            <div className="bg-[#29272a] text-white px-5 py-3 rounded-[20px] rounded-tr-sm max-w-[80%] shadow-sm">
-                <p className="text-[15px] leading-6 font-light">{content}</p>
+            <div className="bg-[#29272a] text-white px-4 py-3 rounded-[18px] rounded-tr-[4px] max-w-[85%] shadow-sm">
+                <p className="text-[15px] leading-[1.5] font-normal">{content}</p>
             </div>
         </div>
     );
@@ -104,11 +167,14 @@ interface ChatInterfaceProps {
     messages: ChatMessage[];
     isThinking: boolean;
     streamingContent: string;
+    thinkingDuration?: number;
     onWizardComplete?: () => void;
     onCardClick?: (title: string) => void;
 }
 
-export function ChatInterface({ messages, isThinking, streamingContent, onWizardComplete, onCardClick }: ChatInterfaceProps) {
+export function ChatInterface({ messages, isThinking, streamingContent, thinkingDuration = 0, onWizardComplete, onCardClick }: ChatInterfaceProps) {
+    const isStreaming = streamingContent.length > 0;
+
     return (
         <div className="w-full max-w-3xl flex flex-col gap-6 pb-20">
             {messages.map((msg, idx) => {
@@ -159,10 +225,17 @@ export function ChatInterface({ messages, isThinking, streamingContent, onWizard
                  return <AIResponse key={idx} content={msg.content} />;
             })}
 
+            {/* Thinking state with shimmer animation */}
             {isThinking && <ThinkingBubble />}
 
-            {streamingContent && (
-                <AIResponse content={streamingContent} isStreaming={true} />
+            {/* Streaming response with "thought for Xs" label */}
+            {isStreaming && (
+                <AIResponse
+                    content={streamingContent}
+                    isStreaming={true}
+                    thinkingDuration={thinkingDuration}
+                    showThinkingLabel={true}
+                />
             )}
         </div>
     );
