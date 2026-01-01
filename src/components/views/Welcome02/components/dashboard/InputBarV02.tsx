@@ -270,9 +270,10 @@ interface InputBarProps {
     formCallout?: FormCallout; // Shows a callout header with deal info
     shake?: boolean; // Trigger shake animation (e.g., for invalid input)
     placeholder?: string; // Custom placeholder text
+    isInConversation?: boolean; // Hide mode chips when in active conversation
 }
 
-export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChange, onSubmit, investmentAction, formNudge, formCallout, shake, placeholder: customPlaceholder }: InputBarProps) {
+export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChange, onSubmit, investmentAction, formNudge, formCallout, shake, placeholder: customPlaceholder, isInConversation = false }: InputBarProps) {
   const [inputValue, setInputValue] = useState('');
   const [showCommandPanel, setShowCommandPanel] = useState(false);
   const [panelMode, setPanelMode] = useState<PanelMode>('recipes');
@@ -1597,8 +1598,8 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 "flex items-end justify-between pl-0 pr-[12px]",
                 showRecordingOverlay && "opacity-30 pointer-events-none"
               )}>
-                {/* Left Actions (Chips) - Hidden in investment mode or when callout is shown */}
-                {!isInvestmentMode && !hasCallout ? (
+                {/* Left Actions (Chips) - Hidden in investment mode, when callout is shown, or when in conversation */}
+                {!isInvestmentMode && !hasCallout && !isInConversation ? (
                 <div className="flex gap-[4px] items-center flex-wrap">
                     {/* Home - hidden on mobile unless active */}
                     <div className={cn(

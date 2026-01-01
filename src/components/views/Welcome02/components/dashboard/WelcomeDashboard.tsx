@@ -520,9 +520,24 @@ interface WelcomeDashboardProps {
   isFirstTimeUser?: boolean;
   isConversationalOnboarding?: boolean;
   animationKey?: number;
+  isInConversation?: boolean;
+  onStartConversation?: (message: string, tab?: string) => void;
+  onEndConversation?: () => void;
+  onUpdateConversationTitle?: (title: string) => void;
+  onRequestBack?: () => void; // Called when user wants to go back (for confirmation modal)
 }
 
-export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, isConversationalOnboarding = false, animationKey = 0 }: WelcomeDashboardProps) {
+export function WelcomeDashboard({
+  homeVariant = 'v1',
+  isFirstTimeUser = false,
+  isConversationalOnboarding = false,
+  animationKey = 0,
+  isInConversation: externalIsInConversation,
+  onStartConversation,
+  onEndConversation,
+  onUpdateConversationTitle,
+  onRequestBack,
+}: WelcomeDashboardProps) {
   const [currentMode, setCurrentMode] = useState<ChatMode>('default');
   const [extraSlotItem, setExtraSlotItem] = useState<MoreMode | null>(null);
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
@@ -752,7 +767,18 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
     setChatState({ isActive: false, messages: [], isThinking: false, streamingContent: "" });
   }, [currentMode]);
 
+  // Sync with external conversation state (e.g., when header back button is clicked)
+  useEffect(() => {
+    if (externalIsInConversation === false && chatState.isActive) {
+      // External state says we're not in conversation, reset local state
+      setChatState({ isActive: false, messages: [], isThinking: false, streamingContent: "" });
+    }
+  }, [externalIsInConversation]);
+
   const handleStartChat = (text: string) => {
+    // Notify parent about conversation start
+    onStartConversation?.(text, 'goodfin-ai');
+
     setChatState(prev => ({
       isActive: true,
       messages: [{ role: 'user', content: text }],
@@ -861,7 +887,14 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
   };
 
   const handleBack = () => {
-    setChatState({ isActive: false, messages: [], isThinking: false, streamingContent: "" });
+    // If parent wants to handle back (e.g., show confirmation modal), let them
+    if (onRequestBack) {
+      onRequestBack();
+    } else {
+      // Otherwise, directly end conversation
+      setChatState({ isActive: false, messages: [], isThinking: false, streamingContent: "" });
+      onEndConversation?.();
+    }
   };
 
   const handleToggleHistory = () => {
@@ -931,20 +964,38 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
       {!isConversationalOnboarding && (
       <div className="relative z-10 w-full">
         {chatState.isActive ? (
-          /* When in chat: show back button on left, history toggle still on left but after back */
-          <div className="flex items-center justify-between px-4 py-3">
-            <div className="flex items-center gap-2">
+          /* When in chat: show conversation header with back button, title, and history toggle */
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[#e6e4e7] bg-white/50 backdrop-blur-sm">
+            {/* Left side: Back button and title */}
+            <div className="flex items-center gap-3 min-w-0 flex-1">
               <button
                 onClick={handleBack}
-                className="flex items-center gap-2 text-[#7f7582] hover:text-[#29272a] transition-colors px-2 py-1.5 rounded-lg hover:bg-black/5"
+                className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-[#69606d] hover:text-[#29272a] hover:bg-black/5 transition-colors shrink-0"
               >
                 <ArrowLeft className="w-5 h-5" />
-                <span className="text-sm font-medium">Back</span>
+                <span className="text-[14px] font-medium hidden sm:inline">Back</span>
               </button>
+
+              {/* Divider */}
+              <div className="h-5 w-px bg-[#d0cdd2] shrink-0" />
+
+              {/* Conversation title */}
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <span className="text-[15px] font-semibold text-[#29272a] truncate">
+                  {chatState.messages.find(m => m.role === 'user')?.content?.slice(0, 40) || 'New Conversation'}
+                  {(chatState.messages.find(m => m.role === 'user')?.content?.length || 0) > 40 && '...'}
+                </span>
+                {/* Active tab badge */}
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-[#f0eef0] text-[11px] font-medium text-[#69606d] border border-[#e6e4e7] shrink-0">
+                  Goodfin AI
+                </span>
+              </div>
             </div>
+
+            {/* Right side: History toggle */}
             <button
               onClick={handleToggleHistory}
-              className="p-2 hover:bg-black/5 rounded-lg transition-colors"
+              className="p-2 hover:bg-black/5 rounded-lg transition-colors shrink-0"
               title="Chat History"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -1125,6 +1176,7 @@ export function WelcomeDashboard({ homeVariant = 'v1', isFirstTimeUser = false, 
               currentMode={currentMode}
               extraSlotItem={extraSlotItem}
               onModeChange={handleModeChange}
+              isInConversation={chatState.isActive || externalIsInConversation}
             />
           )}
         </div>

@@ -15,6 +15,7 @@ interface InputBarProps {
   version?: InputBarVersion;
   onVersionChange?: (version: InputBarVersion) => void;
   showVersionSelector?: boolean;
+  isInConversation?: boolean;
 }
 
 export function InputBar({
@@ -24,6 +25,7 @@ export function InputBar({
   version = 'v0.2',
   onVersionChange,
   showVersionSelector = false,
+  isInConversation = false,
 }: InputBarProps) {
   const [internalVersion, setInternalVersion] = useState<InputBarVersion>(version);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -92,6 +94,7 @@ export function InputBar({
           currentMode={currentMode}
           extraSlotItem={extraSlotItem}
           onModeChange={onModeChange}
+          isInConversation={isInConversation}
         />
       )}
     </div>
