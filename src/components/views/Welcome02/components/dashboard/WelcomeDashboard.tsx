@@ -8,7 +8,7 @@ import { ChatInterface, ChatMessage } from './ChatInterface';
 import { InputBar, ChatMode, MoreMode } from './InputBar';
 import { InputBarV02 } from './InputBarV02';
 import type { PersonalizationQuestion } from './InputBarV02';
-import { ChatHistoryDrawer } from './ChatHistoryDrawer';
+import { ChatHistorySidebar } from './ChatHistorySidebar';
 import { Icon, CustomIcon } from '../Icon';
 import { ArrowLeft, Lock, Target, Zap, Calendar, Sparkles } from 'lucide-react';
 import svgPaths from '../../imports/svg-191opiemcf';
@@ -183,6 +183,119 @@ function DropdownMenu({ isOpen, onClose, onFeedback, onResetConversation }: Drop
         </svg>
         Reset Conversation
       </button>
+    </div>
+  );
+}
+
+// Map mode to display label for the agent badge
+const MODE_LABELS: Record<string, string> = {
+  'default': 'Goodfin AI',
+  'research': 'Deep Research',
+  'deals': 'Deals',
+  'news': 'News',
+  'insight': 'Community Insight',
+  'events': 'Events',
+  'portfolio': 'My Portfolio',
+  'investment': 'Investment',
+};
+
+// Component for the conversation header when in active chat
+interface ConversationHeaderProps {
+  onToggleHistory: () => void;
+  onBack: () => void;
+  onNewChat: () => void;
+  onFeedback: () => void;
+  onResetConversation: () => void;
+  title: string;
+  titleOverflow: boolean;
+  activeMode?: string;
+}
+
+function ConversationHeader({
+  onToggleHistory,
+  onBack,
+  onNewChat,
+  onFeedback,
+  onResetConversation,
+  title,
+  titleOverflow,
+  activeMode = 'default'
+}: ConversationHeaderProps) {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  return (
+    <div className="flex items-center justify-between px-4 py-3 border-b border-[#e6e4e7] bg-white/50 backdrop-blur-sm">
+      {/* Left side: Sidebar toggle, Back button, and title */}
+      <div className="flex items-center gap-2 min-w-0 flex-1">
+        {/* Sidebar toggle - leftmost */}
+        <button
+          onClick={onToggleHistory}
+          className="p-2 hover:bg-black/5 rounded-lg transition-colors shrink-0"
+          title="Chat History"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d={localSvgPaths.sidebarLeft} fill="#69606d" />
+          </svg>
+        </button>
+
+        {/* Back button */}
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-[#69606d] hover:text-[#29272a] hover:bg-black/5 transition-colors shrink-0"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="text-[14px] font-medium hidden sm:inline">Back</span>
+        </button>
+
+        {/* Divider */}
+        <div className="h-5 w-px bg-[#d0cdd2] shrink-0" />
+
+        {/* Conversation title */}
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <span className="text-[15px] font-semibold text-[#29272a] truncate">
+            {title}{titleOverflow && '...'}
+          </span>
+          {/* Active agent badge */}
+          <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-[#f0eef0] text-[11px] font-medium text-[#69606d] border border-[#e6e4e7] shrink-0">
+            {MODE_LABELS[activeMode] || 'Goodfin AI'}
+          </span>
+        </div>
+      </div>
+
+      {/* Right side: New Chat and More Options */}
+      <div className="flex items-center gap-1 shrink-0">
+        {/* New Chat / Compose */}
+        <button
+          onClick={onNewChat}
+          className="p-2 hover:bg-black/5 rounded-lg transition-colors"
+          title="New Chat"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d={localSvgPaths.pencilCompose} fill="#69606d" />
+          </svg>
+        </button>
+
+        {/* More Options */}
+        <div className="relative">
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="p-2 hover:bg-black/5 rounded-lg transition-colors"
+            title="More Options"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d={localSvgPaths.moreHorizontal} fill="#69606d" />
+            </svg>
+          </button>
+
+          {isDropdownOpen && (
+            <MoreActionsDropdown
+              onFeedback={onFeedback}
+              onResetConversation={onResetConversation}
+              onClose={() => setIsDropdownOpen(false)}
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -541,6 +654,7 @@ export function WelcomeDashboard({
   const [currentMode, setCurrentMode] = useState<ChatMode>('default');
   const [extraSlotItem, setExtraSlotItem] = useState<MoreMode | null>(null);
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
+  const [pendingModeChange, setPendingModeChange] = useState<ChatMode | null>(null);
 
   // Animation orchestration state for first-time users
   const [animationStage, setAnimationStage] = useState<AnimationStage>('idle');
@@ -758,6 +872,15 @@ export function WelcomeDashboard({
   const isLastQuestion = currentQuestionIndex >= visibleQuestions.length - 1;
 
   const handleModeChange = (mode: ChatMode) => {
+    // If in an active conversation, warn user before changing mode
+    const isInActiveConversation = chatState.isActive || externalIsInConversation;
+    if (isInActiveConversation && mode !== currentMode) {
+      // Store the pending mode and trigger the confirmation modal
+      setPendingModeChange(mode);
+      onRequestBack?.();
+      return;
+    }
+
     setCurrentMode(mode);
     if (mode === 'insight' || mode === 'events' || mode === 'portfolio') {
       setExtraSlotItem(mode);
@@ -774,6 +897,15 @@ export function WelcomeDashboard({
     if (externalIsInConversation === false && chatState.isActive) {
       // External state says we're not in conversation, reset local state
       setChatState({ isActive: false, messages: [], isThinking: false, streamingContent: "", thinkingStartTime: null, thinkingDuration: 0 });
+
+      // If there was a pending mode change, apply it now
+      if (pendingModeChange) {
+        setCurrentMode(pendingModeChange);
+        if (pendingModeChange === 'insight' || pendingModeChange === 'events' || pendingModeChange === 'portfolio') {
+          setExtraSlotItem(pendingModeChange);
+        }
+        setPendingModeChange(null);
+      }
     }
   }, [externalIsInConversation]);
 
@@ -942,11 +1074,12 @@ export function WelcomeDashboard({
 
   return (
     <div className="flex-1 flex flex-col h-full relative overflow-hidden bg-[#f7f7f8]">
-      {/* Chat History Drawer */}
-      <ChatHistoryDrawer
+      {/* Chat History Sidebar */}
+      <ChatHistorySidebar
         isOpen={isHistoryDrawerOpen}
         onClose={() => setIsHistoryDrawerOpen(false)}
         onSelectChat={handleSelectChat}
+        onNewChat={handleNewChat}
       />
 
       {/* Gradient Background */}
@@ -977,45 +1110,17 @@ export function WelcomeDashboard({
       {!isConversationalOnboarding && (
       <div className="relative z-10 w-full">
         {chatState.isActive ? (
-          /* When in chat: show conversation header with back button, title, and history toggle */
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#e6e4e7] bg-white/50 backdrop-blur-sm">
-            {/* Left side: Back button and title */}
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-[#69606d] hover:text-[#29272a] hover:bg-black/5 transition-colors shrink-0"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                <span className="text-[14px] font-medium hidden sm:inline">Back</span>
-              </button>
-
-              {/* Divider */}
-              <div className="h-5 w-px bg-[#d0cdd2] shrink-0" />
-
-              {/* Conversation title */}
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <span className="text-[15px] font-semibold text-[#29272a] truncate">
-                  {chatState.messages.find(m => m.role === 'user')?.content?.slice(0, 40) || 'New Conversation'}
-                  {(chatState.messages.find(m => m.role === 'user')?.content?.length || 0) > 40 && '...'}
-                </span>
-                {/* Active tab badge */}
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-[#f0eef0] text-[11px] font-medium text-[#69606d] border border-[#e6e4e7] shrink-0">
-                  Goodfin AI
-                </span>
-              </div>
-            </div>
-
-            {/* Right side: History toggle */}
-            <button
-              onClick={handleToggleHistory}
-              className="p-2 hover:bg-black/5 rounded-lg transition-colors shrink-0"
-              title="Chat History"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path d={localSvgPaths.sidebarLeft} fill="#69606d" />
-              </svg>
-            </button>
-          </div>
+          /* When in chat: show conversation header with sidebar toggle, back button, title, and actions */
+          <ConversationHeader
+            onToggleHistory={handleToggleHistory}
+            onBack={handleBack}
+            onNewChat={handleNewChat}
+            onFeedback={handleFeedback}
+            onResetConversation={handleResetConversation}
+            title={chatState.messages.find(m => m.role === 'user')?.content?.slice(0, 40) || 'New Conversation'}
+            titleOverflow={(chatState.messages.find(m => m.role === 'user')?.content?.length || 0) > 40}
+            activeMode={currentMode}
+          />
         ) : (
           /* When not in chat: show header actions with history toggle, compose, and more */
           <HeaderActions

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { chatSvgPaths } from './chat-icons';
 import { cn } from '@/lib/utils';
 import { FileText, Calendar, Briefcase, Home, X, Pencil, Plus, Info, Sparkles, ArrowLeft } from "lucide-react";
@@ -75,7 +75,7 @@ function PillTag({ pill, onRemove }: PillTagProps) {
   );
 }
 
-// Simple dropdown menu component
+// Simple dropdown menu component using fixed positioning to escape overflow constraints
 function SimpleDropdown({
   children,
   items,
@@ -86,19 +86,38 @@ function SimpleDropdown({
   onSelect: (value: string) => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+
+  useEffect(() => {
+    if (isOpen && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      // Position above the trigger with some margin
+      setPosition({
+        top: rect.top - 8, // 8px margin above
+        left: rect.left,
+      });
+    }
+  }, [isOpen]);
 
   return (
     <div className="relative">
-      <div onClick={() => setIsOpen(!isOpen)}>
+      <div ref={triggerRef} onClick={() => setIsOpen(!isOpen)}>
         {children}
       </div>
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 z-[100]"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute bottom-full left-0 mb-2 w-56 bg-white/95 backdrop-blur-sm border border-gray-100 shadow-xl rounded-xl p-2 z-50">
+          <div
+            className="fixed w-56 bg-white/95 backdrop-blur-sm border border-gray-100 shadow-xl rounded-xl p-2 z-[101]"
+            style={{
+              bottom: `calc(100vh - ${position.top}px)`,
+              left: position.left,
+            }}
+          >
             {items.map((item) => (
               <button
                 key={item.value}
@@ -280,6 +299,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
   const [triggerQuery, setTriggerQuery] = useState('');
   const [selectedPills, setSelectedPills] = useState<Pill[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const inputContainerRef = useRef<HTMLDivElement>(null);
 
   // Ask AI expanded state for personalization
   const [isAskAiExpanded, setIsAskAiExpanded] = useState(false);
@@ -1346,7 +1366,9 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
 
         {/* Input Box Container - Hidden for processing/complete states */}
         {formCallout?.state !== 'personalization_processing' && formCallout?.state !== 'personalization_complete' && (
-        <div className={cn(
+        <div
+          ref={inputContainerRef}
+          className={cn(
           "bg-white relative shrink-0 w-full",
           hasCallout ? "rounded-b-[16px]" : "rounded-[16px]",
           (formCallout?.state === 'commit_confirm' || formCallout?.state === 'investor_type' || formCallout?.state === 'business_info' || formCallout?.state === 'personalization') ? "h-auto" : hasNudge ? "min-h-[140px]" : isInvestmentMode ? "min-h-[140px]" : "h-[108px]"
@@ -1366,6 +1388,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
           onRecipeSelect={handleRecipeSelect}
           onContextSelect={handleContextSelect}
           onClearSearchQuery={handleClearSearchQuery}
+          anchorRef={inputContainerRef}
         />
 
         <div className="relative z-10 flex flex-col justify-between w-full h-full p-[16px]">
@@ -1598,140 +1621,224 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 "flex items-end justify-between pl-0 pr-[12px]",
                 showRecordingOverlay && "opacity-30 pointer-events-none"
               )}>
-                {/* Left Actions (Chips) - Hidden in investment mode, when callout is shown, or when in conversation */}
-                {!isInvestmentMode && !hasCallout && !isInConversation ? (
-                <div className="flex gap-[4px] items-center flex-wrap">
-                    {/* Home - hidden on mobile unless active */}
-                    <div className={cn(
-                      currentMode === 'default' ? "block" : "hidden md:block"
-                    )}>
-                      <Chip
+                {/* Left Actions (Chips) - Different display based on mode */}
+                {!isInvestmentMode && !hasCallout ? (
+                  isInConversation ? (
+                    /* In conversation: Show only active tab + More with all other options */
+                    <div className="flex gap-[4px] items-center">
+                      {/* Active tab chip */}
+                      {currentMode === 'default' && (
+                        <Chip
                           label="Home"
-                          isActive={currentMode === 'default'}
-                          onClick={() => handleToggle('default')}
-                          icon={
-                              <Home className="size-[11px] text-[#7f7582]" />
-                          }
-                          activeIcon={
-                              <Home className="size-[11px] text-[#f0eef0]" />
-                          }
-                      />
-                    </div>
-
-                    {/* Deep Research - hidden on mobile unless active */}
-                    <div className={cn(
-                      currentMode === 'research' ? "block" : "hidden md:block"
-                    )}>
-                      <Chip
+                          isActive={true}
+                          onClick={() => {}}
+                          icon={<Home className="size-[11px] text-[#f0eef0]" />}
+                        />
+                      )}
+                      {currentMode === 'research' && (
+                        <Chip
                           label="Deep Research"
-                          isActive={currentMode === 'research'}
-                          onClick={() => handleToggle('research')}
+                          isActive={true}
+                          onClick={() => {}}
                           icon={
-                              <svg className="size-[11px]" fill="none" viewBox="0 0 12 16">
-                                <path d={chatSvgPaths.p282ff240} fill="#7f7582" />
-                                <path d={chatSvgPaths.pda45600} fill="#7f7582" />
-                                <path d={chatSvgPaths.p27a45c00} fill="#7f7582" />
-                              </svg>
+                            <svg className="size-[11px]" fill="none" viewBox="0 0 12 16">
+                              <path d={chatSvgPaths.p282ff240} fill="#f0eef0" />
+                              <path d={chatSvgPaths.pda45600} fill="#f0eef0" />
+                              <path d={chatSvgPaths.p27a45c00} fill="#f0eef0" />
+                            </svg>
                           }
-                          activeIcon={
-                              <svg className="size-[11px]" fill="none" viewBox="0 0 12 16">
-                                <path d={chatSvgPaths.p282ff240} fill="#f0eef0" />
-                                <path d={chatSvgPaths.pda45600} fill="#f0eef0" />
-                                <path d={chatSvgPaths.p27a45c00} fill="#f0eef0" />
-                              </svg>
-                          }
-                      />
-                    </div>
-
-                    {/* Deals - hidden on mobile unless active */}
-                    <div className={cn(
-                      currentMode === 'deals' ? "block" : "hidden md:block"
-                    )}>
-                      <Chip
+                        />
+                      )}
+                      {currentMode === 'deals' && (
+                        <Chip
                           label="Deals"
-                          isActive={currentMode === 'deals'}
-                          onClick={() => handleToggle('deals')}
+                          isActive={true}
+                          onClick={() => {}}
                           icon={
-                              <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
-                                <path d={chatSvgPaths.pbe91080} stroke="#7f7582" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                <path d={chatSvgPaths.p3fc7e680} stroke="#7f7582" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                <path d={chatSvgPaths.p553b480} stroke="#7f7582" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                              </svg>
+                            <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
+                              <path d={chatSvgPaths.pbe91080} stroke="#f0eef0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                              <path d={chatSvgPaths.p3fc7e680} stroke="#f0eef0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                              <path d={chatSvgPaths.p553b480} stroke="#f0eef0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                            </svg>
                           }
-                          activeIcon={
-                              <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
-                                <path d={chatSvgPaths.pbe91080} stroke="#f0eef0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                <path d={chatSvgPaths.p3fc7e680} stroke="#f0eef0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                                <path d={chatSvgPaths.p553b480} stroke="#f0eef0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
-                              </svg>
-                          }
-                      />
-                    </div>
-
-                    {/* News - hidden on mobile unless active */}
-                    <div className={cn(
-                      currentMode === 'news' ? "block" : "hidden md:block"
-                    )}>
-                      <Chip
+                        />
+                      )}
+                      {currentMode === 'news' && (
+                        <Chip
                           label="News"
-                          isActive={currentMode === 'news'}
-                          onClick={() => handleToggle('news')}
+                          isActive={true}
+                          onClick={() => {}}
                           icon={
-                              <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
-                                <path d={chatSvgPaths.p36490700} fill="#7f7582" />
-                              </svg>
+                            <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
+                              <path d={chatSvgPaths.p36490700} fill="#f0eef0" />
+                            </svg>
                           }
-                          activeIcon={
-                              <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
-                                <path d={chatSvgPaths.p36490700} fill="#f0eef0" />
-                              </svg>
-                          }
-                      />
-                    </div>
+                        />
+                      )}
+                      {currentMode === 'insight' && (
+                        <Chip label="Community Insight" isActive={true} onClick={() => {}} icon={<FileText className="size-[11px] text-[#f0eef0]" />} />
+                      )}
+                      {currentMode === 'events' && (
+                        <Chip label="Events" isActive={true} onClick={() => {}} icon={<Calendar className="size-[11px] text-[#f0eef0]" />} />
+                      )}
+                      {currentMode === 'portfolio' && (
+                        <Chip label="My Portfolio" isActive={true} onClick={() => {}} icon={<Briefcase className="size-[11px] text-[#f0eef0]" />} />
+                      )}
 
-                    {/* Dynamic Extra Slot - hidden on mobile unless active */}
-                    {extraSlotItem && (
-                      <div className={cn(
-                        currentMode === extraSlotItem ? "block" : "hidden md:block"
-                      )}>
-                        {renderExtraSlot()}
-                      </div>
-                    )}
-
-                    {/* Mobile: Show active "more" item as chip when selected */}
-                    {isMobile && ['insight', 'events', 'portfolio'].includes(currentMode) && currentMode !== extraSlotItem && (
-                      <Chip
-                        label={
-                          currentMode === 'insight' ? 'Community Insight' :
-                          currentMode === 'events' ? 'Events' :
-                          'My Portfolio'
-                        }
-                        isActive={true}
-                        onClick={() => handleToggle(currentMode)}
-                        icon={
-                          currentMode === 'insight' ? <FileText className="size-[11px] text-[#f0eef0]" /> :
-                          currentMode === 'events' ? <Calendar className="size-[11px] text-[#f0eef0]" /> :
-                          <Briefcase className="size-[11px] text-[#f0eef0]" />
-                        }
-                      />
-                    )}
-
-                    {/* More - With Simple Dropdown - always visible */}
-                    <SimpleDropdown
-                      items={moreMenuItems}
-                      onSelect={(value) => onModeChange?.(value as ChatMode)}
-                    >
-                      <Chip
-                        label="More"
-                        isActive={false}
-                        icon={
+                      {/* More dropdown with all other modes */}
+                      <SimpleDropdown
+                        items={[
+                          ...mainChipItems.filter(item => item.value !== currentMode),
+                          ...baseMoreMenuItems.filter(item => item.value !== currentMode),
+                        ]}
+                        onSelect={(value) => onModeChange?.(value as ChatMode)}
+                      >
+                        <Chip
+                          label="More"
+                          isActive={false}
+                          icon={
                             <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
                               <path d={chatSvgPaths.p24b71d80} fill="#7f7582" />
                             </svg>
-                        }
-                      />
-                    </SimpleDropdown>
-                </div>
+                          }
+                        />
+                      </SimpleDropdown>
+                    </div>
+                  ) : (
+                    /* Not in conversation: Show all tabs normally */
+                    <div className="flex gap-[4px] items-center flex-wrap">
+                      {/* Home - hidden on mobile unless active */}
+                      <div className={cn(
+                        currentMode === 'default' ? "block" : "hidden md:block"
+                      )}>
+                        <Chip
+                            label="Home"
+                            isActive={currentMode === 'default'}
+                            onClick={() => handleToggle('default')}
+                            icon={
+                                <Home className="size-[11px] text-[#7f7582]" />
+                            }
+                            activeIcon={
+                                <Home className="size-[11px] text-[#f0eef0]" />
+                            }
+                        />
+                      </div>
+
+                      {/* Deep Research - hidden on mobile unless active */}
+                      <div className={cn(
+                        currentMode === 'research' ? "block" : "hidden md:block"
+                      )}>
+                        <Chip
+                            label="Deep Research"
+                            isActive={currentMode === 'research'}
+                            onClick={() => handleToggle('research')}
+                            icon={
+                                <svg className="size-[11px]" fill="none" viewBox="0 0 12 16">
+                                  <path d={chatSvgPaths.p282ff240} fill="#7f7582" />
+                                  <path d={chatSvgPaths.pda45600} fill="#7f7582" />
+                                  <path d={chatSvgPaths.p27a45c00} fill="#7f7582" />
+                                </svg>
+                            }
+                            activeIcon={
+                                <svg className="size-[11px]" fill="none" viewBox="0 0 12 16">
+                                  <path d={chatSvgPaths.p282ff240} fill="#f0eef0" />
+                                  <path d={chatSvgPaths.pda45600} fill="#f0eef0" />
+                                  <path d={chatSvgPaths.p27a45c00} fill="#f0eef0" />
+                                </svg>
+                            }
+                        />
+                      </div>
+
+                      {/* Deals - hidden on mobile unless active */}
+                      <div className={cn(
+                        currentMode === 'deals' ? "block" : "hidden md:block"
+                      )}>
+                        <Chip
+                            label="Deals"
+                            isActive={currentMode === 'deals'}
+                            onClick={() => handleToggle('deals')}
+                            icon={
+                                <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
+                                  <path d={chatSvgPaths.pbe91080} stroke="#7f7582" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                                  <path d={chatSvgPaths.p3fc7e680} stroke="#7f7582" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                                  <path d={chatSvgPaths.p553b480} stroke="#7f7582" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                                </svg>
+                            }
+                            activeIcon={
+                                <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
+                                  <path d={chatSvgPaths.pbe91080} stroke="#f0eef0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                                  <path d={chatSvgPaths.p3fc7e680} stroke="#f0eef0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                                  <path d={chatSvgPaths.p553b480} stroke="#f0eef0" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
+                                </svg>
+                            }
+                        />
+                      </div>
+
+                      {/* News - hidden on mobile unless active */}
+                      <div className={cn(
+                        currentMode === 'news' ? "block" : "hidden md:block"
+                      )}>
+                        <Chip
+                            label="News"
+                            isActive={currentMode === 'news'}
+                            onClick={() => handleToggle('news')}
+                            icon={
+                                <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
+                                  <path d={chatSvgPaths.p36490700} fill="#7f7582" />
+                                </svg>
+                            }
+                            activeIcon={
+                                <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
+                                  <path d={chatSvgPaths.p36490700} fill="#f0eef0" />
+                                </svg>
+                            }
+                        />
+                      </div>
+
+                      {/* Dynamic Extra Slot - hidden on mobile unless active */}
+                      {extraSlotItem && (
+                        <div className={cn(
+                          currentMode === extraSlotItem ? "block" : "hidden md:block"
+                        )}>
+                          {renderExtraSlot()}
+                        </div>
+                      )}
+
+                      {/* Mobile: Show active "more" item as chip when selected */}
+                      {isMobile && ['insight', 'events', 'portfolio'].includes(currentMode) && currentMode !== extraSlotItem && (
+                        <Chip
+                          label={
+                            currentMode === 'insight' ? 'Community Insight' :
+                            currentMode === 'events' ? 'Events' :
+                            'My Portfolio'
+                          }
+                          isActive={true}
+                          onClick={() => handleToggle(currentMode)}
+                          icon={
+                            currentMode === 'insight' ? <FileText className="size-[11px] text-[#f0eef0]" /> :
+                            currentMode === 'events' ? <Calendar className="size-[11px] text-[#f0eef0]" /> :
+                            <Briefcase className="size-[11px] text-[#f0eef0]" />
+                          }
+                        />
+                      )}
+
+                      {/* More - With Simple Dropdown - always visible */}
+                      <SimpleDropdown
+                        items={moreMenuItems}
+                        onSelect={(value) => onModeChange?.(value as ChatMode)}
+                      >
+                        <Chip
+                          label="More"
+                          isActive={false}
+                          icon={
+                              <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
+                                <path d={chatSvgPaths.p24b71d80} fill="#7f7582" />
+                              </svg>
+                          }
+                        />
+                      </SimpleDropdown>
+                    </div>
+                  )
                 ) : (
                   <div className="flex-1" /> /* Empty spacer in investment mode */
                 )}

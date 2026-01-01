@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Recipe, Context, ViewType, PanelMode } from './types';
@@ -12,6 +12,7 @@ interface CommandPanelProps {
   onRecipeSelect: (recipe: Recipe) => void;
   onContextSelect: (context: Context) => void;
   onClearSearchQuery: () => void;
+  anchorRef?: React.RefObject<HTMLDivElement | null>; // Reference to anchor element for fixed positioning
 }
 
 export function CommandPanel({
@@ -22,9 +23,11 @@ export function CommandPanel({
   onRecipeSelect,
   onContextSelect,
   onClearSearchQuery,
+  anchorRef,
 }: CommandPanelProps) {
   const [currentView, setCurrentView] = useState<ViewType>('home');
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
 
   // Filter recipes based on search query
   const filteredRecipes = RECIPES.filter(
@@ -59,13 +62,23 @@ export function CommandPanel({
   const currentItems = getCurrentItems();
   const itemsLength = currentItems.length;
 
-  // Reset view and selection when panel opens
+  // Reset view and selection when panel opens, and calculate position
   useEffect(() => {
     if (isOpen) {
       setCurrentView('home');
       setSelectedIndex(0);
+
+      // Calculate position based on anchor element
+      if (anchorRef?.current) {
+        const rect = anchorRef.current.getBoundingClientRect();
+        setPosition({
+          top: rect.top - 8, // 8px margin above
+          left: rect.left,
+          width: rect.width,
+        });
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, anchorRef]);
 
   // Reset selected index when view changes
   useEffect(() => {
@@ -155,13 +168,32 @@ export function CommandPanel({
 
   if (!isOpen) return null;
 
+  // Use fixed positioning when anchorRef is provided to escape overflow constraints
+  const useFixedPositioning = !!anchorRef?.current;
+
   return (
-    <div
-      className="absolute bottom-full left-0 right-0 mb-2 z-50 overflow-hidden rounded-2xl border border-border bg-card shadow-2xl"
-      style={{
-        animation: 'panelSlideUp 0.2s ease-out',
-      }}
-    >
+    <>
+      {/* Backdrop for fixed positioning mode */}
+      {useFixedPositioning && (
+        <div
+          className="fixed inset-0 z-[100]"
+          onClick={onClose}
+        />
+      )}
+      <div
+        className={cn(
+          "overflow-hidden rounded-2xl border border-border bg-card shadow-2xl",
+          useFixedPositioning ? "fixed z-[101]" : "absolute bottom-full left-0 right-0 mb-2 z-50"
+        )}
+        style={{
+          animation: 'panelSlideUp 0.2s ease-out',
+          ...(useFixedPositioning ? {
+            bottom: `calc(100vh - ${position.top}px)`,
+            left: position.left,
+            width: position.width,
+          } : {}),
+        }}
+      >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border bg-muted/50 px-4 sm:px-6 pb-2 sm:pb-3 pt-3 sm:pt-4">
         <div className="flex items-center gap-2 sm:gap-3">
@@ -366,5 +398,6 @@ export function CommandPanel({
         }
       `}</style>
     </div>
+    </>
   );
 }
