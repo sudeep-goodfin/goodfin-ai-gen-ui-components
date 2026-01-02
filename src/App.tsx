@@ -51,6 +51,7 @@ import {
   InputBarV02,
   DealProductPage,
   InvestmentFlow,
+  InvestmentAmountInput,
   ZAIInvestmentFlow,
   zaiInvestmentFlowVariants,
   type AIGreetingVariant,
@@ -314,6 +315,26 @@ export function App() {
             { id: 'v0.1', label: 'v0.1 - Basic' },
             { id: 'v0.2', label: 'v0.2 - Commands' },
           ],
+        },
+        {
+          id: 'investment-amount-input',
+          label: 'Investment Amount Input',
+          component: () => (
+            <div className="p-8 bg-[#d9d5db] min-h-[300px] flex items-center justify-center">
+              <InvestmentAmountInput
+                company={{
+                  name: 'Anthropic',
+                  logo: '/icons/products/anthropic.png',
+                  description: 'AI safety and research company',
+                  type: 'Pre-IPO Company',
+                }}
+                onSubmit={(amount) => console.log('Amount:', amount)}
+                onClose={() => console.log('Close')}
+                onProgressClick={() => console.log('Progress')}
+              />
+            </div>
+          ),
+          icon: <DollarSign className="w-6 h-6" />,
         },
         {
           id: 'feedback-buttons',

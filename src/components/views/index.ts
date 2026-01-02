@@ -138,6 +138,7 @@ export {
   TRANSFER_METHODS,
   FAQ_ITEMS,
 } from './InvestmentFlow';
+export { InvestmentAmountInput } from './InvestmentFlow/components/InvestmentAmountInput';
 export type { InvestmentFlowStep, TransferMethod, CompanyData } from './InvestmentFlow';
 
 // Z AI Investment Flow (Chat-based investment experience)
