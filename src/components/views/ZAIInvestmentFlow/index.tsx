@@ -2310,6 +2310,15 @@ export function ZAIInvestmentFlow({
                   onSubmit={flowState === 'askAmount' ? handleAmountSubmit : handleInputSubmit}
                   shake={shakeInput}
                   placeholder={getStepPlaceholder()}
+                  isStreaming={flowState === 'loading' || flowState === 'processingAmount'}
+                  onStopStreaming={() => {
+                    // Handle stop streaming - reset to previous state or cancel operation
+                    if (flowState === 'loading') {
+                      setFlowState('home');
+                    } else if (flowState === 'processingAmount') {
+                      setFlowState('askAmount');
+                    }
+                  }}
                   formCallout={showCalloutDelayed ? {
                     state: showBusinessInfoForm
                       ? 'business_info'

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { chatSvgPaths } from './chat-icons';
 import { cn } from '@/lib/utils';
-import { FileText, Calendar, Briefcase, Home, X, Pencil, Plus, Info, Sparkles, ArrowLeft } from "lucide-react";
+import { FileText, Calendar, Briefcase, Home, X, Pencil, Plus, Info, Sparkles, ArrowLeft, ArrowUp, Mic, Square } from "lucide-react";
 import { CommandPanel, Recipe, Context, Pill, PanelMode } from './command-panel';
 import { useRecording } from './hooks/useRecording';
 import { VoiceRecordingInterface } from './VoiceRecordingInterface';
@@ -290,9 +290,11 @@ interface InputBarProps {
     shake?: boolean; // Trigger shake animation (e.g., for invalid input)
     placeholder?: string; // Custom placeholder text
     isInConversation?: boolean; // Hide mode chips when in active conversation
+    isStreaming?: boolean; // Whether AI response is currently streaming
+    onStopStreaming?: () => void; // Callback to stop streaming
 }
 
-export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChange, onSubmit, investmentAction, formNudge, formCallout, shake, placeholder: customPlaceholder, isInConversation = false }: InputBarProps) {
+export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChange, onSubmit, investmentAction, formNudge, formCallout, shake, placeholder: customPlaceholder, isInConversation = false, isStreaming = false, onStopStreaming }: InputBarProps) {
   const [inputValue, setInputValue] = useState('');
   const [showCommandPanel, setShowCommandPanel] = useState(false);
   const [panelMode, setPanelMode] = useState<PanelMode>('recipes');
@@ -583,19 +585,29 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
     formCallout?.state === 'personalization_processing' ||
     formCallout?.state === 'personalization_complete';
 
-  // Check if in awaiting_input state for special callout styling
+  // Check if in awaiting_input or error state for special callout styling
   const isAwaitingInput = formCallout?.state === 'awaiting_input';
+  const isErrorState = formCallout?.state === 'error';
+  // Use callout style for all callout states (awaiting_input, error, default, confirmed)
+  // but not for special form states (commit_confirm, investor_type, business_info, personalization)
+  const isFormState = formCallout?.state === 'commit_confirm' ||
+    formCallout?.state === 'investor_type' ||
+    formCallout?.state === 'business_info' ||
+    formCallout?.state === 'personalization' ||
+    formCallout?.state === 'personalization_processing' ||
+    formCallout?.state === 'personalization_complete';
+  const useCalloutStyle = hasCallout && !isFormState;
 
   return (
     <div className="w-full max-w-3xl flex flex-col items-center gap-2">
       {/* Wrapper for callout + input with rainbow border for personalization */}
       <div className={cn(
         "w-full relative",
-        // Special asymmetric rounded corners for awaiting_input state
-        isAwaitingInput
+        // Special asymmetric rounded corners for awaiting_input and error states
+        useCalloutStyle
           ? "rounded-tl-[18px] rounded-tr-[24px] rounded-bl-[24px] rounded-br-[24px] bg-[rgba(230,228,231,0.95)] backdrop-blur-[6px] border border-[#f8f8f8]"
           : "rounded-[16px]",
-        !showRainbowBorder && !isAwaitingInput && "overflow-hidden",
+        !showRainbowBorder && !useCalloutStyle && "overflow-hidden",
         shake && "animate-shake",
         showRainbowBorder && "rainbow-border-hover"
       )}>
@@ -604,12 +616,11 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
           <div
             className={cn(
               "px-4 py-3 flex flex-col gap-3 transition-colors duration-300",
-              // Only apply rounded-t and background for non-awaiting_input states
-              !isAwaitingInput && "rounded-t-[16px]",
-              formCallout.state === 'default' && "bg-[#a8d4f0]",
-              formCallout.state === 'awaiting_input' && "bg-transparent",
-              formCallout.state === 'confirmed' && "bg-[#e8e5e8]",
-              formCallout.state === 'error' && "bg-[#e8a8a8]",
+              // Only apply rounded-t for form states, callout style uses transparent bg
+              !useCalloutStyle && "rounded-t-[16px]",
+              // Callout style states use transparent background
+              useCalloutStyle && "bg-transparent",
+              // Form states keep their original backgrounds
               formCallout.state === 'commit_confirm' && "bg-[#e8e5e8]",
               formCallout.state === 'investor_type' && "bg-[#e8e5e8]",
               formCallout.state === 'business_info' && "bg-[#e8e5e8]",
@@ -656,7 +667,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 {!isAskAiExpanded && formCallout.dealLogo && (
                   <div className={cn(
                     "rounded-lg overflow-hidden flex-shrink-0",
-                    isAwaitingInput ? "w-8 h-8" : "w-10 h-10"
+                    useCalloutStyle ? "w-8 h-8" : "w-10 h-10"
                   )}>
                     <img
                       src={formCallout.dealLogo}
@@ -669,11 +680,11 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                   {(formCallout.headerText || isAskAiExpanded) && (
                   <span
                     className={cn(
-                      "font-medium text-[#29272a] truncate",
-                      isAwaitingInput
+                      "font-medium truncate",
+                      useCalloutStyle
                         ? "text-[14px] leading-[16px]"
                         : "text-[14px] md:text-[15px]",
-                      formCallout.state === 'error' && "text-[#8a2929]"
+                      isErrorState ? "text-[#8a2929]" : "text-[#29272a]"
                     )}
                     style={{ fontFamily: 'Soehne Kraftig, sans-serif' }}
                   >
@@ -746,13 +757,13 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                       onClick={formCallout.onProgressClick}
                       className={cn(
                         "hidden md:flex items-center transition-colors",
-                        isAwaitingInput
+                        useCalloutStyle
                           ? "px-2 py-1 bg-[#f7f7f8] rounded-full hover:bg-[#eae8eb]"
                           : "gap-1 px-2 py-1 text-[11px] font-medium text-[#685f6a] bg-white/60 hover:bg-white/80 border border-[#d0cdd2] rounded-md"
                       )}
-                      style={{ fontFamily: isAwaitingInput ? 'Soehne, sans-serif' : 'Soehne Kraftig, sans-serif' }}
+                      style={{ fontFamily: useCalloutStyle ? 'Soehne, sans-serif' : 'Soehne Kraftig, sans-serif' }}
                     >
-                      <span className={isAwaitingInput ? "text-[12px] leading-[16px] text-[#48424a]" : ""}>
+                      <span className={useCalloutStyle ? "text-[12px] leading-[16px] text-[#48424a]" : ""}>
                         Investment progress
                       </span>
                     </button>
@@ -774,13 +785,13 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                       onClick={formCallout.onClose}
                       className={cn(
                         "flex items-center justify-center transition-colors",
-                        isAwaitingInput
+                        useCalloutStyle
                           ? "w-8 h-8 rounded-lg hover:bg-[rgba(0,0,0,0.05)]"
                           : "w-6 h-6 md:w-5 md:h-5 rounded-full hover:bg-black/10"
                       )}
                     >
                       <X className={cn(
-                        isAwaitingInput
+                        useCalloutStyle
                           ? "w-[10.67px] h-[10.67px] text-[#48424a]"
                           : "w-4 h-4 md:w-3.5 md:h-3.5 text-[#29272a]"
                       )} />
@@ -1402,8 +1413,8 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
           ref={inputContainerRef}
           className={cn(
           "bg-white relative shrink-0 w-full",
-          // Awaiting input gets full rounded corners like InvestmentAmountInput
-          isAwaitingInput
+          // Awaiting input and error states get full rounded corners like InvestmentAmountInput
+          useCalloutStyle
             ? "rounded-[24px]"
             : hasCallout
               ? "rounded-b-[16px]"
@@ -1413,8 +1424,8 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
           {/* Border & Shadow Layer */}
           <div aria-hidden="true" className={cn(
             "absolute inset-0 pointer-events-none shadow-[-1px_1px_8px_0px_rgba(164,140,160,0.2)]",
-            // Awaiting input gets full rounded corners and no border
-            isAwaitingInput
+            // Awaiting input and error states get full rounded corners and no border
+            useCalloutStyle
               ? "rounded-[24px]"
               : hasCallout
                 ? "rounded-b-[16px] border border-[#f0eef0] border-solid border-t-0"
@@ -1601,7 +1612,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                 <div className={cn(
                   "flex items-center gap-2 flex-wrap",
                   (isInvestmentMode || hasCallout) ? "flex-1 min-h-[24px]" : "h-[24px] overflow-hidden",
-                  isAwaitingInput && "pl-2"
+                  useCalloutStyle && "pl-2"
                 )}>
                   {/* Selected Pills - hidden in investment mode or callout */}
                   {!isInvestmentMode && !hasCallout && selectedPills.map((pill) => (
@@ -1912,35 +1923,73 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                   <div className="flex-1" /> /* Empty spacer in investment mode */
                 )}
 
-                {/* Right Actions (Mic & Waveform) */}
-                <div className="flex items-center gap-[8px] h-[36px] w-[72px]">
-                     {/* Mic Button - triggers voice recording */}
-                    <button
-                      onClick={startRecording}
-                      className="flex items-center justify-center size-[28px] rounded-[40px] hover:bg-gray-100 cursor-pointer transition-colors"
-                    >
-                        <div className="relative shrink-0 size-[18px]">
-                              <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 18">
-                                <defs>
-                                  <clipPath id="clip_mic">
-                                    <rect fill="white" height="18" width="18" />
-                                  </clipPath>
-                                </defs>
-                                <g clipPath="url(#clip_mic)">
-                                  <path d={chatSvgPaths.p22ac6580} fill="#48424A" />
-                                </g>
-                              </svg>
-                        </div>
-                    </button>
+                {/* Right Actions (Mic & Waveform/Send/Stop) */}
+                <div className="flex items-center gap-[8px] h-[36px]">
+                     {/* Mic Button - triggers voice recording (hidden when streaming) */}
+                    {!isStreaming && (
+                      <button
+                        onClick={startRecording}
+                        className={cn(
+                          "flex items-center justify-center rounded-full cursor-pointer transition-colors",
+                          useCalloutStyle
+                            ? "w-7 h-7 hover:bg-[#f4f3f5]"
+                            : "size-[28px] rounded-[40px] hover:bg-gray-100"
+                        )}
+                      >
+                          {useCalloutStyle ? (
+                            <Mic className="w-[18px] h-[18px] text-[#48424a]" />
+                          ) : (
+                            <div className="relative shrink-0 size-[18px]">
+                                  <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 18">
+                                    <defs>
+                                      <clipPath id="clip_mic">
+                                        <rect fill="white" height="18" width="18" />
+                                      </clipPath>
+                                    </defs>
+                                    <g clipPath="url(#clip_mic)">
+                                      <path d={chatSvgPaths.p22ac6580} fill="#48424A" />
+                                    </g>
+                                  </svg>
+                            </div>
+                          )}
+                      </button>
+                    )}
 
-                    {/* Waveform Button */}
-                    <div className="bg-[rgba(229,220,227,0.56)] flex flex-col items-center justify-center rounded-[16px] shrink-0 w-[36px] h-[36px] hover:bg-[rgba(229,220,227,0.7)] cursor-pointer transition-colors">
-                         <div className="flex gap-[1.5px] items-center justify-center relative shrink-0 size-[18px]">
-                              <div className="w-[3px] h-[4.5px] bg-[#48424a] rounded-[15px]" />
-                              <div className="w-[3px] h-[10.5px] bg-[#48424a] rounded-[15px]" />
-                              <div className="w-[3px] h-[7.5px] bg-[#48424a] rounded-[15px]" />
-                         </div>
-                    </div>
+                    {/* Action Button: Stop (streaming) / Send (has input) / Waveform (no input) */}
+                    {isStreaming ? (
+                      /* Stop Button - shown when streaming */
+                      <button
+                        onClick={onStopStreaming}
+                        className="flex items-center justify-center w-9 h-9 rounded-2xl transition-all bg-[#373338] hover:bg-[#29272a]"
+                      >
+                        <Square className="w-[14px] h-[14px] text-white fill-white" />
+                      </button>
+                    ) : inputValue.trim() ? (
+                      /* Send Button - shown when has input */
+                      <button
+                        onClick={() => {
+                          if (inputValue.trim()) {
+                            onSubmit?.(inputValue.trim());
+                            setInputValue('');
+                          }
+                        }}
+                        className="flex items-center justify-center w-9 h-9 rounded-2xl transition-all"
+                        style={{
+                          background: 'linear-gradient(90.43deg, rgba(127, 117, 130, 0.63) 0%, rgba(56, 52, 57, 0.63) 99.63%), linear-gradient(90deg, #373338 0%, #373338 100%)',
+                        }}
+                      >
+                        <ArrowUp className="w-[18px] h-[18px] text-white" />
+                      </button>
+                    ) : (
+                      /* Waveform Button - shown when no input (voice conversation mode) */
+                      <div className="bg-[rgba(229,220,227,0.56)] flex flex-col items-center justify-center rounded-[16px] shrink-0 w-[36px] h-[36px] hover:bg-[rgba(229,220,227,0.7)] cursor-pointer transition-colors">
+                           <div className="flex gap-[1.5px] items-center justify-center relative shrink-0 size-[18px]">
+                                <div className="w-[3px] h-[4.5px] bg-[#48424a] rounded-[15px]" />
+                                <div className="w-[3px] h-[10.5px] bg-[#48424a] rounded-[15px]" />
+                                <div className="w-[3px] h-[7.5px] bg-[#48424a] rounded-[15px]" />
+                           </div>
+                      </div>
+                    )}
                 </div>
               </div>
             </div>
