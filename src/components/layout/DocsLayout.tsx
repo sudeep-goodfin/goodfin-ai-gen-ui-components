@@ -966,6 +966,7 @@ export function DocsLayout({
                   </div>
                 )}
 
+
                 {/* Preview Container */}
                 <div className="border border-border rounded-xl bg-muted/30">
                   {activeComponent}

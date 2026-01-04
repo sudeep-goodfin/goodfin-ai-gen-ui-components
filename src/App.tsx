@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { DocsLayout } from './components/layout';
 import { ConversationView, aiGreetingConversationFlow, spaceXInvestmentFlow } from './components/chat';
 import {
@@ -103,6 +103,9 @@ import {
   MessageCircle,
   BrainCircuit,
   Clock,
+  Settings,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import {
   FeedbackButtons,
@@ -123,6 +126,227 @@ import {
   SuggestionCard,
   ProgressWidget,
 } from './components/ui';
+
+// InputBar Playground Component with interactive configuration
+type PlaygroundChatMode = 'default' | 'research' | 'deals' | 'news' | 'investment' | 'insight' | 'events' | 'portfolio';
+type PlaygroundCalloutState = 'none' | 'awaiting_input' | 'confirmed' | 'error';
+
+// URL helpers for playground
+const getPlaygroundParams = () => new URLSearchParams(window.location.search);
+const updatePlaygroundParams = (params: Record<string, string | boolean>) => {
+  const url = new URL(window.location.href);
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === false || value === '' || value === 'none' || value === 'default') {
+      url.searchParams.delete(key);
+    } else if (typeof value === 'boolean') {
+      url.searchParams.set(key, value ? '1' : '0');
+    } else {
+      url.searchParams.set(key, value);
+    }
+  });
+  window.history.replaceState({}, '', url.toString());
+};
+
+interface InputBarPlaygroundProps {
+  suggestions: Array<{ id: string; text: string; icon?: React.ReactNode }>;
+}
+
+function InputBarPlayground({ suggestions }: InputBarPlaygroundProps) {
+  // Initialize state from URL params
+  const initFromUrl = () => {
+    const params = getPlaygroundParams();
+    return {
+      chatMode: (params.get('mode') as PlaygroundChatMode) || 'default',
+      calloutState: (params.get('callout') as PlaygroundCalloutState) || 'none',
+      showSuggestions: params.get('suggestions') === '1',
+      isStreaming: params.get('streaming') === '1',
+      isInConversation: params.get('conversation') === '1',
+    };
+  };
+
+  const initial = initFromUrl();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(true);
+  const [chatMode, setChatMode] = useState<PlaygroundChatMode>(initial.chatMode);
+  const [showSuggestions, setShowSuggestions] = useState(initial.showSuggestions);
+  const [isStreaming, setIsStreaming] = useState(initial.isStreaming);
+  const [isInConversation, setIsInConversation] = useState(initial.isInConversation);
+  const [calloutState, setCalloutState] = useState<PlaygroundCalloutState>(initial.calloutState);
+  const [shake, setShake] = useState(false);
+
+  // Update URL when state changes
+  const updateChatMode = (mode: PlaygroundChatMode) => {
+    setChatMode(mode);
+    updatePlaygroundParams({ mode });
+  };
+
+  const updateCalloutState = (state: PlaygroundCalloutState) => {
+    setCalloutState(state);
+    updatePlaygroundParams({ callout: state });
+    // Trigger shake animation when error state is selected
+    if (state === 'error') {
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+    }
+  };
+
+  const updateShowSuggestions = (value: boolean) => {
+    setShowSuggestions(value);
+    updatePlaygroundParams({ suggestions: value });
+  };
+
+  const updateIsStreaming = (value: boolean) => {
+    setIsStreaming(value);
+    updatePlaygroundParams({ streaming: value });
+  };
+
+  const updateIsInConversation = (value: boolean) => {
+    setIsInConversation(value);
+    updatePlaygroundParams({ conversation: value });
+  };
+
+  const getFormCallout = () => {
+    if (calloutState === 'none') return undefined;
+
+    const baseCallout = {
+      dealLogo: '/icons/products/anthropic.png',
+      onClose: () => setCalloutState('none'),
+    };
+
+    switch (calloutState) {
+      case 'awaiting_input':
+        return { ...baseCallout, state: 'awaiting_input' as const, headerText: 'Anthropic' };
+      case 'confirmed':
+        return { ...baseCallout, state: 'confirmed' as const, headerText: 'Anthropic', displayValue: '$50,000', onEditAmount: () => {} };
+      case 'error':
+        return { ...baseCallout, state: 'error' as const, headerText: 'Minimum investment is $25,000' };
+      default:
+        return undefined;
+    }
+  };
+
+  return (
+    <div className="bg-[#f7f7f8] min-h-[600px]">
+      {/* Settings Panel */}
+      <div className="border-b border-gray-200 bg-white">
+        <button
+          onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+          className="w-full px-4 py-3 flex items-center justify-between text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            <span>Configuration</span>
+          </div>
+          {isSettingsOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </button>
+
+        {isSettingsOpen && (
+          <div className="px-4 pb-4 space-y-4">
+            {/* Chat Mode */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Chat Mode</label>
+              <div className="flex flex-wrap gap-2">
+                {(['default', 'research', 'deals', 'news'] as PlaygroundChatMode[]).map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => updateChatMode(mode)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
+                      chatMode === mode
+                        ? 'bg-gray-900 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Callout State */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Callout State</label>
+              <div className="flex flex-wrap gap-2">
+                {(['none', 'awaiting_input', 'confirmed', 'error'] as PlaygroundCalloutState[]).map((state) => (
+                  <button
+                    key={state}
+                    onClick={() => updateCalloutState(state)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
+                      calloutState === state
+                        ? 'bg-gray-900 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {state === 'none' ? 'None' : state.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Toggles */}
+            <div className="flex flex-wrap gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showSuggestions}
+                  onChange={(e) => updateShowSuggestions(e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-500"
+                />
+                <span className="text-sm text-gray-700">Show Suggestions</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isStreaming}
+                  onChange={(e) => updateIsStreaming(e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-500"
+                />
+                <span className="text-sm text-gray-700">Streaming</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isInConversation}
+                  onChange={(e) => updateIsInConversation(e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-500"
+                />
+                <span className="text-sm text-gray-700">In Conversation</span>
+              </label>
+            </div>
+
+            {/* Error Animation - Only show when error state is selected */}
+            {calloutState === 'error' && (
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Error Animation</label>
+                <button
+                  onClick={() => {
+                    setShake(true);
+                    setTimeout(() => setShake(false), 500);
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                >
+                  Trigger Shake Animation
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Preview */}
+      <div className="p-8 min-h-[500px] flex items-end justify-center">
+        <InputBarV02
+          currentMode={calloutState !== 'none' ? 'investment' : chatMode}
+          suggestions={showSuggestions ? suggestions : []}
+          isStreaming={isStreaming}
+          isInConversation={isInConversation}
+          formCallout={getFormCallout()}
+          shake={shake}
+          onStopStreaming={() => updateIsStreaming(false)}
+          onSuggestionClick={(s) => console.log('Selected:', s.text)}
+        />
+      </div>
+    </div>
+  );
+}
 
 export function App() {
   // Replay function ref for AI greeting animation
@@ -301,19 +525,130 @@ export function App() {
         {
           id: 'input-bar',
           label: 'Input Bar (Chatbox)',
-          component: (variant: string) => (
-            <div className="p-8 bg-[#f7f7f8] min-h-[400px] flex items-end justify-center">
-              {variant === 'v0.1' ? (
-                <InputBarV01 currentMode="default" />
-              ) : (
-                <InputBarV02 currentMode="default" />
-              )}
-            </div>
-          ),
+          component: (variant: string) => {
+            const suggestions = [
+              { id: '1', text: "Show me trending pre-IPO deals this week", icon: <Sparkles className="w-4 h-4" /> },
+              { id: '2', text: "What's the minimum investment for Anthropic?", icon: <Sparkles className="w-4 h-4" /> },
+              { id: '3', text: "Compare SpaceX and Stripe investment terms", icon: <Sparkles className="w-4 h-4" /> },
+              { id: '4', text: "Help me diversify my private market portfolio", icon: <Sparkles className="w-4 h-4" /> },
+            ];
+
+            if (variant === 'v0.1') {
+              return (
+                <div className="p-8 bg-[#f7f7f8] min-h-[300px] flex items-end justify-center">
+                  <InputBarV01 currentMode="default" />
+                </div>
+              );
+            }
+
+            if (variant === 'all-states') {
+              return (
+                <div className="p-8 bg-[#f7f7f8] space-y-12">
+                  {/* Default State */}
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Default State</h3>
+                    <InputBarV02 currentMode="default" />
+                  </div>
+
+                  {/* With Suggestions */}
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">With Suggestions (click input)</h3>
+                    <InputBarV02
+                      currentMode="default"
+                      suggestions={suggestions}
+                      onSuggestionClick={(s) => console.log('Selected:', s.text)}
+                    />
+                  </div>
+
+                  {/* Chat Modes */}
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Chat Modes</h3>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <span className="text-xs text-gray-400">Research Mode</span>
+                        <InputBarV02 currentMode="research" />
+                      </div>
+                      <div className="space-y-2">
+                        <span className="text-xs text-gray-400">Deals Mode</span>
+                        <InputBarV02 currentMode="deals" />
+                      </div>
+                      <div className="space-y-2">
+                        <span className="text-xs text-gray-400">News Mode</span>
+                        <InputBarV02 currentMode="news" />
+                      </div>
+                      <div className="space-y-2">
+                        <span className="text-xs text-gray-400">In Conversation</span>
+                        <InputBarV02 currentMode="deals" isInConversation />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Investment States */}
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Investment Flow States</h3>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <span className="text-xs text-gray-400">Awaiting Input</span>
+                        <InputBarV02
+                          currentMode="investment"
+                          formCallout={{
+                            state: 'awaiting_input',
+                            dealLogo: '/icons/products/anthropic.png',
+                            headerText: 'Anthropic',
+                            onClose: () => {},
+                          }}
+                          placeholder="Enter amount"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <span className="text-xs text-gray-400">Confirmed</span>
+                        <InputBarV02
+                          currentMode="investment"
+                          formCallout={{
+                            state: 'confirmed',
+                            dealLogo: '/icons/products/anthropic.png',
+                            headerText: 'Anthropic',
+                            displayValue: '$50,000',
+                            onClose: () => {},
+                            onEditAmount: () => {},
+                          }}
+                          placeholder="Ask a follow-up question..."
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <span className="text-xs text-gray-400">Error State</span>
+                        <InputBarV02
+                          currentMode="investment"
+                          formCallout={{
+                            state: 'error',
+                            dealLogo: '/icons/products/anthropic.png',
+                            headerText: 'Minimum investment is $25,000',
+                            onClose: () => {},
+                          }}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <span className="text-xs text-gray-400">Streaming Response</span>
+                        <InputBarV02
+                          currentMode="default"
+                          isStreaming={true}
+                          onStopStreaming={() => {}}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            // v0.2 - Interactive Playground
+            return <InputBarPlayground suggestions={suggestions} />;
+          },
           icon: <MessageSquare className="w-6 h-6" />,
           variants: [
             { id: 'v0.1', label: 'v0.1 - Basic' },
-            { id: 'v0.2', label: 'v0.2 - Commands' },
+            { id: 'v0.2', label: 'v0.2 - Playground' },
+            { id: 'all-states', label: 'All States' },
           ],
         },
         {

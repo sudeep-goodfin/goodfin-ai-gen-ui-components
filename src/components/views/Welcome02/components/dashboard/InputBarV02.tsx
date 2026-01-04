@@ -279,6 +279,13 @@ interface FormCallout {
   onContinueToHome?: () => void;
 }
 
+// Suggestion item for the overlay
+export interface SuggestionItem {
+  id: string;
+  text: string;
+  icon?: React.ReactNode;
+}
+
 interface InputBarProps {
     currentMode?: ChatMode;
     extraSlotItem?: MoreMode | null;
@@ -292,11 +299,20 @@ interface InputBarProps {
     isInConversation?: boolean; // Hide mode chips when in active conversation
     isStreaming?: boolean; // Whether AI response is currently streaming
     onStopStreaming?: () => void; // Callback to stop streaming
+    // Suggestion overlay props
+    suggestions?: SuggestionItem[]; // Array of suggestion items to display
+    showSuggestionsOnFocus?: boolean; // Auto-show suggestions when input is focused (default: true)
+    onSuggestionClick?: (suggestion: SuggestionItem) => void; // Callback when a suggestion is clicked
 }
 
-export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChange, onSubmit, investmentAction, formNudge, formCallout, shake, placeholder: customPlaceholder, isInConversation = false, isStreaming = false, onStopStreaming }: InputBarProps) {
+export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChange, onSubmit, investmentAction, formNudge, formCallout, shake, placeholder: customPlaceholder, isInConversation = false, isStreaming = false, onStopStreaming, suggestions = [], showSuggestionsOnFocus = true, onSuggestionClick }: InputBarProps) {
   const [inputValue, setInputValue] = useState('');
   const [showCommandPanel, setShowCommandPanel] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+
+  // Compute whether to show suggestions overlay
+  // Show when: input is focused + no text typed + suggestions exist + showSuggestionsOnFocus is enabled
+  const showSuggestionOverlay = isFocused && inputValue.trim() === '' && suggestions.length > 0 && showSuggestionsOnFocus;
   const [panelMode, setPanelMode] = useState<PanelMode>('recipes');
   const [triggerQuery, setTriggerQuery] = useState('');
   const [selectedPills, setSelectedPills] = useState<Pill[]>([]);
@@ -599,7 +615,28 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
   const useCalloutStyle = hasCallout && !isFormState;
 
   return (
-    <div className="w-full max-w-3xl flex flex-col items-center gap-2">
+    <div className="w-full max-w-3xl flex flex-col items-center gap-2 relative">
+      {/* Suggestion Overlay - positioned absolutely above input bar */}
+      {showSuggestionOverlay && (
+        <div className="absolute bottom-full left-0 right-0 py-4 flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
+          {suggestions.map((suggestion) => (
+            <button
+              key={suggestion.id}
+              onClick={() => {
+                onSuggestionClick?.(suggestion);
+                setInputValue(suggestion.text);
+                inputRef.current?.focus();
+              }}
+              className="w-full flex items-center gap-2 text-left py-2.5 px-4 text-[15px] leading-[22px] text-[#48424a] hover:text-[#29272a] hover:bg-[#e8e5e8] transition-all cursor-pointer"
+              style={{ fontFamily: 'Soehne, sans-serif' }}
+            >
+              {suggestion.icon && <span className="flex-shrink-0 opacity-60">{suggestion.icon}</span>}
+              <span>{suggestion.text}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Wrapper for callout + input with rainbow border for personalization */}
       <div className={cn(
         "w-full relative",
@@ -1641,6 +1678,11 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                     value={inputValue}
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => {
+                      // Delay hiding to allow click on suggestions
+                      setTimeout(() => setIsFocused(false), 150);
+                    }}
                     disabled={showRecordingOverlay}
                     placeholder={
                       hasCallout
