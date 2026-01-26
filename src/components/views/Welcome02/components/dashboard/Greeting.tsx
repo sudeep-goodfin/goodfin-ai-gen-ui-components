@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AnimatedWordText } from '../../../AIGreeting/AnimatedWordText';
 import { ThinkingText } from '../../../AIGreeting/ThinkingText';
 import { cn } from '../../../../../lib/utils';
+import { GoodfinAILogo } from './GoodfinAILogo';
 
 // Animation phases for first-time user
 type AnimationPhase = 'idle' | 'logo' | 'thinking' | 'greeting' | 'description' | 'complete';
@@ -19,6 +20,7 @@ interface GreetingProps {
   firstTimeTitle?: string;
   firstTimeDescription?: string;
   animationKey?: number;
+  customDescription?: string;
 }
 
 export function Greeting({
@@ -29,7 +31,8 @@ export function Greeting({
   isFirstTimeUser = false,
   firstTimeTitle = "Welcome to Goodfin, Alex",
   firstTimeDescription = "I'm your AI concierge, here to help you discover and invest in **exclusive private market opportunities**. To personalize your experience, I'd love to learn a bit more about your investment preferences.",
-  animationKey = 0
+  animationKey = 0,
+  customDescription
 }: GreetingProps) {
   const [phase, setPhase] = useState<AnimationPhase>('idle');
 
@@ -94,11 +97,10 @@ export function Greeting({
           )}
         >
           <div className="relative w-12 h-12 rounded-full overflow-hidden border border-[#F8F8F8]" style={{ boxShadow: '0px 5px 5px 0px rgba(190, 185, 192, 0.33)' }}>
-            <img
-              src="/conciergeIcon.png"
-              alt="Goodfin AI"
+            <GoodfinAILogo
+              size={48}
               className={cn(
-                'w-full h-full object-cover',
+                'w-full h-full',
                 isComplete && 'animate-pulse-subtle'
               )}
             />
@@ -163,7 +165,7 @@ export function Greeting({
       {/* Greeting Header with Avatar inline */}
       <div className="flex items-center gap-4">
         <div className="relative w-10 h-10 rounded-full overflow-hidden shadow-[0px_0.833px_2.5px_0px_rgba(0,0,0,0.1),0px_0.833px_1.667px_-0.833px_rgba(0,0,0,0.1)] border border-[#F8F8F8]">
-          <img src="/conciergeIcon.png" alt="Goodfin AI" className="w-full h-full object-cover opacity-90" />
+          <GoodfinAILogo size={40} className="w-full h-full opacity-90" />
         </div>
         <h1 className="text-[20px] text-[#48424a] leading-[30.4px] tracking-[-0.7px] font-serif">
           {title}
@@ -171,17 +173,23 @@ export function Greeting({
       </div>
 
       {/* Description for returning users */}
-      <p className="text-[16px] text-[#7f7582] leading-[24px] font-['Soehne',sans-serif]">
-        Your portfolio increased by{' '}
-        <span className="font-['Soehne_Kraftig',sans-serif] text-[#29272a] font-medium">
-          {portfolioGain} ({portfolioPercentage})
-        </span>{' '}
-        this month, primarily driven by secondary market activity in SpaceX. You have{' '}
-        <span className="font-['Soehne_Kraftig',sans-serif] text-[#29272a] font-medium">
-          {priorityAllocations}
-        </span>
-        .
-      </p>
+      {customDescription ? (
+        <p className="text-[16px] text-[#7f7582] leading-[24px] font-['Soehne',sans-serif]">
+          {customDescription}
+        </p>
+      ) : (
+        <p className="text-[16px] text-[#7f7582] leading-[24px] font-['Soehne',sans-serif]">
+          Your portfolio increased by{' '}
+          <span className="font-['Soehne_Kraftig',sans-serif] text-[#29272a] font-medium">
+            {portfolioGain} ({portfolioPercentage})
+          </span>{' '}
+          this month, primarily driven by secondary market activity in SpaceX. You have{' '}
+          <span className="font-['Soehne_Kraftig',sans-serif] text-[#29272a] font-medium">
+            {priorityAllocations}
+          </span>
+          .
+        </p>
+      )}
     </div>
   );
 }

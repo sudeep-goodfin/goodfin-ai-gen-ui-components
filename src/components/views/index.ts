@@ -170,3 +170,12 @@ export {
   LongRunningTaskShowcase,
   longRunningTaskVariants,
 } from './AIElements';
+
+// Goodfin Go (Non-accredited user flow)
+export {
+  GoodfinGo,
+  GoodfinGoDashboard,
+  MarketingPage,
+  goodfinGoVariants,
+} from './GoodfinGo';
+export type { GoodfinGoStep } from './GoodfinGo';

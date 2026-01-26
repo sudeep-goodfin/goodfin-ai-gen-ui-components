@@ -13,6 +13,7 @@ export interface Investment {
   date: string;
   status: 'active' | 'pending' | 'exited';
   icon?: React.ReactNode;
+  isTopPerformer?: boolean;
 }
 
 // Investment row component
@@ -34,10 +35,22 @@ export function InvestmentRow({
   return (
     <div
       className={cn(
-        "flex items-center justify-between p-4 bg-card rounded-xl border border-border hover:border-muted-foreground/30 transition-colors",
+        "relative flex items-center justify-between p-4 bg-card rounded-xl border transition-colors",
+        investment.isTopPerformer
+          ? "border-amber-300/60 bg-gradient-to-r from-amber-50/50 to-card"
+          : "border-border hover:border-muted-foreground/30",
         className
       )}
     >
+      {/* Top Performer Badge - Curved callout at top right */}
+      {investment.isTopPerformer && (
+        <div className="absolute -top-2.5 right-4 flex items-center gap-1 bg-gradient-to-r from-amber-500 to-amber-400 text-white px-2.5 py-0.5 rounded-full shadow-sm text-[10px] font-semibold tracking-wide">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+          </svg>
+          TOP PERFORMER
+        </div>
+      )}
       <div className="flex items-center gap-4">
         {/* Icon */}
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
@@ -149,6 +162,7 @@ export const SAMPLE_INVESTMENTS: Investment[] = [
     returnPercent: 25.0,
     date: 'Mar 2024',
     status: 'active',
+    isTopPerformer: true,
   },
   {
     id: '2',

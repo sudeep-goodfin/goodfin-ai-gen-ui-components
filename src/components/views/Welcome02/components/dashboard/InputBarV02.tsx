@@ -79,11 +79,13 @@ function PillTag({ pill, onRemove }: PillTagProps) {
 function SimpleDropdown({
   children,
   items,
-  onSelect
+  onSelect,
+  restrictedItems = []
 }: {
   children: React.ReactNode;
   items: { label: string; value: string; icon: React.ReactNode }[];
   onSelect: (value: string) => void;
+  restrictedItems?: string[];
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -118,19 +120,30 @@ function SimpleDropdown({
               left: position.left,
             }}
           >
-            {items.map((item) => (
-              <button
-                key={item.value}
-                className="w-full flex items-center gap-2 py-2.5 px-3 rounded-lg hover:bg-gray-100 transition-colors text-left"
-                onClick={() => {
-                  onSelect(item.value);
-                  setIsOpen(false);
-                }}
-              >
-                {item.icon}
-                <span className="text-sm text-[#29272a]">{item.label}</span>
-              </button>
-            ))}
+            {items.map((item) => {
+              const isRestricted = restrictedItems.includes(item.value);
+              return (
+                <button
+                  key={item.value}
+                  className={cn(
+                    "w-full flex items-center gap-2 py-2.5 px-3 rounded-lg transition-colors text-left",
+                    isRestricted ? "opacity-60 cursor-not-allowed" : "hover:bg-gray-100"
+                  )}
+                  onClick={() => {
+                    if (!isRestricted) {
+                      onSelect(item.value);
+                      setIsOpen(false);
+                    }
+                  }}
+                >
+                  {item.icon}
+                  <span className="text-sm text-[#29272a] flex-1">{item.label}</span>
+                  {isRestricted && (
+                    <span className="text-[10px] text-[#a09a9f] font-medium">Requires sign in</span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </>
       )}
@@ -303,9 +316,10 @@ interface InputBarProps {
     suggestions?: SuggestionItem[]; // Array of suggestion items to display
     showSuggestionsOnFocus?: boolean; // Auto-show suggestions when input is focused (default: true)
     onSuggestionClick?: (suggestion: SuggestionItem) => void; // Callback when a suggestion is clicked
+    restrictedModes?: string[]; // Modes that require sign in (shown as disabled with "Requires sign in" label)
 }
 
-export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChange, onSubmit, investmentAction, formNudge, formCallout, shake, placeholder: customPlaceholder, isInConversation = false, isStreaming = false, onStopStreaming, suggestions = [], showSuggestionsOnFocus = true, onSuggestionClick }: InputBarProps) {
+export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChange, onSubmit, investmentAction, formNudge, formCallout, shake, placeholder: customPlaceholder, isInConversation = false, isStreaming = false, onStopStreaming, suggestions = [], showSuggestionsOnFocus = true, onSuggestionClick, restrictedModes = [] }: InputBarProps) {
   const [inputValue, setInputValue] = useState('');
   const [showCommandPanel, setShowCommandPanel] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -1693,7 +1707,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                           ? customPlaceholder || `Ask followup about ${investmentAction?.label?.replace('Invest in ', '').toLowerCase() || 'this deal'}`
                           : selectedPills.length > 0
                             ? "Add more context..."
-                            : "Ask anything... (type / or @ for commands)"
+                            : customPlaceholder || "Ask anything... (type / or @ for commands)"
                     }
                     className={cn(
                       "flex-1 min-w-[200px] text-[16px] leading-normal text-[#29272a] placeholder:text-[#7f7582] bg-transparent outline-none font-light tracking-[-0.3125px]",
@@ -1814,6 +1828,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                           ...baseMoreMenuItems.filter(item => item.value !== currentMode),
                         ]}
                         onSelect={(value) => onModeChange?.(value as ChatMode)}
+                        restrictedItems={restrictedModes}
                       >
                         <Chip
                           label="More"
@@ -1873,12 +1888,13 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
 
                       {/* Deals - hidden on mobile unless active */}
                       <div className={cn(
-                        currentMode === 'deals' ? "block" : "hidden md:block"
+                        currentMode === 'deals' ? "block" : "hidden md:block",
+                        restrictedModes.includes('deals') && "opacity-60"
                       )}>
                         <Chip
-                            label="Deals"
+                            label={restrictedModes.includes('deals') ? "Deals 🔒" : "Deals"}
                             isActive={currentMode === 'deals'}
-                            onClick={() => handleToggle('deals')}
+                            onClick={() => !restrictedModes.includes('deals') && handleToggle('deals')}
                             icon={
                                 <svg className="size-[11px]" fill="none" viewBox="0 0 20 20">
                                   <path d={chatSvgPaths.pbe91080} stroke="#7f7582" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.66667" />
@@ -1948,6 +1964,7 @@ export function InputBarV02({ currentMode = 'default', extraSlotItem, onModeChan
                       <SimpleDropdown
                         items={moreMenuItems}
                         onSelect={(value) => onModeChange?.(value as ChatMode)}
+                        restrictedItems={restrictedModes}
                       >
                         <Chip
                           label="More"

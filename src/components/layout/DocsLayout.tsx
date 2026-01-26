@@ -81,6 +81,7 @@ const viewModeIcons: Record<string, React.ReactNode> = {
   welcome02: <Home className="w-4 h-4" />,
   'investment-flow': <DollarSign className="w-4 h-4" />,
   'z-ai-investment-flow': <Sparkles className="w-4 h-4" />,
+  'goodfin-go': <Globe className="w-4 h-4" />,
   'ai-elements': <Bot className="w-4 h-4" />,
   archive: <Archive className="w-4 h-4" />,
 };
@@ -152,7 +153,7 @@ type ComponentGroup = {
   components: ComponentOption[];
 };
 
-type ViewMode = 'landing' | 'component' | 'conversation' | 'onboarding' | 'personalization' | 'welcome' | 'welcome02' | 'investment-flow' | 'z-ai-investment-flow';
+type ViewMode = 'landing' | 'component' | 'conversation' | 'onboarding' | 'personalization' | 'welcome' | 'welcome02' | 'investment-flow' | 'z-ai-investment-flow' | 'goodfin-go';
 
 type DocsLayoutProps = {
   groups: ComponentGroup[];
@@ -163,6 +164,7 @@ type DocsLayoutProps = {
   renderWelcome02View?: (variant: string, showChrome: boolean, homeVariant: string) => React.ReactNode;
   renderInvestmentFlowView?: (step: string, onDismiss: () => void) => React.ReactNode;
   renderZAIInvestmentFlowView?: (userState: string, onDismiss: () => void) => React.ReactNode;
+  renderGoodfinGoView?: (step: string, showChrome: boolean) => React.ReactNode;
   onboardingVariants?: VariantOption[];
   personalizationVariants?: VariantOption[];
   welcomeVariants?: VariantOption[];
@@ -170,6 +172,7 @@ type DocsLayoutProps = {
   welcome02HomeVariants?: VariantOption[];
   investmentFlowSteps?: VariantOption[];
   zaiInvestmentFlowVariants?: VariantOption[];
+  goodfinGoVariants?: VariantOption[];
   conversationFlowOptions?: { id: string; label: string }[];
 };
 
@@ -182,6 +185,7 @@ export function DocsLayout({
   renderWelcome02View,
   renderInvestmentFlowView,
   renderZAIInvestmentFlowView,
+  renderGoodfinGoView,
   onboardingVariants = [],
   personalizationVariants = [],
   welcomeVariants = [],
@@ -189,6 +193,7 @@ export function DocsLayout({
   welcome02HomeVariants = [],
   investmentFlowSteps = [],
   zaiInvestmentFlowVariants = [],
+  goodfinGoVariants = [],
   conversationFlowOptions = [],
 }: DocsLayoutProps) {
   // Flatten all components from groups
@@ -205,6 +210,7 @@ export function DocsLayout({
     if (mode === 'welcome02') return 'welcome02';
     if (mode === 'investment-flow') return 'investment-flow';
     if (mode === 'z-ai-investment-flow') return 'z-ai-investment-flow';
+    if (mode === 'goodfin-go') return 'goodfin-go';
     if (mode === 'landing') return 'landing';
     // If no component is specified in URL, show landing page
     const componentId = params.get('component');
@@ -292,6 +298,10 @@ export function DocsLayout({
   const [activeZAIInvestmentFlowVariant, setActiveZAIInvestmentFlowVariant] = useState(() => {
     const params = getUrlParams();
     return params.get('zaiVariant') || zaiInvestmentFlowVariants[0]?.id || 'accredited-returning';
+  });
+  const [activeGoodfinGoStep, setActiveGoodfinGoStep] = useState(() => {
+    const params = getUrlParams();
+    return params.get('goodfinGoStep') || goodfinGoVariants[0]?.id || 'landing';
   });
 
   // Fullscreen state (from URL)
@@ -429,6 +439,7 @@ export function DocsLayout({
       homeVariant: viewMode === 'welcome02' ? activeWelcome02HomeVariant : undefined,
       investmentStep: viewMode === 'investment-flow' ? activeInvestmentFlowStep : undefined,
       zaiVariant: viewMode === 'z-ai-investment-flow' ? activeZAIInvestmentFlowVariant : undefined,
+      goodfinGoStep: viewMode === 'goodfin-go' ? activeGoodfinGoStep : undefined,
       // Fullscreen state (only store if true to keep URLs cleaner)
       fullscreen: isFullscreen ? true : undefined,
       // Chrome toggle for welcome02 (only store if true since false is default)
@@ -452,7 +463,7 @@ export function DocsLayout({
     }
 
     updateUrlParams(params);
-  }, [viewMode, activeId, activeGroupId, variantStates, activeConversationFlow, activeOnboardingVariant, activePersonalizationVariant, activeWelcomeVariant, activeWelcome02Variant, activeWelcome02HomeVariant, activeInvestmentFlowStep, activeZAIInvestmentFlowVariant, isFullscreen, showWelcome02Chrome, isSidebarCollapsed, selectedRelease, theme, hidePrototypeHint, showPresets, showStepper, showSuggestions, presetCount]);
+  }, [viewMode, activeId, activeGroupId, variantStates, activeConversationFlow, activeOnboardingVariant, activePersonalizationVariant, activeWelcomeVariant, activeWelcome02Variant, activeWelcome02HomeVariant, activeInvestmentFlowStep, activeZAIInvestmentFlowVariant, activeGoodfinGoStep, isFullscreen, showWelcome02Chrome, isSidebarCollapsed, selectedRelease, theme, hidePrototypeHint, showPresets, showStepper, showSuggestions, presetCount]);
 
   // Build sidebar sections based on view mode
   const buildSidebarSections = (): SidebarSection[] => {
@@ -489,6 +500,14 @@ export function DocsLayout({
           icon: viewModeIcons['z-ai-investment-flow'],
           children: zaiInvestmentFlowVariants.length > 0
             ? zaiInvestmentFlowVariants.map(v => ({ id: v.id, label: v.label }))
+            : undefined,
+        },
+        {
+          id: 'goodfin-go',
+          label: 'Goodfin Go (Non-Accredited)',
+          icon: viewModeIcons['goodfin-go'],
+          children: goodfinGoVariants.length > 0
+            ? goodfinGoVariants.map(v => ({ id: v.id, label: v.label }))
             : undefined,
         },
         {
@@ -557,6 +576,8 @@ export function DocsLayout({
         setViewMode('welcome02');
       } else if (itemId === 'z-ai-investment-flow') {
         setViewMode('z-ai-investment-flow');
+      } else if (itemId === 'goodfin-go') {
+        setViewMode('goodfin-go');
       }
     } else if (sectionId === 'archive') {
       // Archive items
@@ -593,6 +614,9 @@ export function DocsLayout({
       } else if (itemId === 'z-ai-investment-flow') {
         setViewMode('z-ai-investment-flow');
         setActiveZAIInvestmentFlowVariant(subItemId);
+      } else if (itemId === 'goodfin-go') {
+        setViewMode('goodfin-go');
+        setActiveGoodfinGoStep(subItemId);
       }
     } else if (sectionId === 'archive') {
       // Archive sub-items
@@ -651,6 +675,7 @@ export function DocsLayout({
     if (viewMode === 'welcome02') return activeWelcome02Variant;
     if (viewMode === 'investment-flow') return activeInvestmentFlowStep;
     if (viewMode === 'z-ai-investment-flow') return activeZAIInvestmentFlowVariant;
+    if (viewMode === 'goodfin-go') return activeGoodfinGoStep;
     if (viewMode === 'component') return variantStates[activeId];
     return undefined;
   };
@@ -762,6 +787,17 @@ export function DocsLayout({
           onOptionSelect: (id) => setActiveZAIInvestmentFlowVariant(id),
         });
       }
+    } else if (viewMode === 'goodfin-go') {
+      crumbs.push({ label: 'Goodfin Go (Non-Accredited)' });
+      if (goodfinGoVariants.length > 0) {
+        const currentLabel = goodfinGoVariants.find(v => v.id === activeGoodfinGoStep)?.label || '';
+        crumbs.push({
+          label: currentLabel,
+          dropdownOptions: goodfinGoVariants.map(v => ({ id: v.id, label: v.label })),
+          selectedOptionId: activeGoodfinGoStep,
+          onOptionSelect: (id) => setActiveGoodfinGoStep(id),
+        });
+      }
     }
 
     return crumbs;
@@ -818,6 +854,7 @@ export function DocsLayout({
             setViewMode('welcome02');
             setActiveWelcome02Variant('accredited-returning');
           })}
+          {viewMode === 'goodfin-go' && renderGoodfinGoView?.(activeGoodfinGoStep, false)}
         </div>
       </div>
     );
@@ -868,9 +905,9 @@ export function DocsLayout({
         />
 
         {/* Main Content Area */}
-        <main className={cn("flex-1 overflow-hidden", (viewMode === 'personalization' || viewMode === 'welcome02' || viewMode === 'investment-flow' || viewMode === 'z-ai-investment-flow') && "flex flex-col")}>
+        <main className={cn("flex-1 overflow-hidden", (viewMode === 'personalization' || viewMode === 'welcome02' || viewMode === 'investment-flow' || viewMode === 'z-ai-investment-flow' || viewMode === 'goodfin-go') && "flex flex-col")}>
           {/* Standard content wrapper with Radix ScrollArea - only shown for non-fullscreen views */}
-          {viewMode !== 'personalization' && viewMode !== 'welcome02' && viewMode !== 'investment-flow' && viewMode !== 'z-ai-investment-flow' && (
+          {viewMode !== 'personalization' && viewMode !== 'welcome02' && viewMode !== 'investment-flow' && viewMode !== 'z-ai-investment-flow' && viewMode !== 'goodfin-go' && (
           <ScrollAreaPrimitive.Root className="h-full w-full">
             <ScrollAreaPrimitive.Viewport className="h-full w-full">
               <div className="p-4 md:p-8 max-w-5xl mx-auto">
@@ -1343,6 +1380,68 @@ export function DocsLayout({
                   setViewMode('welcome02');
                   setActiveWelcome02Variant('accredited-returning');
                 })}
+              </div>
+            </div>
+          )}
+
+          {/* Goodfin Go View - renders outside the constrained container */}
+          {viewMode === 'goodfin-go' && (
+            <div className="flex flex-col flex-1 min-h-0">
+              {/* Options Bar */}
+              <div className="flex flex-wrap items-center gap-4 px-4 md:px-8 py-3 border-b border-border bg-background/50">
+                {/* Step Selector Pills */}
+                {goodfinGoVariants.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Step:</span>
+                    <div
+                      className="inline-flex gap-1 p-1 rounded-lg"
+                      style={{ backgroundColor: 'var(--grey-100)' }}
+                    >
+                      {goodfinGoVariants.map((step) => (
+                        <button
+                          key={step.id}
+                          onClick={() => setActiveGoodfinGoStep(step.id)}
+                          className={cn('px-2.5 py-1 text-sm font-medium rounded-md transition-all')}
+                          style={{
+                            backgroundColor: activeGoodfinGoStep === step.id ? '#FFFFFF' : 'transparent',
+                            color: activeGoodfinGoStep === step.id ? 'var(--grey-950)' : 'var(--grey-500)',
+                            boxShadow: activeGoodfinGoStep === step.id ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                          }}
+                        >
+                          {step.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Chrome Toggle */}
+                <button
+                  onClick={() => setShowWelcome02Chrome(prev => !prev)}
+                  className={cn(
+                    'flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg border transition-all',
+                    showWelcome02Chrome
+                      ? 'border-border bg-white text-muted-foreground hover:text-foreground'
+                      : 'border-foreground bg-foreground text-background'
+                  )}
+                >
+                  {showWelcome02Chrome ? (
+                    <>
+                      <PanelLeft className="w-4 h-4" />
+                      <span className="hidden sm:inline">With Chrome</span>
+                    </>
+                  ) : (
+                    <>
+                      <PanelLeftClose className="w-4 h-4" />
+                      <span className="hidden sm:inline">App Only</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Direct render - no container */}
+              <div className="flex-1 min-h-0 overflow-hidden">
+                {renderGoodfinGoView?.(activeGoodfinGoStep, showWelcome02Chrome)}
               </div>
             </div>
           )}

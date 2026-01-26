@@ -54,12 +54,15 @@ import {
   InvestmentAmountInput,
   ZAIInvestmentFlow,
   zaiInvestmentFlowVariants,
+  GoodfinGo,
+  goodfinGoVariants,
   type AIGreetingVariant,
   type InvestmentFlowStep,
   type OnboardingVariant,
   type WelcomeScreenVariant,
   type InputBarVersion,
   type ZAIUserState,
+  type GoodfinGoStep,
   ShimmerShowcase,
   shimmerVariants,
   ThinkingIndicatorShowcase,
@@ -1073,7 +1076,14 @@ export function App() {
           onComplete={() => {}}
         />
       )}
+      renderGoodfinGoView={(step, showChrome) => (
+        <GoodfinGo
+          step={step as GoodfinGoStep}
+          showChrome={showChrome}
+        />
+      )}
       zaiInvestmentFlowVariants={zaiInvestmentFlowVariants}
+      goodfinGoVariants={goodfinGoVariants}
       onboardingVariants={onboardingVariants}
       personalizationVariants={personalizationVariants}
       welcomeVariants={welcomeScreenVariants}

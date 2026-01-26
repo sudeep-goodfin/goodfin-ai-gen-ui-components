@@ -76,6 +76,8 @@ const MY_INVESTMENTS_DATA = [
         returnPercent: 25.0,
         date: 'Mar 2024',
         status: 'active' as const,
+        isTopPerformer: true,
+        logo: '/icons/products/spaceX.png',
     },
     {
         id: '2',
@@ -86,16 +88,18 @@ const MY_INVESTMENTS_DATA = [
         returnPercent: 25.0,
         date: 'Jan 2024',
         status: 'active' as const,
+        logo: '/icons/products/anthropic.png',
     },
     {
         id: '3',
-        name: 'Stripe',
+        name: 'OpenAI',
         type: 'Secondary',
         investedAmount: 200000,
         currentValue: 224000,
         returnPercent: 12.0,
         date: 'Nov 2023',
         status: 'active' as const,
+        logo: '/icons/products/openAI.png',
     },
     {
         id: '4',
@@ -106,27 +110,53 @@ const MY_INVESTMENTS_DATA = [
         returnPercent: 18.0,
         date: 'Aug 2023',
         status: 'active' as const,
+        logo: '/icons/products/databricks.jpg',
     },
     {
         id: '5',
-        name: 'Discord',
+        name: 'Anduril',
         type: 'Secondary',
         investedAmount: 75000,
         currentValue: 82500,
         returnPercent: 10.0,
         date: 'Jun 2023',
         status: 'active' as const,
+        logo: '/icons/products/anduril.jpg',
     },
 ];
 
 // Investment row component
 function InvestmentRow({ investment }: { investment: typeof MY_INVESTMENTS_DATA[0] }) {
     const isPositive = investment.returnPercent >= 0;
+    const isTopPerformer = 'isTopPerformer' in investment && investment.isTopPerformer;
+
     return (
-        <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-[#f0eef0] hover:border-[#e0dde1] transition-colors">
+        <div className={cn(
+            "relative flex items-center justify-between p-4 bg-white rounded-xl border transition-colors",
+            isTopPerformer
+                ? "border-amber-200/80 bg-gradient-to-r from-amber-50/40 via-white to-white"
+                : "border-[#f0eef0] hover:border-[#e0dde1]"
+        )}>
+            {/* Top Performer Badge */}
+            {isTopPerformer && (
+                <div className="absolute -top-2.5 right-6 flex items-center gap-1 bg-gradient-to-r from-amber-500 to-amber-400 text-white px-2.5 py-0.5 rounded-full shadow-sm">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                    </svg>
+                    <span className="text-[10px] font-semibold tracking-wide">TOP PERFORMER</span>
+                </div>
+            )}
             <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#f7f5f8] to-[#ebe8ec] flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-[#7f7582]" />
+                <div className="w-11 h-11 rounded-xl overflow-hidden bg-gradient-to-br from-[#f7f5f8] to-[#ebe8ec] flex items-center justify-center shrink-0">
+                    {investment.logo ? (
+                        <img
+                            src={investment.logo}
+                            alt={investment.name}
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <Building2 className="w-5 h-5 text-[#7f7582]" />
+                    )}
                 </div>
                 <div>
                     <div className="text-sm font-medium text-[#29272a]">{investment.name}</div>
@@ -178,7 +208,7 @@ function MyInvestmentsContent() {
             </div>
 
             {/* Investments List */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3 mt-2">
                 {MY_INVESTMENTS_DATA.map((investment) => (
                     <InvestmentRow key={investment.id} investment={investment} />
                 ))}
