@@ -4,11 +4,12 @@ import { Greeting } from '../Welcome02/components/dashboard/Greeting';
 import { InputBarV02 } from '../Welcome02/components/dashboard/InputBarV02';
 import { ChatMode } from '../Welcome02/components/dashboard/InputBar';
 import { ChatHistorySidebar } from '../Welcome02/components/dashboard/ChatHistorySidebar';
-import { ArrowLeft, Sparkles, TrendingUp, Star, Newspaper, X, UserPlus, User, ChevronRight, Building2, Users, Calendar, Globe, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Sparkles, TrendingUp, Star, Newspaper, X, UserPlus, User, ChevronRight, Building2, Users, Calendar, Globe, ExternalLink, Settings } from 'lucide-react';
 import { svgPaths as localSvgPaths } from '../Welcome02/svgPaths';
 import { cn } from '../../../lib/utils';
 import { Shimmer } from '../../ui/Shimmer';
 import { GoodfinAILogo } from '../Welcome02/components/dashboard/GoodfinAILogo';
+import stripeLogo from '../Welcome02/assets/deal-stripe.png';
 
 // Featured companies with latest news and details
 const FEATURED_COMPANIES = [
@@ -36,7 +37,7 @@ const FEATURED_COMPANIES = [
     id: 'stripe',
     name: 'Stripe',
     category: 'FINTECH',
-    image: '/icons/products/stripe.png',
+    image: stripeLogo,
     news: 'Expands payment infrastructure to 10 new markets, reports 25% revenue growth in Q4.',
     valuation: '$65B',
     founded: '2010',
@@ -101,10 +102,73 @@ const SUGGESTIONS = [
   { id: '3', text: "Compare AI companies valuations", icon: <Star className="w-4 h-4" /> },
 ];
 
+// Deep Research Reports
+const DEEP_RESEARCH_REPORTS = [
+  {
+    id: 'spacex-research',
+    company: 'SpaceX',
+    title: 'SpaceX: Path to Mars and Beyond',
+    summary: 'Comprehensive analysis of SpaceX\'s Starship program, revenue projections, and competitive positioning in the commercial space industry.',
+    date: 'Jan 24, 2026',
+    readTime: '12 min read',
+    image: '/icons/products/spaceX.png',
+  },
+  {
+    id: 'anthropic-research',
+    company: 'Anthropic',
+    title: 'Anthropic: The AI Safety Imperative',
+    summary: 'Deep dive into Anthropic\'s Constitutional AI approach, enterprise adoption, and market differentiation strategy.',
+    date: 'Jan 22, 2026',
+    readTime: '10 min read',
+    image: '/icons/products/anthropic.png',
+  },
+  {
+    id: 'stripe-research',
+    company: 'Stripe',
+    title: 'Stripe: Fintech Infrastructure Leader',
+    summary: 'Analysis of Stripe\'s expansion into financial services, international growth, and path to profitability.',
+    date: 'Jan 20, 2026',
+    readTime: '8 min read',
+    image: stripeLogo,
+  },
+];
+
+// Latest News
+const LATEST_NEWS = [
+  {
+    id: 'news-1',
+    headline: 'SpaceX Starship Achieves Full Orbital Flight',
+    source: 'TechCrunch',
+    time: '2 hours ago',
+    category: 'Space',
+  },
+  {
+    id: 'news-2',
+    headline: 'Anthropic Raises $2B at $18B Valuation',
+    source: 'Bloomberg',
+    time: '5 hours ago',
+    category: 'AI',
+  },
+  {
+    id: 'news-3',
+    headline: 'Stripe Expands to 10 New Markets in APAC',
+    source: 'Reuters',
+    time: '8 hours ago',
+    category: 'Fintech',
+  },
+  {
+    id: 'news-4',
+    headline: 'OpenAI Enterprise Adoption Surges 300%',
+    source: 'WSJ',
+    time: '1 day ago',
+    category: 'AI',
+  },
+];
+
 // Maximum prompts for non-registered users
 const MAX_PROMPTS = 5;
 
-// Company News Card Component
+// Company News Card Component - Premium Investment Card
 function CompanyNewsCard({
   company,
   onClick,
@@ -114,32 +178,99 @@ function CompanyNewsCard({
   onClick?: () => void;
   onLearnMore?: () => void;
 }) {
+  const isPositiveGrowth = company.metrics.growth.startsWith('+');
+
   return (
-    <div className="group bg-white rounded-[16px] border border-[#e6e4e7] p-4 hover:border-[#c5bfc6] hover:shadow-sm transition-all">
+    <div
+      className="group relative bg-white rounded-[20px] border border-[#e8e6ea] overflow-hidden transition-all duration-300 hover:border-[#d4d0d6] hover:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.12)]"
+    >
+      {/* Subtle gradient overlay on hover */}
       <div
-        onClick={onClick}
-        className="flex items-start gap-3 cursor-pointer"
-      >
-        <div className="w-12 h-12 rounded-xl overflow-hidden bg-[#f0eef0] shrink-0">
-          <img src={company.image} alt={company.name} className="w-full h-full object-cover" />
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+        style={{
+          background: 'linear-gradient(135deg, rgba(255,245,235,0.5) 0%, rgba(255,230,210,0.3) 100%)',
+        }}
+      />
+
+      {/* Main content */}
+      <div className="relative p-5">
+        {/* Header row */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            {/* Logo with subtle ring */}
+            <div className="relative">
+              <div className="w-11 h-11 rounded-[12px] overflow-hidden bg-gradient-to-br from-[#f8f7f9] to-[#f0eef1] p-[1px]">
+                <div className="w-full h-full rounded-[11px] overflow-hidden bg-white">
+                  <img src={company.image} alt={company.name} className="w-full h-full object-cover" />
+                </div>
+              </div>
+              {/* Online indicator dot */}
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-[#22c55e] rounded-full border-2 border-white" />
+            </div>
+
+            <div>
+              <h3 className="text-[16px] font-semibold text-[#1a1a1a] tracking-[-0.01em]">{company.name}</h3>
+              <span className="text-[10px] text-[#8a8490] font-medium uppercase tracking-[0.08em]">{company.category}</span>
+            </div>
+          </div>
+
+          {/* Valuation badge */}
+          <div className="text-right">
+            <div className="text-[11px] text-[#8a8490] font-medium mb-0.5">Valuation</div>
+            <div className="text-[15px] font-bold text-[#1a1a1a] tracking-[-0.02em]">{company.valuation}</div>
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <span className="text-[10px] text-[#69606d] font-medium uppercase tracking-wide">{company.category}</span>
-          <h3 className="text-[15px] font-semibold text-[#29272a] mb-1">{company.name}</h3>
-          <p className="text-[13px] text-[#69606d] line-clamp-2">{company.news}</p>
+
+        {/* News content */}
+        <div
+          onClick={onClick}
+          className="cursor-pointer mb-4"
+        >
+          <p className="text-[13px] text-[#4a464d] leading-[1.6] line-clamp-2">{company.news}</p>
+        </div>
+
+        {/* Metrics row */}
+        <div className="flex items-center gap-3 mb-4 py-3 border-t border-b border-[#f0eef1]">
+          <div className="flex-1">
+            <div className="text-[10px] text-[#8a8490] font-medium uppercase tracking-wide mb-1">Revenue</div>
+            <div className="text-[13px] font-semibold text-[#1a1a1a]">{company.metrics.revenue}</div>
+          </div>
+          <div className="w-px h-8 bg-[#e8e6ea]" />
+          <div className="flex-1">
+            <div className="text-[10px] text-[#8a8490] font-medium uppercase tracking-wide mb-1">Growth</div>
+            <div className={cn(
+              "text-[13px] font-semibold",
+              isPositiveGrowth ? "text-[#16a34a]" : "text-[#dc2626]"
+            )}>
+              {company.metrics.growth}
+            </div>
+          </div>
+          <div className="w-px h-8 bg-[#e8e6ea]" />
+          <div className="flex-1">
+            <div className="text-[10px] text-[#8a8490] font-medium uppercase tracking-wide mb-1">Funding</div>
+            <div className="text-[13px] font-semibold text-[#1a1a1a]">{company.metrics.funding}</div>
+          </div>
+        </div>
+
+        {/* Action row */}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onLearnMore?.();
+            }}
+            className="group/btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1a1a1a] text-white text-[12px] font-medium transition-all duration-200 hover:bg-[#2d2d2d] hover:gap-2"
+          >
+            View Details
+            <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5" />
+          </button>
+
+          <div className="flex items-center gap-1.5 text-[11px] text-[#8a8490]">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#ff954a] animate-pulse" />
+            <span>Active opportunity</span>
+          </div>
         </div>
       </div>
-      {/* Learn more link */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onLearnMore?.();
-        }}
-        className="mt-3 flex items-center gap-1 text-[12px] font-medium text-[#ff954a] hover:text-[#e8853f] transition-colors"
-      >
-        Learn more
-        <ChevronRight className="w-3.5 h-3.5" />
-      </button>
     </div>
   );
 }
@@ -155,11 +286,6 @@ function CompanyDetailPage({
   onAskAI: (query: string) => void;
 }) {
   const [activeTab, setActiveTab] = useState<'highlights' | 'details' | 'news'>('highlights');
-  const [expandedSection, setExpandedSection] = useState<string | null>(null);
-
-  const toggleSection = (section: string) => {
-    setExpandedSection(expandedSection === section ? null : section);
-  };
 
   const tabs = [
     { id: 'highlights', label: 'Highlights' },
@@ -316,10 +442,58 @@ function CompanyDetailPage({
             <div className="lg:col-span-1 bg-[#f4f3f5] lg:bg-transparent p-6 lg:pr-6 lg:pl-0 lg:py-6">
               <div className="lg:sticky lg:top-6 space-y-4">
 
-                {/* Currently Invested Card */}
-                <div className="bg-white rounded-lg p-4">
-                  <span className="text-[11px] text-[#69606d] uppercase tracking-wide">Valuation</span>
-                  <p className="text-[28px] font-semibold text-[#29272a] mt-1">{company.valuation}</p>
+                {/* Valuation Card */}
+                <div className="bg-gradient-to-br from-[#fff8f0] to-[#ffefe0] rounded-xl p-4 border border-[#ffe4c9]">
+                  <span className="text-[11px] text-[#a86c4a] font-medium uppercase tracking-wide">Valuation</span>
+                  <p className="text-[24px] font-bold text-[#29272a] mt-1">{company.valuation}</p>
+                </div>
+
+                {/* Metrics */}
+                <div className="bg-white rounded-xl p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[12px] text-[#69606d]">Revenue</span>
+                    <span className="text-[13px] font-semibold text-[#29272a]">{company.metrics.revenue}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[12px] text-[#69606d]">Growth</span>
+                    <span className="text-[13px] font-semibold text-[#22c55e]">{company.metrics.growth}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[12px] text-[#69606d]">Total Funding</span>
+                    <span className="text-[13px] font-semibold text-[#29272a]">{company.metrics.funding}</span>
+                  </div>
+                </div>
+
+                {/* Company Info */}
+                <div className="bg-white rounded-xl p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-[#69606d]" />
+                    <span className="text-[12px] text-[#69606d]">Founded</span>
+                    <span className="text-[13px] font-medium text-[#29272a] ml-auto">{company.founded}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Building2 className="w-4 h-4 text-[#69606d]" />
+                    <span className="text-[12px] text-[#69606d]">HQ</span>
+                    <span className="text-[13px] font-medium text-[#29272a] ml-auto">{company.headquarters}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-[#69606d]" />
+                    <span className="text-[12px] text-[#69606d]">Employees</span>
+                    <span className="text-[13px] font-medium text-[#29272a] ml-auto">{company.employees}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-[#69606d]" />
+                    <span className="text-[12px] text-[#69606d]">Website</span>
+                    <a
+                      href={`https://${company.website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[13px] font-medium text-[#ff954a] hover:underline ml-auto flex items-center gap-1"
+                    >
+                      {company.website}
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
                 </div>
 
                 {/* CTA Button */}
@@ -328,7 +502,7 @@ function CompanyDetailPage({
                     onAskAI(`Tell me everything about ${company.name} - their business model, financials, competitive advantages, and risks`);
                     onBack();
                   }}
-                  className="w-full h-12 rounded-lg text-white text-[14px] font-medium transition-all flex items-center justify-center gap-2"
+                  className="w-full h-12 rounded-xl text-white text-[14px] font-medium transition-all flex items-center justify-center gap-2"
                   style={{
                     background: 'linear-gradient(90deg, rgba(127, 117, 130, 0.63) 0%, rgba(56, 52, 57, 0.63) 100%), #373338',
                     boxShadow: '0 2px 4px 0 rgba(190, 185, 192, 0.64), 2px 2px 2px 0 rgba(255, 255, 255, 0.14) inset',
@@ -338,114 +512,13 @@ function CompanyDetailPage({
                   Dive deep with Goodfin Go
                 </button>
 
-                {/* Terms Text */}
-                <p className="text-[11px] text-[#a09a9f] leading-relaxed">
-                  By investing, you have read and agree to our Terms & Conditions and our Disclaimer below.
-                </p>
-
-                {/* Accordion Sections */}
-                <div className="bg-[#faf8f6] rounded-lg overflow-hidden">
-                  {/* Support */}
-                  <div className="border-b border-[#e6e4e7]">
-                    <button
-                      onClick={() => toggleSection('support')}
-                      className="w-full flex items-center justify-between p-4 text-left"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 rounded-full bg-[#e6e4e7] flex items-center justify-center">
-                          <span className="text-[11px] text-[#69606d]">?</span>
-                        </div>
-                        <span className="text-[13px] font-medium text-[#29272a]">Support</span>
-                      </div>
-                      <ChevronRight className={cn(
-                        "w-4 h-4 text-[#69606d] transition-transform",
-                        expandedSection === 'support' && "rotate-90"
-                      )} />
-                    </button>
-                    {expandedSection === 'support' && (
-                      <div className="px-4 pb-4 text-[13px] text-[#69606d]">
-                        Contact support@goodfin.com for any questions about this investment opportunity.
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Investment Terms */}
-                  <div className="border-b border-[#e6e4e7]">
-                    <button
-                      onClick={() => toggleSection('terms')}
-                      className="w-full flex items-center justify-between p-4 text-left"
-                    >
-                      <span className="text-[13px] font-medium text-[#29272a]">Investment Terms</span>
-                      <ChevronRight className={cn(
-                        "w-4 h-4 text-[#69606d] transition-transform",
-                        expandedSection === 'terms' && "rotate-90"
-                      )} />
-                    </button>
-                    {expandedSection === 'terms' && (
-                      <div className="px-4 pb-4 space-y-3">
-                        <div>
-                          <span className="text-[11px] text-[#69606d]">Valuation</span>
-                          <p className="text-[13px] font-medium text-[#29272a]">{company.valuation}</p>
-                        </div>
-                        <div>
-                          <span className="text-[11px] text-[#69606d]">Total Funding</span>
-                          <p className="text-[13px] font-medium text-[#29272a]">{company.metrics.funding}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Disclaimer */}
-                  <div className="border-b border-[#e6e4e7]">
-                    <button
-                      onClick={() => toggleSection('disclaimer')}
-                      className="w-full flex items-center justify-between p-4 text-left"
-                    >
-                      <span className="text-[13px] font-medium text-[#29272a]">Disclaimer</span>
-                      <ChevronRight className={cn(
-                        "w-4 h-4 text-[#69606d] transition-transform",
-                        expandedSection === 'disclaimer' && "rotate-90"
-                      )} />
-                    </button>
-                    {expandedSection === 'disclaimer' && (
-                      <div className="px-4 pb-4 text-[12px] text-[#69606d] leading-relaxed">
-                        This information is provided for educational purposes only and does not constitute investment advice. Past performance is not indicative of future results.
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Legal Documents */}
-                  <div className="border-b border-[#e6e4e7]">
-                    <button
-                      onClick={() => toggleSection('legal')}
-                      className="w-full flex items-center justify-between p-4 text-left"
-                    >
-                      <span className="text-[13px] font-medium text-[#29272a]">Legal Documents</span>
-                      <ChevronRight className={cn(
-                        "w-4 h-4 text-[#69606d] transition-transform",
-                        expandedSection === 'legal' && "rotate-90"
-                      )} />
-                    </button>
-                    {expandedSection === 'legal' && (
-                      <div className="px-4 pb-4 space-y-2">
-                        <a href="#" className="block text-[13px] text-[#ff954a] hover:underline">
-                          Subscription Agreement
-                        </a>
-                        <a href="#" className="block text-[13px] text-[#ff954a] hover:underline">
-                          Operating Agreement
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
                 {/* Deep Research Report Button */}
                 <button
                   onClick={() => {
                     onAskAI(`Generate a deep research report for ${company.name}`);
                     onBack();
                   }}
-                  className="w-full p-4 rounded-lg text-left overflow-hidden relative"
+                  className="w-full p-4 rounded-xl text-left overflow-hidden relative"
                   style={{
                     background: 'linear-gradient(135deg, #fff8f0 0%, #ffe8d4 50%, #ffd4b8 100%)',
                   }}
@@ -1115,16 +1188,110 @@ export function GoodfinGoDashboard({
                       <Newspaper className="w-4 h-4 text-[#69606d]" />
                       <span className="text-[13px] font-semibold text-[#29272a]">Trending pre-IPO Companies</span>
                     </div>
-                    <span className="text-[11px] text-[#a09a9f]">Based on your interests</span>
+                    <button
+                      className="flex items-center gap-1.5 text-[11px] text-[#a09a9f] hover:text-[#69606d] transition-colors group"
+                      onClick={() => {/* TODO: Open preferences modal */}}
+                    >
+                      <span>Based on your interests</span>
+                      <Settings className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:rotate-45 transition-all duration-200" />
+                    </button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {FEATURED_COMPANIES.map((company) => (
                       <CompanyNewsCard
                         key={company.id}
                         company={company}
-                        onClick={() => handleStartChat(`Tell me the latest news about ${company.name}`)}
+                        onClick={() => setSelectedCompany(company)}
                         onLearnMore={() => setSelectedCompany(company)}
                       />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Deep Research Reports Section */}
+                <div
+                  className={cn(
+                    'transition-all duration-700 ease-out delay-300',
+                    !hasAnimated
+                      ? 'opacity-0 translate-y-4'
+                      : 'opacity-100 translate-y-0'
+                  )}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-[#69606d]" />
+                      <span className="text-[13px] font-semibold text-[#29272a]">Deep Research Reports</span>
+                    </div>
+                    <button className="text-[11px] text-[#ff954a] font-medium hover:underline">View all</button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {DEEP_RESEARCH_REPORTS.map((report) => (
+                      <div
+                        key={report.id}
+                        onClick={() => handleStartChat(`Show me the deep research report on ${report.company}`)}
+                        className="group bg-white rounded-[16px] border border-[#e6e4e7] overflow-hidden hover:border-[#c5bfc6] hover:shadow-sm transition-all cursor-pointer"
+                      >
+                        {/* Gradient Header */}
+                        <div
+                          className="h-20 relative"
+                          style={{
+                            background: 'linear-gradient(135deg, #fff8f0 0%, #ffe8d4 50%, #ffd4b8 100%)',
+                          }}
+                        >
+                          <div className="absolute bottom-3 left-3">
+                            <div className="w-8 h-8 rounded-lg overflow-hidden bg-white shadow-sm">
+                              <img src={report.image} alt={report.company} className="w-full h-full object-cover" />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-4">
+                          <h3 className="text-[14px] font-semibold text-[#29272a] mb-2 line-clamp-1">{report.title}</h3>
+                          <p className="text-[12px] text-[#69606d] line-clamp-2 mb-3">{report.summary}</p>
+                          <div className="flex items-center justify-between text-[11px] text-[#a09a9f]">
+                            <span>{report.date}</span>
+                            <span>{report.readTime}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Latest News Section */}
+                <div
+                  className={cn(
+                    'transition-all duration-700 ease-out delay-400',
+                    !hasAnimated
+                      ? 'opacity-0 translate-y-4'
+                      : 'opacity-100 translate-y-0'
+                  )}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Newspaper className="w-4 h-4 text-[#69606d]" />
+                      <span className="text-[13px] font-semibold text-[#29272a]">Latest News</span>
+                    </div>
+                    <button className="text-[11px] text-[#ff954a] font-medium hover:underline">View all</button>
+                  </div>
+                  <div className="bg-white rounded-[16px] border border-[#e6e4e7] divide-y divide-[#e6e4e7]">
+                    {LATEST_NEWS.map((news) => (
+                      <div
+                        key={news.id}
+                        onClick={() => handleStartChat(`Tell me more about: ${news.headline}`)}
+                        className="flex items-center justify-between p-4 hover:bg-[#faf9fa] transition-colors cursor-pointer"
+                      >
+                        <div className="flex-1 min-w-0 pr-4">
+                          <h4 className="text-[14px] font-medium text-[#29272a] mb-1 line-clamp-1">{news.headline}</h4>
+                          <div className="flex items-center gap-2 text-[11px] text-[#a09a9f]">
+                            <span>{news.source}</span>
+                            <span>•</span>
+                            <span>{news.time}</span>
+                          </div>
+                        </div>
+                        <span className="px-2 py-1 bg-[#f0eef0] text-[10px] font-medium text-[#69606d] rounded-md shrink-0">
+                          {news.category}
+                        </span>
+                      </div>
                     ))}
                   </div>
                 </div>
